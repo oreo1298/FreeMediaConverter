@@ -146,7 +146,8 @@ else
   say "retort-cli not found: build it (cargo build --release -p retort-cli) or set RETORT_CLI, then re-run"
 fi
 
-say "Done: $out"
-echo "Please check the files (nothing secret should be in them), then commit the folder as"
-echo "  tests/fixtures/hw/<machine-name>/"
-echo "or attach it (tar czf report.tar.gz \"$out\") to a GitHub issue."
+tar czf "$out.tar.gz" "$out"
+say "Done: $out (and $out.tar.gz)"
+echo "Please look through the files (nothing secret should be in them), then attach"
+echo "  $out.tar.gz"
+echo "to a GitHub issue (\"Hardware report\"), or commit the folder as tests/fixtures/hw/<machine-name>/."
