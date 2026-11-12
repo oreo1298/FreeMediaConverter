@@ -51,6 +51,8 @@ if "APP_REPO_OWNER" in changed or "APP_REPO_NAME" in changed:
                  f"{new['APP_REPO_OWNER']}/{new['APP_REPO_NAME']}"))
     subs.append((re.compile(re.escape(f"|{old['APP_REPO_OWNER']}|{old['APP_REPO_NAME']}|")),
                  f"|{new['APP_REPO_OWNER']}|{new['APP_REPO_NAME']}|"))
+# The clone's folder name in the install instructions ("cd FreeMediaConverter").
+lit("APP_REPO_NAME", r"\b", r"\b")
 if "APP_BIN" in changed:
     ob, nb = old["APP_BIN"], new["APP_BIN"]
     subs.append((re.compile(rf"\b{re.escape(ob)}-cli\b"), f"{nb}-cli"))
@@ -60,7 +62,7 @@ lit("APP_NAME", r"\b", r"\b")
 
 files = subprocess.run(["git", "ls-files", "packaging", "nix", "flake.nix", "meson.build", "meson_options.txt",
                         "Cargo.toml", "crates/app/Cargo.toml", "crates/cli/Cargo.toml", "crates/core/Cargo.toml",
-                        ".github", "scripts", "README.md", "docs/INSTALL.md", "docs/INSTALL.in.md", "docs/MAINTAINER.md",
+                        ".github", "scripts", "PKGBUILD", "build-package.sh", "docs/install", "README.md", "docs/INSTALL.md", "docs/INSTALL.in.md", "docs/MAINTAINER.md",
                         "CHANGELOG.md"], capture_output=True, text=True, check=True).stdout.split()
 skip = {"scripts/rename.sh", "packaging/flatpak/cargo-sources.json"}
 edited = 0

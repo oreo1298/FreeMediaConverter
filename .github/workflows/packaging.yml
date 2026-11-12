@@ -1,13 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Packaging smoke tests (a subset of the release matrix) whenever packaging,
-# build or data files change, weekly, and on demand. Each job builds the
-# package in a container of its target distro, installs it there and runs it.
+# build or data files change, weekly, and on demand. The native jobs follow
+# docs/INSTALL.md as a normal user in a container of their distro: build the
+# package from the checkout, install, update, remove.
 name: Packaging
 
 on:
   push:
     paths:
       - "packaging/**"
+      - "PKGBUILD"
+      - "build-package.sh"
+      - "docs/install/**"
+      - "scripts/doc_test.py"
       - "scripts/make-dist.sh"
       - "meson.build"
       - "meson_options.txt"
@@ -33,25 +38,36 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: dist-src, path: dist/* }
 
-  build:
-    name: ${{ matrix.name }}
-    needs: dist
+  native:
+    name: install ${{ matrix.job }} ${{ matrix.arch }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { name: "deb Ubuntu 24.04", script: debian/build.sh, arg: "ubuntu:24.04", runner: ubuntu-24.04 }
-          - { name: "deb Debian 13 arm64", script: debian/build.sh, arg: "debian:trixie", runner: ubuntu-24.04-arm }
-          - { name: "rpm Fedora 45", script: rpm/build.sh, arg: "fedora:45", runner: ubuntu-24.04 }
-          - { name: "rpm openSUSE Tumbleweed", script: rpm/build.sh, arg: "opensuse/tumbleweed", runner: ubuntu-24.04 }
-          - { name: "Arch PKGBUILD + namcap", script: arch/build.sh, arg: "", runner: ubuntu-24.04 }
-          - { name: "portable tarball", script: tarball/build.sh, arg: "", runner: ubuntu-24.04 }
+          - { job: "debian@ubuntu:24.04", arch: x86_64, runner: ubuntu-24.04 }
+          - { job: "debian@debian:trixie", arch: aarch64, runner: ubuntu-24.04-arm }
+          - { job: "fedora@fedora:45", arch: x86_64, runner: ubuntu-24.04 }
+          - { job: "opensuse@opensuse/tumbleweed", arch: x86_64, runner: ubuntu-24.04 }
+          - { job: "arch@archlinux", arch: x86_64, runner: ubuntu-24.04 }
     runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/test-docs.sh "${{ matrix.job }}"
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: doc-test-${{ strategy.job-index }}
+          path: dist/doc-test
+
+  tarball:
+    name: portable tarball
+    needs: dist
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with: { name: dist-src, path: dist }
-      - run: packaging/${{ matrix.script }} ${{ matrix.arg }}
+      - run: packaging/tarball/build.sh
 
   flatpak:
     runs-on: ubuntu-24.04

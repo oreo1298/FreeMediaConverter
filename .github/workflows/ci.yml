@@ -51,6 +51,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: shellcheck -S warning $(git ls-files '*.sh')
+      # makepkg provides srcdir/pkgdir/startdir and reads pkgname/arch/... itself.
+      - run: shellcheck -S warning -s bash -e SC2034,SC2154 PKGBUILD
 
   test:
     name: test (${{ matrix.arch }})

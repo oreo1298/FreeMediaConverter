@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Release source tarballs:
 #   dist/<bin>-<version>.tar.xz         git archive of HEAD (or the working tree with --dirty)
-#   dist/<bin>-<version>-vendor.tar.xz  cargo vendor (offline builds: deb, rpm, AUR, Gentoo, Void)
+#   dist/<bin>-<version>-vendor.tar.xz  cargo vendor (offline builds: tarball, AppImage, Gentoo, Void)
 # The vendor tarball unpacks to vendor/ plus .cargo/config.toml next to the sources.
 set -euo pipefail
 cd "$(dirname "$0")/.."

@@ -12,8 +12,7 @@ check() { # what found
 }
 check meson.build "$(sed -n "s/^  version: '\(.*\)',/\1/p" meson.build)"
 check "packaging/rpm/$bin.spec" "$(sed -n 's/^Version: *//p' "packaging/rpm/$bin.spec")"
-check "packaging/arch/$bin/PKGBUILD" "$(sed -n 's/^pkgver=//p' "packaging/arch/$bin/PKGBUILD")"
-check "packaging/arch/$bin-bin/PKGBUILD" "$(sed -n 's/^pkgver=//p' "packaging/arch/$bin-bin/PKGBUILD")"
+check PKGBUILD "$(sed -n 's/^pkgver=//p' PKGBUILD)"
 check "packaging/void/srcpkgs/$bin/template" "$(sed -n 's/^version=//p' "packaging/void/srcpkgs/$bin/template")"
 ebuild=$(find packaging/gentoo -name "$bin-*.ebuild" | head -1)
 check "$ebuild" "$(basename "$ebuild" .ebuild | sed "s/^$bin-//")"

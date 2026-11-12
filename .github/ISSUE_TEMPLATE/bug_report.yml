@@ -27,6 +27,6 @@ body:
     id: install
     attributes:
       label: How did you install Retort?
-      options: [Flatpak, .deb, .rpm, AUR, AppImage, Portable tarball, Nix, Gentoo, Void, Built from source]
+      options: [".deb (build-package.sh)", ".rpm (build-package.sh)", "Arch (makepkg)", Flatpak, AppImage, Portable tarball, Nix, Gentoo, Void, "Meson, no package"]
     validations:
       required: true
