@@ -960,7 +960,11 @@ pub fn remove_item(ui: &Ui, id: u64) {
         return;
     }
     ui.state.borrow_mut().items.remove(idx);
-    if let Some(card) = ui.cards.borrow_mut().remove(&id) {
+    // Release the borrow before touching the list: removing a selected row
+    // emits selected-rows-changed synchronously, and its handler reads
+    // `cards` (a held borrow_mut panicked there and aborted the app).
+    let card = ui.cards.borrow_mut().remove(&id);
+    if let Some(card) = card {
         ui.list.remove(&card.row);
     }
     refresh(ui);
