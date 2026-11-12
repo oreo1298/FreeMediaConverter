@@ -241,10 +241,10 @@ sudo dnf install -y intel-media-driver
 
 ### Hardware acceleration — NVIDIA
 
-From NVIDIA's own repository (RPM Fusion has no NVIDIA driver for EL 10):
+From NVIDIA's own repository (RPM Fusion has no NVIDIA driver for EL 10; its arm64 repository is called `sbsa`):
 
 ```bash
-sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/$(uname -m)/cuda-rhel10.repo
+sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/$(uname -m | sed s/aarch64/sbsa/)/cuda-rhel10.repo
 sudo dnf install -y nvidia-driver-cuda-libs nvidia-driver-libs
 ```
 

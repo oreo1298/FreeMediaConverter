@@ -18,6 +18,7 @@ see docs/MAINTAINER.md).
 import argparse
 import http.server
 import os
+import platform
 import re
 import shlex
 import shutil
@@ -242,6 +243,8 @@ def install_jobs(data, only):
                 if "images" in step and image not in step["images"]:
                     continue
                 test = step.get("test", "run")
+                if "arch" in step and platform.machine() not in step["arch"]:
+                    test = f"skip: {'/'.join(step['arch'])} only (this machine: {platform.machine()})"
                 todo = step.get("test_commands", step.get("commands", []))
                 if test.startswith("skip"):
                     report.append(f"skipped ({test[5:].strip()}): " + "; ".join(step.get("commands", [])))

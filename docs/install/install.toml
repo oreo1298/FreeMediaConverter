@@ -11,6 +11,8 @@
 #              (apt-get -s, dnf --assumeno, zypper --dry-run, pacman --print):
 #              used for GPU drivers, which cannot work in a container
 #   "skip: …"  not runnable in CI; the reason is shown in the test report
+# `arch = [...]` limits a step to those machines (Intel GPUs: x86-64 only);
+# elsewhere the test reports it as skipped.
 # `{releases}` is the latest-release download URL; the test points it at a
 # local copy.
 
@@ -90,6 +92,7 @@ commands = [
 ]
 [[section.step]]
 text = "Then, on both:"
+arch = ["x86_64"]
 commands = ["sudo apt install intel-media-va-driver-non-free libmfx-gen1.2 libvpl2"]
 [[section.step]]
 title = "Hardware acceleration — AMD"
@@ -162,6 +165,7 @@ commands = [
 test_check = ["retort-cli presets > /dev/null"]
 [[section.step]]
 title = "Hardware acceleration — Intel"
+arch = ["x86_64"]
 commands = ["sudo dnf install -y intel-media-driver intel-vpl-gpu-rt"]
 [[section.step]]
 title = "Hardware acceleration — AMD (H.264/HEVC encode)"
@@ -216,12 +220,13 @@ commands = [
 test_check = ["retort-cli presets > /dev/null"]
 [[section.step]]
 title = "Hardware acceleration — Intel"
+arch = ["x86_64"]
 commands = ["sudo dnf install -y intel-media-driver"]
 [[section.step]]
 title = "Hardware acceleration — NVIDIA"
-text = "From NVIDIA's own repository (RPM Fusion has no NVIDIA driver for EL 10):"
+text = "From NVIDIA's own repository (RPM Fusion has no NVIDIA driver for EL 10; its arm64 repository is called `sbsa`):"
 commands = [
-  "sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/$(uname -m)/cuda-rhel10.repo",
+  "sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/$(uname -m | sed s/aarch64/sbsa/)/cuda-rhel10.repo",
   "sudo dnf install -y nvidia-driver-cuda-libs nvidia-driver-libs",
 ]
 test = "resolve"
@@ -280,6 +285,7 @@ commands = [
 test_check = ["retort-cli presets > /dev/null"]
 [[section.step]]
 title = "Hardware acceleration — Intel"
+arch = ["x86_64"]
 commands = ["sudo zypper install -y intel-media-driver libvpl2"]
 [[section.step]]
 title = "Remove"
@@ -320,6 +326,7 @@ test_check = ["retort-cli presets > /dev/null"]
 tip = "If `makepkg` says `PKGBUILD does not exist`, you are not inside the `FreeMediaConverter` folder."
 [[section.step]]
 title = "Hardware acceleration — Intel"
+arch = ["x86_64"]
 commands = ["sudo pacman -S --needed intel-media-driver vpl-gpu-rt"]
 [[section.step]]
 title = "Hardware acceleration — NVIDIA"
