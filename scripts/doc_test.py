@@ -87,7 +87,7 @@ apt-get install -y -qq --no-install-recommends git build-essential debhelper mes
   appstream desktop-file-utils libgtk-4-dev libadwaita-1-dev cargo-1.97 >/dev/null
 useradd -m builder && echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
 echo 'Defaults env_keep += "HTTPS_PROXY https_proxy HTTP_PROXY http_proxy NO_PROXY no_proxy"' >> /etc/sudoers.d/builder
-mkdir -p /home/builder/r && tar -C /src --exclude=./target --exclude=./_build --exclude=./dist --exclude=./_package -cf - . | tar -C /home/builder/r -xf -
+mkdir -p /home/builder/r && tar -C /src --exclude=./target --exclude=./_build --exclude=./dist --exclude=./_package -cf - . | tar --no-same-owner -C /home/builder/r -xf -
 chown -R builder /home/builder/r
 su builder -c 'cd /home/builder/r && RETORT_BUILD_ASSUME_YES=1 ./build-package.sh' >/dev/null
 ffmpeg -v error -f lavfi -i testsrc2=s=640x360:d=3 -f lavfi -i sine=d=3 -c:v libx264 -c:a aac holiday.mkv
@@ -99,7 +99,8 @@ apt-get install -y -qq --no-install-recommends build-essential git meson ninja-b
   desktop-file-utils libgtk-4-dev libadwaita-1-dev ffmpeg python3 gnupg xvfb xauth dbus fonts-cantarell >/dev/null
 curl -sSf https://sh.rustup.rs | sh -s -- -y -q --profile minimal --component rustfmt,clippy >/dev/null
 . "$HOME/.cargo/env"
-mkdir -p /work && tar -C /src --exclude=./target --exclude=./_build --exclude=./_install --exclude=./dist -cf - . | tar -C /work -xf -
+# The checkout belongs to whoever works in it (git refuses "dubious ownership").
+mkdir -p /work && tar -C /src --exclude=./target --exclude=./_build --exclude=./_install --exclude=./dist -cf - . | tar --no-same-owner -C /work -xf -
 cd /work
 """),
 }
