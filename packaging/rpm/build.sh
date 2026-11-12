@@ -43,7 +43,13 @@ cp /dist/$BIN-$PKGVER.tar.xz /dist/$BIN-$PKGVER-vendor.tar.xz $top/SOURCES/
 cp /spec/retort.spec $top/SPECS/
 rpmbuild -ba $top/SPECS/retort.spec >/tmp/build.log 2>&1 || { tail -80 /tmp/build.log; exit 1; }
 grep -E "^(Ok|Fail):" /tmp/build.log || true
-dest=/out/$ID-${VERSION_ID:-rolling}
+# Stable repository names: fedora-45, el-10 (AlmaLinux/RHEL/Rocky), opensuse-tumbleweed, opensuse-leap-16.0
+case "$ID" in
+  almalinux|rocky|rhel|centos) repo=el-${VERSION_ID%%.*} ;;
+  opensuse-tumbleweed) repo=opensuse-tumbleweed ;;
+  *) repo=$ID-$VERSION_ID ;;
+esac
+dest=/out/$repo
 mkdir -p $dest
 cp $top/RPMS/*/*.rpm $top/SRPMS/*.rpm $dest/
 # Smoke test with the distro FFmpeg.
