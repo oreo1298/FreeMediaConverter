@@ -1,0 +1,346 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Single source for docs/INSTALL.md (scripts/gen-install.py) and for the
+# documentation test (scripts/test-docs.sh), which runs every command below in
+# a container of each listed image against a local, signed copy of the
+# package repositories and release files.
+#
+# Per step, `test` says how the commands are exercised:
+#   "run"      run as written (default)
+#   "resolve"  package installs are resolved but not downloaded
+#              (apt-get -s, dnf --assumeno, zypper --dry-run, pacman --print):
+#              used for GPU drivers, which cannot work in a container
+#   "skip: …"  not runnable in CI; the reason is shown in the test report
+# `{base}` is the GitHub Pages site and `{releases}` the latest-release
+# download URL; the test points both at local copies.
+
+base = "https://oreo1298.github.io/FreeMediaConverter"
+releases = "https://github.com/oreo1298/FreeMediaConverter/releases/latest/download"
+
+intro = """
+Retort needs GTK 4.14+, libadwaita 1.5+ and FFmpeg 6.1 or newer. Pick your
+system below; every command on this page is run by `scripts/test-docs.sh` in
+a fresh container of that system before each release.
+
+**Quickest way** on any supported distribution — the script detects your
+system and uses the matching method from this page:
+
+```bash
+curl -fsSL https://oreo1298.github.io/FreeMediaConverter/install.sh | sh
+```
+
+After installing, open **System Check** from the main menu (or run
+`retort-cli diagnose`): it tells you exactly which hardware acceleration works
+and which package to install for the rest.
+"""
+
+[[section]]
+id = "quick"
+title = "Quick install script"
+hidden = true
+images = ["ubuntu:24.04", "fedora:45", "opensuse/tumbleweed"]
+[[section.step]]
+commands = ["curl -fsSL {base}/install.sh | sh"]
+
+[[section]]
+id = "flatpak"
+title = "Flatpak (any distribution)"
+images = ["flatpak"]
+text = """
+The Flatpak bundles a complete FFmpeg 9 (x264, x265, SVT-AV1, libvpx, libaom,
+Opus, LAME, libplacebo, NVENC/NVDEC, VA-API, Vulkan and Quick Sync support)
+on the GNOME 51 runtime. It works on every distribution with Flatpak,
+including Debian 12 and Ubuntu 22.04 whose GTK is too old for the native
+packages. Until Retort is on Flathub, install the bundle from the release:
+"""
+[[section.step]]
+commands = [
+  "flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo",
+  "curl -fLO {releases}/Retort-$(uname -m).flatpak",
+  "flatpak install --user -y Retort-$(uname -m).flatpak",
+  "flatpak run io.github.oreo1298.Retort",
+]
+test_commands = [
+  "flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo",
+  "curl -fLO {releases}/Retort-$(uname -m).flatpak",
+  "flatpak install --user -y Retort-$(uname -m).flatpak",
+  "flatpak run --command=retort-cli io.github.oreo1298.Retort presets",
+]
+test_note = "The test runs the bundled retort-cli instead of the GUI (no display)."
+
+[[section]]
+id = "debian"
+title = "Ubuntu 24.04 LTS and newer, Debian 13"
+images = ["ubuntu:24.04", "ubuntu:26.04", "debian:trixie"]
+text = """
+Add Retort's signed APT repository and install. Updates then arrive with your
+normal system updates. `retort-cli` (no GTK) can be installed on its own on
+servers.
+"""
+[[section.step]]
+commands = [
+  "sudo install -d -m 0755 /etc/apt/keyrings",
+  "curl -fsSL {base}/retort-archive-keyring.gpg | sudo tee /etc/apt/keyrings/retort-archive-keyring.gpg > /dev/null",
+  "echo \"deb [signed-by=/etc/apt/keyrings/retort-archive-keyring.gpg] {base}/apt $(. /etc/os-release && echo $VERSION_CODENAME) main\" | sudo tee /etc/apt/sources.list.d/retort.list",
+  "sudo apt update",
+  "sudo apt install retort",
+]
+
+[[section.step]]
+title = "Hardware acceleration — Intel (Broadwell and newer)"
+text = "Debian only: enable the `non-free` component first (Ubuntu has it in `multiverse`, enabled by default)."
+images = ["debian:trixie"]
+commands = [
+  "sudo sed -i 's/^Components: main$/Components: main contrib non-free non-free-firmware/' /etc/apt/sources.list.d/debian.sources",
+  "sudo apt update",
+]
+[[section.step]]
+text = "Then, on both:"
+commands = ["sudo apt install intel-media-va-driver-non-free libmfx-gen1.2 libvpl2"]
+[[section.step]]
+title = "Hardware acceleration — AMD"
+commands = ["sudo apt install mesa-va-drivers"]
+[[section.step]]
+title = "Hardware acceleration — NVIDIA"
+text = "Install the proprietary driver; NVENC and NVDEC come with it. On Ubuntu use *Software & Updates → Additional Drivers*, or:"
+images = ["ubuntu:24.04", "ubuntu:26.04"]
+commands = ["sudo ubuntu-drivers install"]
+test = "skip: needs NVIDIA hardware (the package names below are resolved instead)"
+[[section.step]]
+text = "On Debian 13 (with `non-free` enabled as above):"
+images = ["debian:trixie"]
+commands = ["sudo apt install nvidia-driver libnvidia-encode1 libcuda1"]
+test = "resolve"
+
+[[section]]
+id = "fedora"
+title = "Fedora 45"
+images = ["fedora:45"]
+text = """
+Add Retort's signed RPM repository and install. Fedora's own `ffmpeg-free`
+is installed with it; it lacks the H.264/HEVC encoders, so for those switch
+to RPM Fusion's full FFmpeg (second step).
+"""
+[[section.step]]
+commands = [
+  "sudo curl -fsSL -o /etc/yum.repos.d/retort.repo {base}/rpm/retort-fedora-$(rpm -E %fedora).repo",
+  "sudo dnf install -y retort",
+]
+[[section.step]]
+title = "Full FFmpeg from RPM Fusion"
+commands = [
+  "sudo dnf install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm",
+  "sudo dnf swap -y ffmpeg-free ffmpeg --allowerasing",
+]
+[[section.step]]
+title = "Hardware acceleration — Intel"
+commands = ["sudo dnf install -y intel-media-driver intel-vpl-gpu-rt"]
+[[section.step]]
+title = "Hardware acceleration — AMD (H.264/HEVC encode)"
+commands = ["sudo dnf install -y mesa-va-drivers-freeworld"]
+[[section.step]]
+title = "Hardware acceleration — NVIDIA"
+commands = ["sudo dnf install -y akmod-nvidia xorg-x11-drv-nvidia-cuda"]
+test = "resolve"
+
+[[section]]
+id = "el"
+title = "AlmaLinux, Rocky Linux and RHEL 10"
+images = ["almalinux:10"]
+text = "FFmpeg comes from EPEL (`ffmpeg-free`); RPM Fusion has the full build."
+[[section.step]]
+commands = [
+  "sudo dnf install -y epel-release",
+  "sudo dnf config-manager --set-enabled crb",
+  "sudo curl -fsSL -o /etc/yum.repos.d/retort.repo {base}/rpm/retort-el-10.repo",
+  "sudo dnf install -y retort",
+]
+[[section.step]]
+title = "Full FFmpeg from RPM Fusion"
+commands = [
+  "sudo dnf install -y https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-10.noarch.rpm https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-10.noarch.rpm",
+  "sudo dnf swap -y ffmpeg-free ffmpeg --allowerasing",
+]
+[[section.step]]
+title = "Hardware acceleration — Intel"
+commands = ["sudo dnf install -y intel-media-driver"]
+[[section.step]]
+title = "Hardware acceleration — NVIDIA"
+text = "From NVIDIA's own repository (RPM Fusion has no NVIDIA driver for EL 10):"
+commands = [
+  "sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/$(uname -m)/cuda-rhel10.repo",
+  "sudo dnf install -y nvidia-driver-cuda-libs nvidia-driver-libs",
+]
+test = "resolve"
+
+[[section]]
+id = "opensuse"
+title = "openSUSE Tumbleweed and Leap 16"
+images = ["opensuse/tumbleweed", "opensuse/leap:16.0"]
+text = """
+openSUSE's own FFmpeg lacks the H.264/HEVC encoders; Packman has the full
+build. Add Retort's repository (use `opensuse-leap-16.0` instead of
+`opensuse-tumbleweed` on Leap):
+"""
+[[section.step]]
+commands = [
+  "sudo zypper addrepo --refresh {base}/rpm/retort-opensuse-tumbleweed.repo",
+  "sudo zypper --gpg-auto-import-keys refresh retort",
+  "sudo zypper install -y retort",
+]
+images = ["opensuse/tumbleweed"]
+[[section.step]]
+commands = [
+  "sudo zypper addrepo --refresh {base}/rpm/retort-opensuse-leap-16.0.repo",
+  "sudo zypper --gpg-auto-import-keys refresh retort",
+  "sudo zypper install -y retort",
+]
+images = ["opensuse/leap:16.0"]
+hidden = true
+[[section.step]]
+title = "Full FFmpeg from Packman (Tumbleweed)"
+images = ["opensuse/tumbleweed"]
+commands = [
+  "sudo zypper addrepo --refresh --priority 90 https://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Tumbleweed/ packman",
+  "sudo zypper --gpg-auto-import-keys refresh packman",
+  "sudo zypper install -y --from packman --allow-vendor-change ffmpeg",
+]
+[[section.step]]
+title = "Full FFmpeg from Packman (Leap 16)"
+images = ["opensuse/leap:16.0"]
+commands = [
+  "sudo zypper addrepo --refresh --priority 90 https://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Leap_16.0/ packman",
+  "sudo zypper --gpg-auto-import-keys refresh packman",
+  "sudo zypper install -y --from packman --allow-vendor-change ffmpeg-8",
+]
+[[section.step]]
+title = "Hardware acceleration — Intel"
+commands = ["sudo zypper install -y intel-media-driver libvpl2"]
+
+[[section]]
+id = "arch"
+title = "Arch Linux"
+images = ["archlinux"]
+text = """
+Retort is in the AUR: `retort-bin` (prebuilt), `retort` (built from source)
+and `retort-git`. With an AUR helper such as `yay` or `paru`:
+"""
+[[section.step]]
+commands = ["yay -S retort-bin"]
+test = "skip: equivalent tested by packaging/arch/build.sh (builds, namcap-checks, installs and runs the same PKGBUILD)"
+[[section.step]]
+text = "Without a helper:"
+commands = [
+  "git clone https://aur.archlinux.org/retort-bin.git",
+  "cd retort-bin",
+  "makepkg -si",
+]
+test = "skip: equivalent tested by packaging/arch/build.sh (builds, namcap-checks, installs and runs the same PKGBUILD)"
+[[section.step]]
+title = "Hardware acceleration — Intel"
+commands = ["sudo pacman -S --needed intel-media-driver vpl-gpu-rt"]
+[[section.step]]
+title = "Hardware acceleration — NVIDIA"
+commands = ["sudo pacman -S --needed nvidia-utils"]
+test = "resolve"
+
+[[section]]
+id = "appimage"
+title = "AppImage (glibc 2.39 or newer)"
+images = ["ubuntu:24.04"]
+text = """
+One file with GTK, libadwaita and a full FFmpeg inside; your system's GPU
+drivers are used. Download, make executable, run:
+"""
+[[section.step]]
+commands = [
+  "curl -fLO {releases}/Retort-$(uname -m).AppImage",
+  "chmod +x Retort-$(uname -m).AppImage",
+  "./Retort-$(uname -m).AppImage",
+]
+test_commands = [
+  "curl -fLO {releases}/Retort-$(uname -m).AppImage",
+  "chmod +x Retort-$(uname -m).AppImage",
+  "APPIMAGE_EXTRACT_AND_RUN=1 timeout 20 xvfb-run -a ./Retort-$(uname -m).AppImage || test $? -eq 124",
+]
+tip = "Without FUSE (some containers and minimal systems), run it as `APPIMAGE_EXTRACT_AND_RUN=1 ./Retort-$(uname -m).AppImage`."
+test_note = "The test starts the app under Xvfb for 20 seconds."
+
+[[section]]
+id = "tarball"
+title = "Portable tarball (any distribution with GTK 4.14+ and libadwaita 1.5+)"
+images = ["fedora:45"]
+text = """
+Install GTK 4, libadwaita and FFmpeg from your distribution first. The
+tarball installs into `~/.local` (or `/usr/local` with `--system`) and can
+uninstall itself. This build can optionally check for updates (off by default).
+"""
+[[section.step]]
+commands = [
+  "curl -fLO {releases}/retort-linux-$(uname -m).tar.xz",
+  "tar xf retort-linux-$(uname -m).tar.xz",
+  "./retort-*-linux/install.sh",
+]
+[[section.step]]
+text = "To remove it later:"
+commands = ["~/.local/share/retort/uninstall.sh"]
+
+[[section]]
+id = "nix"
+title = "Nix and NixOS"
+images = []
+text = "Run it directly, or add the flake to your configuration:"
+[[section.step]]
+commands = ["nix run github:oreo1298/FreeMediaConverter"]
+test = "skip: equivalent tested by the Packaging workflow's Nix job (nix build of the same flake)"
+
+[[section]]
+id = "gentoo-void"
+title = "Gentoo and Void Linux"
+images = []
+text = """
+An ebuild (`packaging/gentoo/media-video/retort`) and a Void template
+(`packaging/void/srcpkgs/retort`) are in the repository and are submitted to
+GURU and void-packages with each release.
+"""
+
+[[section]]
+id = "source"
+title = "From source"
+images = ["ubuntu:24.04"]
+text = """
+Needs Rust 1.92+, Meson 0.62+, GTK 4.14+, libadwaita 1.5+, gettext,
+desktop-file-utils, AppStream and FFmpeg. On Ubuntu 24.04:
+"""
+[[section.step]]
+commands = [
+  "sudo apt install build-essential curl git meson ninja-build pkg-config gettext appstream desktop-file-utils libgtk-4-dev libadwaita-1-dev ffmpeg",
+  "curl -sSf https://sh.rustup.rs | sh -s -- -y",
+  ". \"$HOME/.cargo/env\"",
+  "git clone https://github.com/oreo1298/FreeMediaConverter.git",
+  "cd FreeMediaConverter",
+  "meson setup _build --prefix=/usr/local",
+  "meson compile -C _build",
+  "sudo meson install -C _build",
+]
+test_commands = [
+  "sudo apt install build-essential curl git meson ninja-build pkg-config gettext appstream desktop-file-utils libgtk-4-dev libadwaita-1-dev ffmpeg",
+  "curl -sSf https://sh.rustup.rs | sh -s -- -y",
+  ". \"$HOME/.cargo/env\"",
+  "mkdir FreeMediaConverter && tar -C /src --exclude=./target --exclude=./_build --exclude=./dist -cf - . | tar -C FreeMediaConverter -xf -",
+  "cd FreeMediaConverter",
+  "meson setup _build --prefix=/usr/local",
+  "meson compile -C _build",
+  "sudo meson install -C _build",
+  "retort-cli presets",
+]
+test_note = "The test copies the checkout under test instead of cloning."
+
+[[section]]
+id = "check"
+title = "After installing"
+images = []
+text = """
+Start Retort from your applications menu. Then open **System Check** (main
+menu) or run `retort-cli diagnose`: it lists every GPU, which encoders and
+decoders passed a real test, and the exact commands to fix anything missing.
+"""
