@@ -7,6 +7,7 @@ devices:
 summary:
 encoders:
   av1_vaapi      @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  av1_vulkan     @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
   ffv1_vulkan    @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
   h263_v4l2m2m   @default    8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
   h264_v4l2m2m   @default    8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]

@@ -9,6 +9,7 @@ summary:
 encoders:
   av1_amf        @renderD128 8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
   av1_vaapi      @renderD128 8bit=ok 10bit=ok bf=Some(true) rc=[ConstQp, Vbr, Cbr]
+  av1_vulkan     @renderD128 8bit=ok 10bit=ok bf=Some(true) rc=[ConstQp, Vbr, Cbr]
   ffv1_vulkan    @renderD128 8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
   h263_v4l2m2m   @default    8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
   h264_amf       @renderD128 8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]

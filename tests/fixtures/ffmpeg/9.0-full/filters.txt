@@ -161,6 +161,7 @@ Filters:
  T. bbox              V->V       Compute bounding box for each frame.
  .. bench             V->V       Benchmark part of a filtergraph.
  TS bilateral         V->V       Apply Bilateral filter.
+ .. bilateral_cuda    V->V       GPU accelerated bilateral filter
  T. bitplanenoise     V->V       Measure bit plane noise.
  .S blackdetect       V->V       Detect video intervals that are (almost) black.
  .. blackdetect_vulkan V->V       Detect video intervals that are (almost) black.
@@ -172,12 +173,14 @@ Filters:
  TS bm3d              N->V       Block-Matching 3D denoiser.
  T. boxblur           V->V       Blur the input.
  TS bwdif             V->V       Deinterlace the input image.
+ T. bwdif_cuda        V->V       Deinterlace CUDA frames
  T. bwdif_vulkan      V->V       Deinterlace Vulkan frames via bwdif
  TS cas               V->V       Contrast Adaptive Sharpen.
  .. ccrepack          V->V       Repack CEA-708 closed caption metadata
  .. chromaber_vulkan  V->V       Offset chroma of input video (chromatic aberration)
  TS chromahold        V->V       Turns a certain color range into gray.
  TS chromakey         V->V       Turns a certain color into transparency. Operates on YUV colors.
+ .. chromakey_cuda    V->V       GPU accelerated chromakey filter
  TS chromanr          V->V       Reduce chrominance noise.
  TS chromashift       V->V       Shift chroma.
  .. ciescope          V->V       Video CIE scope.
@@ -194,6 +197,7 @@ Filters:
  TS colormap          VVV->V     Apply custom Color Maps to video stream.
  TS colormatrix       V->V       Convert color matrix.
  TS colorspace        V->V       Convert between colorspaces.
+ .. colorspace_cuda   V->V       CUDA accelerated video color converter
  TS colortemperature  V->V       Adjust color temperature of video.
  TS convolution       V->V       Apply convolution filter.
  TS convolve          VV->V      Convolve first video stream with second video stream.
@@ -339,8 +343,10 @@ Filters:
  .. overlay_qsv       VV->V      Quick Sync Video overlay.
  .. overlay_vaapi     VV->V      Overlay one video on top of another
  .. overlay_vulkan    VV->V      Overlay a source on top of another
+ T. overlay_cuda      VV->V      Overlay one video on top of another using CUDA
  T. owdenoise         V->V       Denoise using wavelets.
  .. pad               V->V       Pad the input video.
+ .. pad_cuda          V->V       CUDA-based GPU padding filter
  .. palettegen        V->V       Find the optimal palette for a given stream.
  .. paletteuse        VV->V      Use a palette to downsample an input video stream.
  T. perms             V->V       Set permissions for the output video frame.
@@ -375,6 +381,7 @@ Filters:
  .. scale             V->V       Scale the input video size and/or convert the image format.
  .. vpp_amf           V->V       AMF video scaling and format conversion
  .. sr_amf            V->V       AMF HQ video upscaling
+ .. scale_cuda        V->V       GPU accelerated video resizer
  .. scale_qsv         V->V       Quick Sync Video "scaling and format conversion"
  .. scale_vaapi       V->V       Scale to/from VAAPI surfaces.
  .. scale_vulkan      V->V       Scale Vulkan frames
@@ -423,6 +430,7 @@ Filters:
  .. thistogram        V->V       Compute and draw a temporal histogram.
  TS threshold         VVVV->V    Threshold first video stream using other video streams.
  TS thumbnail         V->V       Select the most representative frame in a given sequence of consecutive frames.
+ .. thumbnail_cuda    V->V       Select the most representative frame in a given sequence of consecutive frames using CUDA.
  .. tile              V->V       Tile several successive frames together.
  .. tiltandshift      V->V       Generate a tilt-and-shift'd video.
  .. tinterlace        V->V       Perform temporal field interlacing.
@@ -434,6 +442,7 @@ Filters:
  .. tonemap_vaapi     V->V       VAAPI VPP for tone-mapping
  .. tpad              V->V       Temporarily pad video frames.
  .S transpose         V->V       Transpose input video.
+ .. transpose_cuda    V->V       Transpose input video using CUDA
  .. transpose_vaapi   V->V       VAAPI VPP for transpose
  .. transpose_vulkan  V->V       Transpose Vulkan Filter
  .. trim              V->V       Pick one continuous section from the input, drop the rest.
@@ -466,6 +475,7 @@ Filters:
  T. xpsnr             VV->V      Calculate the extended perceptually weighted peak signal-to-noise ratio (XPSNR) between two video streams.
  .S xstack            N->V       Stack video inputs into custom layout.
  TS yadif             V->V       Deinterlace the input image.
+ T. yadif_cuda        V->V       Deinterlace CUDA frames
  TS yaepblur          V->V       Yet another edge preserving blur filter.
  .. zoompan           V->V       Apply Zoom & Pan effect.
  .S zscale            V->V       Apply resizing, colorspace and bit depth conversion.

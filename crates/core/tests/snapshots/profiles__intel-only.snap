@@ -9,6 +9,7 @@ summary:
 encoders:
   av1_qsv        @renderD128 8bit=FAIL(Error initializing the encoder: unsupported (-3)) 10bit=skip(8-bit probe failed) bf=None rc=[]
   av1_vaapi      @renderD128 8bit=FAIL(Driver cannot encode this codec (decode-only driver?)) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  av1_vulkan     @renderD128 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
   ffv1_vulkan    @renderD128 8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
   h263_v4l2m2m   @default    8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
   h264_qsv       @renderD128 8bit=ok 10bit=skip(10-bit not supported by this encoder) bf=Some(true) rc=[Icq, ConstQp, Vbr, Cbr]

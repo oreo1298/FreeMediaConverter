@@ -11,6 +11,8 @@ encoders:
   av1_qsv        @renderD128 8bit=FAIL(Intel oneVPL/QSV runtime unavailable for this device) 10bit=skip(8-bit probe failed) bf=None rc=[]
   av1_vaapi      @renderD128 8bit=FAIL(Permission denied opening the device) 10bit=skip(8-bit probe failed) bf=None rc=[]
   av1_vaapi      @renderD129 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  av1_vulkan     @renderD128 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  av1_vulkan     @renderD129 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
   ffv1_vulkan    @renderD128 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
   ffv1_vulkan    @renderD129 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
   h263_v4l2m2m   @default    8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
@@ -45,6 +47,7 @@ encoders:
   vp9_qsv        @renderD128 8bit=FAIL(Intel oneVPL/QSV runtime unavailable for this device) 10bit=skip(8-bit probe failed) bf=None rc=[]
 decoders (passing):
 filters:
+  scale_cuda@cuda0 FAIL(Vulkan driver lacks the required video extensions)
   scale_vaapi@renderD128 FAIL(Vulkan driver lacks the required video extensions)
   tonemap_vaapi@renderD128 FAIL(Vulkan driver lacks the required video extensions)
   scale_vaapi@renderD129 FAIL(Vulkan driver lacks the required video extensions)

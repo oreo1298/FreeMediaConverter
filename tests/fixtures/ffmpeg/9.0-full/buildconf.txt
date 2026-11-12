@@ -34,6 +34,7 @@
     --enable-nvenc
     --enable-nvdec
     --enable-cuvid
+    --enable-cuda-llvm
     --enable-amf
     --enable-v4l2-m2m
     --enable-gnutls

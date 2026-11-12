@@ -13,6 +13,8 @@ encoders:
   av1_qsv        @renderD128 8bit=FAIL(Error initializing the encoder: unsupported (-3)) 10bit=skip(8-bit probe failed) bf=None rc=[]
   av1_vaapi      @renderD128 8bit=FAIL(Driver cannot encode this codec (decode-only driver?)) 10bit=skip(8-bit probe failed) bf=None rc=[]
   av1_vaapi      @renderD129 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  av1_vulkan     @renderD128 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  av1_vulkan     @renderD129 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
   ffv1_vulkan    @renderD128 8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
   ffv1_vulkan    @renderD129 8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
   h263_v4l2m2m   @default    8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
@@ -52,6 +54,7 @@ decoders (passing):
   Vulkan@renderD128: h264/8 hevc/8 hevc/10 av1/8 av1/10 vp9/8 vp9/10
   Vulkan@renderD129: h264/8 hevc/8 hevc/10 av1/8 av1/10 vp9/8 vp9/10
 filters:
+  scale_cuda@cuda0 ok
   scale_vaapi@renderD128 ok
   tonemap_vaapi@renderD128 ok
   scale_vaapi@renderD129 FAIL(VA-API driver failed to load)

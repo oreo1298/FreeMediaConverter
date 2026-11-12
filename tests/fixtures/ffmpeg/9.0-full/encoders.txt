@@ -21,6 +21,7 @@ Encoders:
  V..... av1_qsv              AV1 (Intel Quick Sync Video acceleration) (codec av1)
  V....D av1_amf              AMD AMF AV1 encoder (codec av1)
  V....D av1_vaapi            AV1 (VAAPI) (codec av1)
+ V....D av1_vulkan           AV1 (Vulkan) (codec av1)
  V....D avrp                 Avid 1:1 10-bit RGB Packer
  V..X.D avui                 Avid Meridien Uncompressed
  VF...D bitpacked            Bitpacked
