@@ -8,8 +8,8 @@ pkgdesc="Convert video and audio files with FFmpeg, using verified hardware acce
 arch=('x86_64' 'aarch64')
 url="https://github.com/oreo1298/FreeMediaConverter"
 license=('GPL-3.0-or-later')
-depends=('gtk4' 'libadwaita' 'glib2' 'glibc' 'gcc-libs' 'cairo' 'pango' 'gdk-pixbuf2' 'graphene'
-         'hicolor-icon-theme' 'ffmpeg')
+depends=('gtk4' 'libadwaita' 'glib2' 'glibc' 'libgcc' 'cairo' 'graphene' 'hicolor-icon-theme' 'ffmpeg')
+options=('!debug')
 optdepends=('intel-media-driver: Intel VA-API / Quick Sync encode'
             'vpl-gpu-rt: Intel Quick Sync runtime'
             'nvidia-utils: NVENC / NVDEC'

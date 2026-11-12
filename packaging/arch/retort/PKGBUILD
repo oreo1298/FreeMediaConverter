@@ -8,7 +8,9 @@ pkgdesc="Convert video and audio files with FFmpeg, using verified hardware acce
 arch=('x86_64' 'aarch64')
 url="https://github.com/oreo1298/FreeMediaConverter"
 license=('GPL-3.0-or-later')
-makedepends=('cargo' 'meson' 'appstream' 'desktop-file-utils' 'gtk4' 'libadwaita')
+# Release binaries are stripped by Cargo (profile.release strip = "symbols").
+options=('!debug')
+makedepends=('cargo' 'meson' 'ffmpeg' 'appstream' 'desktop-file-utils' 'gtk4' 'libadwaita')
 source=("https://github.com/oreo1298/FreeMediaConverter/releases/download/v$pkgver/$pkgbase-$pkgver.tar.xz")
 sha256sums=('SKIP')
 
@@ -29,12 +31,11 @@ check() {
 }
 
 _install() {
-  [ -d "$srcdir/install" ] || meson install -C build --destdir "$srcdir/install"
+  [ -d "$srcdir/install" ] || meson install -C build --no-rebuild --destdir "$srcdir/install"
 }
 
 package_retort() {
-  depends=('gtk4' 'libadwaita' 'glib2' 'glibc' 'gcc-libs' 'cairo' 'pango' 'gdk-pixbuf2' 'graphene'
-           'hicolor-icon-theme' 'ffmpeg')
+  depends=('gtk4' 'libadwaita' 'glib2' 'glibc' 'libgcc' 'cairo' 'graphene' 'hicolor-icon-theme' 'ffmpeg')
   optdepends=('retort-cli: command-line companion'
               'intel-media-driver: Intel VA-API / Quick Sync encode'
               'vpl-gpu-rt: Intel Quick Sync runtime'
@@ -48,7 +49,7 @@ package_retort() {
 
 package_retort-cli() {
   pkgdesc="Convert video and audio files with FFmpeg (command line, no GTK)"
-  depends=('glibc' 'gcc-libs' 'ffmpeg')
+  depends=('glibc' 'libgcc' 'ffmpeg')
   _install
   install -Dm755 "$srcdir/install/usr/bin/retort-cli" "$pkgdir/usr/bin/retort-cli"
   install -Dm644 "$srcdir/$pkgbase-$pkgver/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
