@@ -57,6 +57,7 @@ advanced mode that exposes almost everything.
 The short version: [**docs/INSTALL.md**](docs/INSTALL.md) has tested
 instructions for every distribution. In most cases:
 
+<!-- doc-test: context=install -->
 ```bash
 curl -fsSL https://oreo1298.github.io/FreeMediaConverter/install.sh | sh
 ```
@@ -70,14 +71,17 @@ AppImage, Nix flake, Gentoo ebuild and Void template.
 
 `retort-cli` uses the same engine without GTK, so it also works on servers:
 
+<!-- doc-test: context=cli -->
 ```bash
 retort-cli diagnose
 ```
 
+<!-- doc-test: context=cli -->
 ```bash
 retort-cli convert holiday.mkv --preset mp4-compatible
 ```
 
+<!-- doc-test: context=cli -->
 ```bash
 retort-cli convert lecture.mp4 --preset target-size --size-mb 25 --preview
 ```
@@ -90,14 +94,17 @@ list everything; `--dry-run` prints the FFmpeg commands without running them.
 You need Rust 1.92 or newer, Meson, GTK 4.14+, libadwaita 1.5+ and FFmpeg
 (6.1 or newer):
 
+<!-- doc-test: context=dev -->
 ```bash
 meson setup _build --prefix=/usr/local
 ```
 
+<!-- doc-test: context=dev -->
 ```bash
 meson compile -C _build
 ```
 
+<!-- doc-test: context=dev -->
 ```bash
 sudo meson install -C _build
 ```

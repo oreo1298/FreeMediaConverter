@@ -14,10 +14,12 @@ Conventions for code are in `CLAUDE.md`; status and decisions in
    and store the *armored secret key* as the repository secret
    `REPO_SIGNING_KEY` (Settings → Secrets and variables → Actions):
 
+   <!-- doc-test: context=dev -->
    ```bash
    gpg --batch --passphrase '' --quick-gen-key "Retort Packages <noreply@users.noreply.github.com>" ed25519 sign 3y
    ```
 
+   <!-- doc-test: context=dev -->
    ```bash
    gpg --armor --export-secret-keys "Retort Packages" > retort-signing-key.asc
    ```
@@ -40,12 +42,14 @@ Conventions for code are in `CLAUDE.md`; status and decisions in
    - `data/app.metainfo.xml.in` (new `<release>` with date and notes)
    - `CHANGELOG.md` (new `## [x.y.z] - YYYY-MM-DD` section)
 
+   <!-- doc-test: context=dev -->
    ```bash
    scripts/check-versions.sh
    ```
 
 2. If `Cargo.lock` changed, regenerate the Flatpak crate list:
 
+   <!-- doc-test: skip needs a flatpak-builder-tools checkout and its Python modules; the Flatpak CI job builds from the committed file -->
    ```bash
    python3 flatpak-cargo-generator.py Cargo.lock -o packaging/flatpak/cargo-sources.json
    ```
@@ -54,16 +58,19 @@ Conventions for code are in `CLAUDE.md`; status and decisions in
 3. Re-check distro package names used by System Check and INSTALL.md
    (needs Docker; see the script header for proxy settings):
 
+   <!-- doc-test: skip starts its own Docker containers (maintainer machine) -->
    ```bash
    scripts/research/verify-packages.sh
    ```
 
 4. Make sure CI is green on `main`, then tag and push:
 
+   <!-- doc-test: skip creates a release tag -->
    ```bash
    git tag -s v0.2.0 -m "Retort 0.2.0"
    ```
 
+   <!-- doc-test: skip publishes a release -->
    ```bash
    git push origin v0.2.0
    ```
@@ -79,26 +86,32 @@ Conventions for code are in `CLAUDE.md`; status and decisions in
 
 Each package build is also runnable locally (Docker needed):
 
+<!-- doc-test: context=dev -->
 ```bash
 scripts/make-dist.sh
 ```
 
+<!-- doc-test: skip runs Docker; the Packaging and Release workflows run this script -->
 ```bash
 packaging/debian/build.sh ubuntu:24.04
 ```
 
+<!-- doc-test: skip runs Docker; the Packaging and Release workflows run this script -->
 ```bash
 packaging/rpm/build.sh fedora:45
 ```
 
+<!-- doc-test: skip runs Docker; the Packaging and Release workflows run this script -->
 ```bash
 packaging/arch/build.sh
 ```
 
+<!-- doc-test: skip runs Docker; the Packaging and Release workflows run this script -->
 ```bash
 packaging/tarball/build.sh
 ```
 
+<!-- doc-test: skip runs Docker; the Release workflow runs this script -->
 ```bash
 packaging/appimage/build.sh
 ```
@@ -127,6 +140,7 @@ source of the `retort` module with
 
 keep `cargo-sources.json`, and run the linter before opening the PR:
 
+<!-- doc-test: skip needs the Flathub submission checkout; the Packaging workflow lints the manifest -->
 ```bash
 flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest io.github.oreo1298.Retort.json
 ```
@@ -162,6 +176,7 @@ appears:
 
 Edit `branding.env`, then:
 
+<!-- doc-test: context=dev -->
 ```bash
 scripts/rename.sh
 ```

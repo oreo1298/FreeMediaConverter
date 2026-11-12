@@ -11,7 +11,8 @@ all welcome.
 - **Hardware acceleration missing or failing**: run *System Check* (main menu)
   and `retort-cli diagnose`, and attach a hardware report:
 
-  ```bash
+  <!-- doc-test: context=dev -->
+```bash
   scripts/collect-hw-report.sh
   ```
 
@@ -21,36 +22,43 @@ The code map is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), the status
 and decisions in [docs/PROGRESS.md](docs/PROGRESS.md). Most logic lives in
 `crates/core` (no GTK), which has fast tests:
 
+<!-- doc-test: context=dev -->
 ```bash
 cargo test -p retort-core
 ```
 
 Before sending a pull request, run what CI runs:
 
+<!-- doc-test: context=dev -->
 ```bash
 cargo fmt --all --check
 ```
 
+<!-- doc-test: context=dev -->
 ```bash
 cargo clippy --workspace --all-targets -- -D warnings
 ```
 
+<!-- doc-test: context=dev -->
 ```bash
 cargo test --workspace
 ```
 
+<!-- doc-test: context=dev -->
 ```bash
 scripts/check-no-shell.sh
 ```
 
 Integration tests run the real `ffmpeg` (6.1 or newer):
 
+<!-- doc-test: context=dev -->
 ```bash
 cargo test -p retort-core --test integration -- --include-ignored
 ```
 
 GUI changes: render the screenshots and look at them (light, dark, narrow):
 
+<!-- doc-test: context=dev -->
 ```bash
 scripts/screenshots.sh
 ```
@@ -72,10 +80,12 @@ Commit messages are imperative and scoped: `core: …`, `app: …`, `cli: …`,
 Translations use gettext. Generate the template, then create or update your
 language's file in `po/` and add its code to `po/LINGUAS`:
 
+<!-- doc-test: context=dev -->
 ```bash
 meson setup _build
 ```
 
+<!-- doc-test: context=dev -->
 ```bash
 meson compile -C _build retort-pot
 ```
