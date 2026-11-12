@@ -321,7 +321,7 @@ commands = [
   "cd FreeMediaConverter",
   "meson setup _build --prefix=/usr/local",
   "meson compile -C _build",
-  "sudo meson install -C _build",
+  "sudo meson install -C _build --no-rebuild",
 ]
 test_commands = [
   "sudo apt install build-essential curl git meson ninja-build pkg-config gettext appstream desktop-file-utils libgtk-4-dev libadwaita-1-dev ffmpeg",
@@ -331,7 +331,7 @@ test_commands = [
   "cd FreeMediaConverter",
   "meson setup _build --prefix=/usr/local",
   "meson compile -C _build",
-  "sudo meson install -C _build",
+  "sudo meson install -C _build --no-rebuild",
   "retort-cli presets",
 ]
 test_note = "The test copies the checkout under test instead of cloning."

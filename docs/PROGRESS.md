@@ -77,9 +77,10 @@ Read this first in a new session. Requirements: `docs/SPEC.md`. Code map:
 - [x] CI: lint/test x86-64 + arm64 (from M1), Packaging smoke workflow, Release workflow on tags (all formats × both arches, GitHub release, Pages repositories)
 
 ### M5 — Docs and polish
-- [ ] README, INSTALL.md (generated from one source), test-docs.sh
-- [ ] TESTING.md, MAINTAINER.md, CONTRIBUTING, CoC, SECURITY, issue templates
-- [ ] Final screenshots + polish pass
+- [x] README, INSTALL.md (generated from `docs/install/install.toml`), `scripts/test-docs.sh`
+- [x] TESTING.md, MAINTAINER.md, CONTRIBUTING, Code of Conduct, SECURITY, issue forms
+- [x] Documentation test run locally against a signed local mirror: every INSTALL section on every listed distribution, README/CONTRIBUTING/TESTING/MAINTAINER blocks (results below); the Release workflow runs it before publishing
+- [x] Final screenshots + polish pass
 
 ## Environment (sandbox, checked 2026-11-12)
 
@@ -183,6 +184,17 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 
 ## Hardware test list
 
+### After M4/M5 (packages)
+
+Install Retort the way your users will, then repeat the GUI checks from M2/M3:
+
+| Machine | Install with | Check |
+|---|---|---|
+| Desktop (RTX 4090) | Flatpak bundle from a release (`Retort-x86_64.flatpak`) | Flatpak pulls `org.freedesktop.Platform.GL.nvidia-<driver>` automatically; System Check shows NVENC verified; AV1 NVENC encode works inside the sandbox. Then the .deb/.rpm for your distro and compare. |
+| Dell 5570 (Iris Xe + NVIDIA) | `install.sh` (APT or RPM repository) | Intel VA-API/QSV need the driver packages INSTALL.md lists; check that `org.freedesktop.Platform.VAAPI.Intel` is installed with the Flatpak. |
+| Proxmox (Intel iGPU + GTX 1660 Ti) | `retort-cli` package only (no GTK pulled in) | `apt install retort-cli` / `dnf install retort-cli`; `retort-cli diagnose`, `probe-hw`, a batch `convert`. |
+| M1 MacBook Air (Asahi, arm64) | AppImage `Retort-aarch64.AppImage` and the Fedora arm64 RPM | Both start; everything on CPU; arm64 Flatpak bundle too. |
+
 ### After M3 (Advanced mode, preview)
 
 On each machine, with a real HDR10 file, a multi-audio MKV (e.g. a film with two languages + subtitles) and a phone video:
@@ -197,7 +209,7 @@ On each machine, with a real HDR10 file, a multi-audio MKV (e.g. a film with two
 ### After M2 (GUI)
 
 Build and run from the tree: `meson setup _build && meson compile -C _build && meson devenv -C _build retort`
-(or install: `meson setup _build --prefix=/usr/local && sudo meson install -C _build`).
+(or install: `meson setup _build --prefix=/usr/local && meson compile -C _build && sudo meson install -C _build --no-rebuild`).
 
 On **each machine** (light and dark style, and once at narrow width):
 

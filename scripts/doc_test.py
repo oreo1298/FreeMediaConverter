@@ -188,9 +188,10 @@ def run_container(image, script, mounts=(), privileged=False, log=None):
 
 
 def script_for(commands, prelude, url, rel):
-    lines = ["set -eo pipefail", CA_PRELUDE, prelude,
-             f"export RETORT_INSTALL_BASE={url} RETORT_INSTALL_RELEASES={rel}",
-             "mkdir -p /tmp/home && cd /tmp/home"]
+    # Contexts may `cd` (the dev context into its checkout): start in a scratch
+    # home first so their working directory sticks.
+    lines = ["set -eo pipefail", "mkdir -p /tmp/home && cd /tmp/home", CA_PRELUDE, prelude,
+             f"export RETORT_INSTALL_BASE={url} RETORT_INSTALL_RELEASES={rel}"]
     for i, c in enumerate(commands):
         lines.append(f"echo '>>> [{i + 1}] {c.replace(chr(39), chr(39) + chr(92) + chr(39) + chr(39))}'")
         lines.append(c)

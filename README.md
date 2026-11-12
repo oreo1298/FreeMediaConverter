@@ -106,7 +106,7 @@ meson compile -C _build
 
 <!-- doc-test: context=dev -->
 ```bash
-sudo meson install -C _build
+sudo meson install -C _build --no-rebuild
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow and

@@ -308,7 +308,7 @@ git clone https://github.com/oreo1298/FreeMediaConverter.git
 cd FreeMediaConverter
 meson setup _build --prefix=/usr/local
 meson compile -C _build
-sudo meson install -C _build
+sudo meson install -C _build --no-rebuild
 ```
 
 <a id="check"></a>
