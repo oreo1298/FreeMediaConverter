@@ -17,7 +17,8 @@ docker_args=(${DOCKER_ARGS:-})
 # Shell prelude for containers: trust /ca.crt if mounted.
 ca_prelude='
 if [ -f /ca.crt ]; then
-  { cp /ca.crt /usr/local/share/ca-certificates/proxy.crt && update-ca-certificates; } >/dev/null 2>&1 ||
+  # Debian/Ubuntu: the ca-certificates package picks this up when installed later.
+  { [ -d /etc/apt ] && mkdir -p /usr/local/share/ca-certificates && cp /ca.crt /usr/local/share/ca-certificates/proxy.crt && { update-ca-certificates || true; }; } >/dev/null 2>&1 ||
   { cp /ca.crt /etc/pki/ca-trust/source/anchors/proxy.crt && update-ca-trust; } >/dev/null 2>&1 ||
   { mkdir -p /etc/pki/trust/anchors && cp /ca.crt /etc/pki/trust/anchors/proxy.crt && update-ca-certificates; } >/dev/null 2>&1 ||
   { cp /ca.crt /etc/ca-certificates/trust-source/anchors/proxy.crt && trust extract-compat; } >/dev/null 2>&1 || true

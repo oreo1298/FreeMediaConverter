@@ -210,7 +210,7 @@ images = ["opensuse/leap:16.0"]
 commands = [
   "sudo zypper addrepo --refresh --priority 90 https://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Leap_16.0/ packman",
   "sudo zypper --gpg-auto-import-keys refresh packman",
-  "sudo zypper install -y --from packman --allow-vendor-change ffmpeg-8",
+  "sudo zypper install -y --from packman --allow-vendor-change ffmpeg-8 -ffmpeg-7",
 ]
 [[section.step]]
 title = "Hardware acceleration — Intel"
@@ -258,12 +258,13 @@ commands = [
   "./Retort-$(uname -m).AppImage",
 ]
 test_commands = [
+  "sudo apt install xvfb xauth libgtk-4-1",
   "curl -fLO {releases}/Retort-$(uname -m).AppImage",
   "chmod +x Retort-$(uname -m).AppImage",
   "APPIMAGE_EXTRACT_AND_RUN=1 timeout 20 xvfb-run -a ./Retort-$(uname -m).AppImage || test $? -eq 124",
 ]
 tip = "Without FUSE (some containers and minimal systems), run it as `APPIMAGE_EXTRACT_AND_RUN=1 ./Retort-$(uname -m).AppImage`."
-test_note = "The test starts the app under Xvfb for 20 seconds."
+test_note = "The test container gets Xvfb and the desktop libraries every GTK desktop has (the AppImage uses the host's libGL, fontconfig and friends), then starts the app for 20 seconds."
 
 [[section]]
 id = "tarball"

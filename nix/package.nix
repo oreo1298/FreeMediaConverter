@@ -13,6 +13,7 @@
 , desktop-file-utils
 , appstream
 , wrapGAppsHook4
+, makeWrapper
 , gtk4
 , libadwaita
 , ffmpeg-full
@@ -22,7 +23,22 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "retort";
   version = (lib.importTOML ../Cargo.toml).workspace.package.version;
 
-  src = lib.cleanSource ../.;
+  # Only what the build needs (never a local target/ or _build/).
+  src = lib.fileset.toSource {
+    root = ../.;
+    fileset = lib.fileset.unions [
+      ../Cargo.toml
+      ../Cargo.lock
+      ../crates
+      ../data
+      ../po
+      ../build-aux
+      ../meson.build
+      ../meson_options.txt
+      ../branding.env
+      ../LICENSE
+    ];
+  };
 
   cargoDeps = rustPlatform.importCargoLock { lockFile = ../Cargo.lock; };
 
@@ -39,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     desktop-file-utils
     appstream
     wrapGAppsHook4
+    makeWrapper
   ];
 
   buildInputs = [ gtk4 libadwaita ];

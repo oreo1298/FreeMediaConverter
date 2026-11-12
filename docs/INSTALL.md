@@ -200,7 +200,7 @@ sudo zypper install -y --from packman --allow-vendor-change ffmpeg
 ```bash
 sudo zypper addrepo --refresh --priority 90 https://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Leap_16.0/ packman
 sudo zypper --gpg-auto-import-keys refresh packman
-sudo zypper install -y --from packman --allow-vendor-change ffmpeg-8
+sudo zypper install -y --from packman --allow-vendor-change ffmpeg-8 -ffmpeg-7
 ```
 
 ### Hardware acceleration — Intel

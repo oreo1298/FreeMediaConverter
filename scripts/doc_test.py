@@ -33,7 +33,7 @@ MD_DOCS = ["README.md", "CONTRIBUTING.md", "docs/TESTING.md", "docs/MAINTAINER.m
 
 CA_PRELUDE = r"""
 if [ -f /ca.crt ]; then
-  { mkdir -p /usr/local/share/ca-certificates && cp /ca.crt /usr/local/share/ca-certificates/proxy.crt && update-ca-certificates; } >/dev/null 2>&1 ||
+  { [ -d /etc/apt ] && mkdir -p /usr/local/share/ca-certificates && cp /ca.crt /usr/local/share/ca-certificates/proxy.crt && { update-ca-certificates || true; }; } >/dev/null 2>&1 ||
   { cp /ca.crt /etc/pki/ca-trust/source/anchors/proxy.crt && update-ca-trust; } >/dev/null 2>&1 ||
   { mkdir -p /etc/pki/trust/anchors && cp /ca.crt /etc/pki/trust/anchors/proxy.crt && update-ca-certificates; } >/dev/null 2>&1 ||
   { cp /ca.crt /etc/ca-certificates/trust-source/anchors/proxy.crt && trust extract-compat; } >/dev/null 2>&1 || true
@@ -92,7 +92,9 @@ def resolve_only(cmd: str) -> str:
         return f"apt-get install -s {m.group(1)} >/dev/null"
     m = re.match(r"sudo dnf install -y (.*)", cmd)
     if m:
-        return f"dnf install --assumeno {m.group(1)} > /tmp/r.log 2>&1; grep -q 'Operation aborted' /tmp/r.log || {{ tail /tmp/r.log; false; }}"
+        # --assumeno exits 1 by design; success = resolution reached the prompt.
+        return (f"{{ dnf install --assumeno {m.group(1)} > /tmp/r.log 2>&1 || true; }}; "
+                f"grep -q 'Operation aborted' /tmp/r.log || {{ tail -20 /tmp/r.log; false; }}")
     m = re.match(r"sudo zypper install -y (.*)", cmd)
     if m:
         return f"zypper -n install --dry-run {m.group(1)} >/dev/null"
@@ -164,7 +166,8 @@ def run_container(image, script, mounts=(), privileged=False, log=None):
                 if k in os.environ:
                     env += ["-e", f"{k}={os.environ[k]}"]
             res = subprocess.run(["docker", "exec", *env, FLATPAK_CONTAINER, "bash", "-c", script],
-                                 capture_output=True, text=True)
+                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            res.stderr = ""
         if log:
             log.write_text(res.stdout + res.stderr)
         return res
@@ -174,9 +177,10 @@ def run_container(image, script, mounts=(), privileged=False, log=None):
     for src, dst, mode in mounts:
         args += ["-v", f"{src}:{dst}:{mode}"]
     args += [image, "bash", "-c", script]
-    res = subprocess.run(args, capture_output=True, text=True)
+    res = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    res.stderr = ""
     if log:
-        log.write_text(res.stdout + res.stderr)
+        log.write_text(res.stdout)
     if res.returncode != 0 and not log:
         sys.stderr.write(res.stdout[-3000:] + res.stderr[-3000:])
         raise SystemExit(f"container {image} failed")
