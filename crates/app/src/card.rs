@@ -31,7 +31,7 @@ pub struct Card {
     progress: gtk::ProgressBar,
     status: gtk::Label,
     status_icon: gtk::Image,
-    spinner: gtk::Spinner,
+    spinner: gtk::Widget,
     pause: gtk::Button,
     cancel: gtk::Button,
     remove: gtk::Button,
@@ -132,7 +132,7 @@ impl Card {
         let status_box = gtk::Box::new(gtk::Orientation::Horizontal, 6);
         let status_icon = gtk::Image::new();
         status_icon.set_visible(false);
-        let spinner = gtk::Spinner::new();
+        let spinner = util::spinner();
         spinner.set_visible(false);
         let status = gtk::Label::new(None);
         status.set_xalign(0.0);
@@ -359,8 +359,6 @@ impl Card {
         self.progress.set_visible(running);
         self.spinner
             .set_visible(matches!(item.status, Status::Analyzing));
-        self.spinner
-            .set_spinning(matches!(item.status, Status::Analyzing));
         self.pause.set_visible(running);
         self.cancel.set_visible(item.status.is_active());
         let done = matches!(item.status, Status::Done { .. });

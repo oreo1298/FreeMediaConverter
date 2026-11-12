@@ -105,42 +105,67 @@ fn about(app: &adw::Application) {
     about.present(Some(&ui.window));
 }
 
+/// Keyboard shortcuts as (group, [(accelerator, title)]).
+fn shortcut_groups() -> Vec<(String, Vec<(&'static str, String)>)> {
+    vec![
+        (
+            gettext("Queue"),
+            vec![
+                ("<Ctrl>o", gettext("Add files")),
+                ("<Ctrl>Return", gettext("Convert")),
+                ("Delete", gettext("Remove selected files")),
+                ("<Ctrl>a", gettext("Select all files")),
+            ],
+        ),
+        (
+            gettext("General"),
+            vec![
+                ("<Ctrl>comma", gettext("Preferences")),
+                ("<Ctrl>question", gettext("Keyboard shortcuts")),
+                ("F9", gettext("Show or hide output settings")),
+                ("<Ctrl>q", gettext("Quit")),
+            ],
+        ),
+    ]
+}
+
+/// AdwShortcutsDialog on libadwaita 1.8+ (GtkShortcutsWindow is deprecated
+/// since GTK 4.18), GtkShortcutsWindow otherwise.
+#[cfg(feature = "adw_1_8")]
 fn shortcuts(app: &adw::Application) {
     let Some(ui) = window::app_ui(app) else {
         return;
     };
-    let group = |title: &str, items: &[(&str, &str)]| {
-        let g = gtk::ShortcutsGroup::builder().title(title).build();
+    let dialog = adw::ShortcutsDialog::new();
+    for (title, items) in shortcut_groups() {
+        let section = adw::ShortcutsSection::new(Some(&title));
         for (accel, t) in items {
-            let s = gtk::ShortcutsShortcut::builder()
-                .accelerator(*accel)
-                .title(*t)
-                .build();
-            g.add_shortcut(&s);
+            section.add(adw::ShortcutsItem::new(&t, accel));
         }
-        g
+        dialog.add(section);
+    }
+    dialog.present(Some(&ui.window));
+}
+
+#[cfg(not(feature = "adw_1_8"))]
+fn shortcuts(app: &adw::Application) {
+    let Some(ui) = window::app_ui(app) else {
+        return;
     };
     let section = gtk::ShortcutsSection::builder()
         .section_name("main")
         .build();
-    section.add_group(&group(
-        &gettext("Queue"),
-        &[
-            ("<Ctrl>o", &gettext("Add files")),
-            ("<Ctrl>Return", &gettext("Convert")),
-            ("Delete", &gettext("Remove selected files")),
-            ("<Ctrl>a", &gettext("Select all files")),
-        ],
-    ));
-    section.add_group(&group(
-        &gettext("General"),
-        &[
-            ("<Ctrl>comma", &gettext("Preferences")),
-            ("<Ctrl>question", &gettext("Keyboard shortcuts")),
-            ("F9", &gettext("Show or hide output settings")),
-            ("<Ctrl>q", &gettext("Quit")),
-        ],
-    ));
+    for (title, items) in shortcut_groups() {
+        let g = gtk::ShortcutsGroup::builder().title(title.as_str()).build();
+        for (accel, t) in items {
+            let s = gtk::ShortcutsShortcut::builder()
+                .accelerator(accel)
+                .title(t.as_str())
+                .build();
+            g.add_shortcut(&s);
+        }
+        section.add_group(&g);
+    }
     let w = gtk::ShortcutsWindow::builder()
         .modal(true)
         .transient_for(&ui.window)
@@ -211,9 +236,19 @@ fn main() -> glib::ExitCode {
             demo::run(ui, dir.clone());
         }
     });
+    let e2e = std::env::var_os("RETORT_E2E").is_some();
     app.connect_open(move |app, files, _| {
         let paths: Vec<PathBuf> = files.iter().filter_map(|f| f.path()).collect();
-        window::present(app, paths, demo);
+        let ui = window::present(app, paths, demo);
+        if e2e {
+            demo::e2e(ui);
+        }
     });
-    app.run()
+    let code = app.run();
+    if e2e {
+        return glib::ExitCode::from(
+            demo::E2E_STATUS.load(std::sync::atomic::Ordering::SeqCst) as u8
+        );
+    }
+    code
 }

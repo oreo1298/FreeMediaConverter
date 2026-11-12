@@ -333,9 +333,7 @@ fn fill_matrix(ui: &Ui, container: &gtk::Box) {
                 &[&done.to_string(), &total.to_string()],
             ))
             .build();
-        let sp = gtk::Spinner::new();
-        sp.set_spinning(true);
-        row.add_suffix(&sp);
+        row.add_suffix(&util::spinner());
         let lb = gtk::ListBox::new();
         lb.add_css_class("boxed-list");
         lb.append(&row);

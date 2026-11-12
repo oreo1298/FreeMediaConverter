@@ -65,6 +65,21 @@ pub fn eta(secs: f64) -> String {
     retort_core::media::format_duration(secs)
 }
 
+/// A spinning indicator (AdwSpinner on libadwaita 1.6+). It animates only
+/// while mapped, so callers just toggle visibility.
+pub fn spinner() -> gtk::Widget {
+    #[cfg(feature = "adw_1_6")]
+    {
+        adw::Spinner::new().upcast()
+    }
+    #[cfg(not(feature = "adw_1_6"))]
+    {
+        let s = gtk::Spinner::new();
+        s.set_spinning(true);
+        s.upcast()
+    }
+}
+
 /// Icon-only button with tooltip and accessible label.
 pub fn icon_button(icon: &str, tooltip: &str) -> gtk::Button {
     let b = gtk::Button::from_icon_name(icon);

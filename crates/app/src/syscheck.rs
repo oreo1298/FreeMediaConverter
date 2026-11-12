@@ -15,8 +15,7 @@ use retort_core::process::SystemRunner;
 
 pub fn show(ui: &Ui) {
     let content = gtk::Box::new(gtk::Orientation::Vertical, 0);
-    let spinner = gtk::Spinner::new();
-    spinner.set_spinning(true);
+    let spinner = util::spinner();
     spinner.set_size_request(32, 32);
     let loading = adw::StatusPage::builder()
         .title(gettext("Checking Your System…"))
