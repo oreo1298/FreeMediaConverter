@@ -7,9 +7,9 @@ Read this first in a new session. Requirements: `docs/SPEC.md`. Code map:
 
 | Milestone | State |
 |---|---|
-| M0 Bootstrap (spec, docs, name, scaffold) | done (Meson skeleton lands with M2) |
+| M0 Bootstrap (spec, docs, name, scaffold) | done |
 | M1 Core engine + CLI + collect-hw-report.sh | done |
-| M2 GUI | not started |
+| M2 GUI | done (Advanced panel is a placeholder until M3) |
 | M3 Advanced mode, planner, HDR, preview, target size | not started |
 | M4 Packaging + release CI | not started |
 | M5 Docs + polish | not started |
@@ -22,7 +22,7 @@ Read this first in a new session. Requirements: `docs/SPEC.md`. Code map:
 - [x] Environment check (below)
 - [x] Name chosen and checked (below)
 - [x] FFmpeg encoder options researched from source (`docs/research/encoders.md`)
-- [x] Cargo workspace building (Meson skeleton lands with the app in M2)
+- [x] Cargo workspace building (Meson build landed in M2)
 
 ### M1 — Core engine
 - [x] ffmpeg locate / version / buildconf / caps parsers (+ fixtures 6.1, 9.0)
@@ -41,14 +41,18 @@ Read this first in a new session. Requirements: `docs/SPEC.md`. Code map:
 - [x] CI workflow: fmt, clippy -D warnings, cargo-deny, shellcheck, tests on x86-64 + arm64, integration vs 6.1 and 9.0.x
 
 ### M2 — GUI
-- [ ] Window shell, empty state, drag-and-drop, file chooser, open-with, CLI args
-- [ ] Queue cards (thumbnail/waveform, pills, progress, hw badge), persistence
-- [ ] Input analysis view
-- [ ] Simple preset picker + format picker
-- [ ] Progress / pause / cancel / notifications / suspend inhibit
-- [ ] Preferences (incl. ffmpeg path) + hardware matrix + System Check
-- [ ] App icon (full color + symbolic)
-- [ ] Headless screenshot harness + review pass
+- [x] Window shell, empty state, drag-and-drop, file chooser, open-with, CLI args
+- [x] Queue cards (thumbnail/waveform, wrapping tags, progress, hw badge, retry/show actions), persistence
+- [x] Input analysis view (File Details: streams, HDR, command, log, copy diagnostics)
+- [x] Simple preset cards + searchable format picker ("All Formats…", container defaults)
+- [x] Progress / pause / cancel / notifications / suspend inhibit
+- [x] Preferences (incl. ffmpeg path) + hardware matrix + System Check
+- [x] App icon (full color + symbolic)
+- [x] Adaptive layout: sidebar collapses at 760sp, compact cards at 520sp (tested at 380 px)
+- [x] Headless screenshot harness + review pass (`scripts/screenshots.sh`, `docs/screenshots/`)
+- [x] GUI end-to-end conversion test under Xvfb (`scripts/e2e-gui.sh`, in CI)
+- [x] Meson build wrapping Cargo; desktop/metainfo/schema validated by `meson test`
+- [x] i18n: gettext domain, `po/POTFILES.in`, core strings marked with `n_()`
 
 ### M3 — Advanced
 - [ ] Advanced video/audio/subtitle/other settings UI
@@ -132,6 +136,12 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 | D17 | Bundled FFmpeg builds use nv-codec-headers n12.2 (driver ≥ 550) | Widest current driver compatibility while keeping AV1 NVENC and 9.0 features | n13.x headers (driver ≥ 570) |
 | D18 | Hardware reports from `collect-hw-report.sh` are self-contained simulated profiles (`profile.json` from `retort-cli probe-hw --profile-spec`) | A real machine's results become a regression fixture by copying one folder | Hand-converting raw logs |
 | D19 | Copy-only codecs (dts, truehd, bitmap subtitles) are accepted for stream copy but never offered for encoding | Their FFmpeg encoders are experimental or need bitmap input | Offering them with `-strict -2` |
+| D20 | Tags in cards use a custom `WrapBox`, thumbnails a `FixedBin` | AdwWrapBox needs libadwaita 1.7 (baseline 1.5); a horizontally scrolling tag row hid the hardware badge; GtkPicture's natural size made thumbnails grow on taller cards | AdwWrapBox behind a feature flag only (no wrap on 1.5–1.6), GtkFlowBox (aligns tags into columns) |
+| D21 | Our small label class is `.tag`, not `.pill` | libadwaita's `button.pill` shares the class name; our label style turned the Convert button grey | Higher-specificity selectors |
+| D22 | Simple sidebar pins Speed / Save To / plan below a scrolling preset list | With 19 presets these were below the fold | Single scroller (options invisible), collapsing preset categories |
+| D23 | Translations are merged into desktop/metainfo templates first, branding substituted afterwards (`build-aux/subst.py`) | Msgids keep `@APP_NAME@` placeholders, so a rename doesn't invalidate translations, and translated strings still match after substitution | configure_file before merge (substituted text never matches the catalogue) |
+| D24 | Core marks catalogue strings with a no-op `n_()`; the app translates at display time | Core stays free of gettext; xgettext (C parser, gettext < 0.24 has no Rust) extracts with `--keyword=n_` | gettext dependency in core |
+| D25 | The copyable command shows the final output name; the log shows the argv that ran (temp name) | Copy-pasting the command must produce the file the user expects; the log stays exact | Showing the temp-file command (confusing when copied) |
 
 ## Findings worth knowing (from real FFmpeg / distro checks)
 
@@ -142,11 +152,36 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 - Fedora 45 folded VA-API drivers into `mesa-dri-drivers` (encode-crippled); the fix is now `dnf install mesa-va-drivers-freeworld` (not `swap`). Ubuntu 26.04 made `mesa-va-drivers` a virtual package (`mesa-libgallium`).
 - RPM Fusion has no NVIDIA driver for EL10; NVIDIA's own `cuda-rhel10.repo` does.
 
+- libadwaita: an `AdwStatusPage` inside a preferences group clips its icon and loses the title (it brings its own scroller); System Check uses a plain header instead.
+- xgettext's C fallback parser warns about Rust lifetimes (`'static`) but still extracts every marked string (checked by script against all `gettext/tr_fmt/ntr_fmt/n_` literals).
+- `GSETTINGS_BACKEND=memory` plus temporary XDG dirs fully isolate a GUI test run.
+
 ## Open questions (for the maintainer)
 
 - None blocking. Real hardware reports (below) will replace the synthetic profiles.
 
 ## Hardware test list
+
+### After M2 (GUI)
+
+Build and run from the tree: `meson setup _build && meson compile -C _build && meson devenv -C _build retort`
+(or install: `meson setup _build --prefix=/usr/local && sudo meson install -C _build`).
+
+On **each machine** (light and dark style, and once at narrow width):
+
+1. First start: the header shows "Testing hardware acceleration…" briefly; then **Preferences → Hardware** must list exactly the GPUs you have, and the matrix must match `retort-cli probe-hw`.
+2. Drop a folder of mixed files on the window: every card gets a thumbnail (or a waveform for audio), correct tags (resolution, codec, bit depth, HDR, channels, duration), and a ⚡ badge only where the probe passed.
+3. Convert with **Fastest** and watch the badge/plan in the sidebar; pause/resume one card, cancel another, and check the notification when the batch ends (with the window unfocused) and that the machine doesn't suspend while converting.
+4. Menu → **System Check**: every finding should be true for your machine; copy one fix command and check it is right for your distro.
+5. File Details (double-click a card): HDR metadata and codec levels look right; "Copy FFmpeg Command" pastes a command that works in a terminal.
+6. Close the window with files in the queue and reopen: the queue comes back.
+
+| Machine | GUI-specific checks |
+|---|---|
+| Desktop (RTX 4090) | Start 4+ NVENC jobs at once (Preferences → max jobs) and confirm requeueing instead of failures when the session limit hits; HDR10 source → "Smaller MP4" keeps the HDR10 tag on the card of the result. |
+| Dell 5570 (Iris Xe + NVIDIA) | "Use only this GPU" set to the Intel GPU really encodes on Intel (`intel_gpu_top`); the plan row in the sidebar names the right device; dGPU asleep vs awake. |
+| Proxmox (Intel iGPU + GTX 1660 Ti) | (If you have a desktop session there.) AV1 must show CPU only; NVENC HEVC 10-bit works. Otherwise skip — the CLI checks from M1 cover it. |
+| M1 MacBook Air (Asahi) | arm64 build; everything shows CPU; the narrow layout on the small screen; System Check explains there is no hardware encoder. |
 
 ### After M1 (CLI only — no GUI yet)
 

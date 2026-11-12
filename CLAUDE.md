@@ -40,15 +40,20 @@ cargo test -p retort-core --test integration -- --include-ignored
 meson setup _build --prefix=$PWD/_install && meson compile -C _build && meson install -C _build
 
 # Run the GUI from the build tree
-meson devenv -C _build retort       # or: cargo run -p retort (needs GSETTINGS_SCHEMA_DIR, see below)
+meson devenv -C _build retort       # or: cargo run -p retort (build.rs compiles a dev schema)
 
-# Headless screenshots (Xvfb)
-scripts/screenshots.sh              # writes docs/screenshots/*.png
+# Headless screenshots (Xvfb) and GUI end-to-end conversion test
+scripts/screenshots.sh              # writes docs/screenshots/*.png (pngquant if installed)
+scripts/e2e-gui.sh                  # real conversion through the GUI, isolated settings
+
+# Translations template
+meson compile -C _build retort-pot  # writes po/retort.pot (not committed)
 ```
 
-Running the GUI with plain `cargo run` needs the schema compiled:
-`glib-compile-schemas --targetdir=_schemas data/ && GSETTINGS_SCHEMA_DIR=_schemas cargo run -p retort`
-(`scripts/dev-run.sh` does this).
+Meson enables the `adw_1_6/1_7/1_8` Cargo features from the installed
+libadwaita version; code behind them must also have a 1.5 fallback. Check
+the newest path with `cargo check -p retort --features adw_1_8` on a distro
+with libadwaita ≥ 1.8 (CI job `latest-gnome`).
 
 ## Conventions
 
@@ -63,7 +68,10 @@ Running the GUI with plain `cargo run` needs the schema compiled:
   latest and recorded in `docs/research/encoders.md`.
 - Errors: `thiserror` in core, `anyhow` in binaries. No `unwrap()` on
   user-data paths.
-- User-facing strings in the app go through gettext (`gettext("…")`).
+- User-facing strings in the app go through gettext (`gettext("…")`,
+  `tr_fmt`, `ntr_fmt`); user-visible literals in core are wrapped in
+  `retort_core::i18n::n_()` and translated by the app with `i18n::tr()`.
+  New source files with strings go into `po/POTFILES.in`.
 - Commit messages: imperative, scoped (`core: …`, `app: …`, `cli: …`,
   `packaging: …`, `docs: …`, `ci: …`). Small commits.
 - Keep `docs/PROGRESS.md` current: milestone checklist, decisions log
