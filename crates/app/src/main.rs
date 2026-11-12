@@ -10,6 +10,7 @@ mod i18n;
 mod model;
 mod picker;
 mod prefs;
+mod preview;
 mod runner;
 mod sidebar;
 mod syscheck;

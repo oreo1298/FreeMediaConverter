@@ -14,3 +14,5 @@ crates/app/src/syscheck.rs
 crates/app/src/window.rs
 crates/core/src/catalog/formats.rs
 crates/core/src/preset.rs
+crates/app/src/preview.rs
+crates/app/src/advanced.rs

@@ -76,6 +76,8 @@ pub struct Win {
     pub prefs_hw: RefCell<Option<gtk::Box>>,
     /// Phone-width layout (compact cards).
     pub compact: Cell<bool>,
+    /// The running or last preview sample.
+    pub preview: RefCell<Option<crate::preview::State>>,
 }
 
 pub type Ui = Rc<Win>;
@@ -400,6 +402,7 @@ fn build(app: &adw::Application, demo: bool) -> Ui {
         demo,
         prefs_hw: RefCell::new(None),
         compact: Cell::new(false),
+        preview: RefCell::new(None),
     });
     for (signal_compact, connect) in [(true, true), (false, false)] {
         let u = ui.clone();
@@ -559,6 +562,7 @@ fn wire(ui: &Ui) {
         if u.state.borrow().batch {
             crate::runner::stop_all(&u);
         }
+        crate::preview::cleanup(&u);
         glib::Propagation::Proceed
     });
 }

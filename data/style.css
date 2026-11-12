@@ -197,6 +197,9 @@ textview.log {
   padding: 12px 12px 14px 12px;
   box-shadow: 0 -1px alpha(@shade_color, 1);
 }
+.folder-strip {
+  margin: 0 12px 4px 18px;
+}
 .small-pill {
   padding: 2px 12px;
   min-height: 26px;

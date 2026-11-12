@@ -23,19 +23,20 @@ pub struct Sidebar {
     pub flowboxes: Vec<gtk::FlowBox>,
     pub preset_ids: Vec<&'static str>,
     pub speed: [gtk::ToggleButton; 3],
-    pub speed_hint: gtk::Label,
     pub size_row: adw::SpinRow,
-    pub folder_row: adw::ActionRow,
+    pub folder_label: gtk::Label,
     pub folder_reset: gtk::Button,
     pub plan_row: adw::ActionRow,
     pub plan_icon: gtk::Image,
     pub notes: gtk::Box,
     pub remux_row: adw::ActionRow,
+    pub preview_row: adw::ActionRow,
+    pub preview_btn: gtk::Button,
+    pub preview_play: gtk::Button,
     /// Shown when the scope uses a container picked from "All Formats".
     pub custom_card: gtk::Box,
     pub custom_title: gtk::Label,
     pub custom_subtitle: gtk::Label,
-    #[allow(dead_code)] // filled in by Advanced mode (M3)
     pub advanced: crate::advanced::Advanced,
 }
 
@@ -182,38 +183,51 @@ impl Sidebar {
         speed_box.append(&fastest);
         speed_box.append(&balanced);
         speed_box.append(&smallest);
-        let speed_hint = gtk::Label::new(None);
-        speed_hint.add_css_class("dim-label");
-        speed_hint.add_css_class("caption");
-        speed_hint.set_xalign(0.0);
-        speed_hint.set_wrap(true);
-        let speed_title = gtk::Label::new(Some(&gettext("Speed")));
-        speed_title.add_css_class("section-title");
-        speed_title.set_xalign(0.0);
-        let speed_col = gtk::Box::new(gtk::Orientation::Vertical, 6);
-        speed_col.append(&speed_title);
-        speed_col.append(&speed_box);
-        speed_col.append(&speed_hint);
+        fastest.set_tooltip_text(Some(&gettext(
+            "Uses your GPU whenever a test proved it works; files are a bit larger",
+        )));
+        balanced.set_tooltip_text(Some(&gettext(
+            "Good quality at good speed; uses the GPU when available",
+        )));
+        smallest.set_tooltip_text(Some(&gettext(
+            "Slow CPU encoding with efficient settings for the smallest files",
+        )));
 
         // Size, destination.
         let size_row = adw::SpinRow::with_range(1.0, 100_000.0, 1.0);
         size_row.set_title(&gettext("Maximum Size"));
         size_row.set_subtitle(&gettext("Megabytes (Discord's free limit is 10 MB)"));
         size_row.set_digits(0);
-        let folder_row = adw::ActionRow::builder().title(gettext("Save To")).build();
-        folder_row.add_prefix(&gtk::Image::from_icon_name("folder-symbolic"));
+        // Destination: a compact strip under the scope line.
+        let folder_strip = gtk::Box::new(gtk::Orientation::Horizontal, 6);
+        folder_strip.add_css_class("folder-strip");
+        let folder_icon = gtk::Image::from_icon_name("folder-symbolic");
+        folder_icon.add_css_class("dim-label");
+        let folder_label = gtk::Label::new(None);
+        folder_label.set_xalign(0.0);
+        folder_label.set_hexpand(true);
+        folder_label.set_ellipsize(gtk::pango::EllipsizeMode::Middle);
+        folder_label.add_css_class("caption");
         let folder_reset =
             util::icon_button("edit-undo-symbolic", &gettext("Save Next to the Original"));
         folder_reset.add_css_class("flat");
         folder_reset.set_valign(gtk::Align::Center);
-        let folder_choose = gtk::Button::with_label(&gettext("Choose…"));
+        let folder_choose = gtk::Button::with_label(&gettext("Change…"));
+        folder_choose.add_css_class("flat");
         folder_choose.set_valign(gtk::Align::Center);
         folder_choose.set_action_name(Some("win.choose-output-folder"));
-        folder_row.add_suffix(&folder_reset);
-        folder_row.add_suffix(&folder_choose);
+        folder_choose.set_tooltip_text(Some(&gettext("Choose where converted files are saved")));
+        folder_strip.append(&folder_icon);
+        folder_strip.append(&folder_label);
+        folder_strip.append(&folder_reset);
+        folder_strip.append(&folder_choose);
         let out_group = adw::PreferencesGroup::new();
         out_group.add(&size_row);
-        out_group.add(&folder_row);
+        out_group.set_visible(false);
+        {
+            let g = out_group.clone();
+            size_row.connect_visible_notify(move |r| g.set_visible(r.is_visible()));
+        }
 
         // Plan preview.
         let plan_group = adw::PreferencesGroup::new();
@@ -223,6 +237,13 @@ impl Sidebar {
             .build();
         let plan_icon = gtk::Image::from_icon_name("system-run-symbolic");
         plan_row.add_prefix(&plan_icon);
+        let preview_btn = gtk::Button::with_label(&gettext("Preview"));
+        preview_btn.set_valign(gtk::Align::Center);
+        preview_btn.set_action_name(Some("win.preview"));
+        preview_btn.set_tooltip_text(Some(&gettext(
+            "Encode 10 seconds from the middle to check quality and estimate the size",
+        )));
+        plan_row.add_suffix(&preview_btn);
         plan_group.add(&plan_row);
         let remux_row = adw::ActionRow::builder()
             .title(gettext("Instant, lossless"))
@@ -239,13 +260,26 @@ impl Sidebar {
         remux_btn.set_action_name(Some("win.use-remux"));
         remux_row.add_suffix(&remux_btn);
         plan_group.add(&remux_row);
+        let preview_row = adw::ActionRow::builder()
+            .title(gettext("Preview"))
+            .subtitle_lines(3)
+            .visible(false)
+            .build();
+        preview_row.add_prefix(&gtk::Image::from_icon_name("media-playback-start-symbolic"));
+        let preview_play = util::icon_button("video-display-symbolic", &gettext("Play the Sample"));
+        preview_play.add_css_class("flat");
+        preview_play.set_valign(gtk::Align::Center);
+        preview_play.set_visible(false);
+        preview_play.set_action_name(Some("win.play-preview"));
+        preview_row.add_suffix(&preview_play);
+        plan_group.add(&preview_row);
         let notes = gtk::Box::new(gtk::Orientation::Vertical, 6);
         notes.set_margin_top(6);
 
         // Speed, destination and the plan stay visible below the preset list.
         let footer = gtk::Box::new(gtk::Orientation::Vertical, 12);
         footer.add_css_class("sidebar-footer");
-        footer.append(&speed_col);
+        footer.append(&speed_box);
         footer.append(&out_group);
         footer.append(&plan_group);
         footer.append(&notes);
@@ -258,15 +292,15 @@ impl Sidebar {
             .hscrollbar_policy(gtk::PolicyType::Never)
             .vexpand(true)
             .build();
-        let simple_page = gtk::Box::new(gtk::Orientation::Vertical, 0);
-        simple_page.append(&simple_scroll);
-        simple_page.append(&footer);
-        stack.add_named(&simple_page, Some("simple"));
+        stack.add_named(&simple_scroll, Some("simple"));
         stack.add_named(&advanced.root, Some("advanced"));
 
         let body = gtk::Box::new(gtk::Orientation::Vertical, 6);
         body.append(&scope);
+        body.append(&folder_strip);
         body.append(&stack);
+        // Shared by Simple and Advanced: speed, destination, plan, preview.
+        body.append(&footer);
         let root = adw::ToolbarView::new();
         root.add_top_bar(&header);
         root.set_content(Some(&body));
@@ -280,14 +314,16 @@ impl Sidebar {
             flowboxes,
             preset_ids,
             speed: [fastest, balanced, smallest],
-            speed_hint,
             size_row,
-            folder_row,
+            folder_label,
             folder_reset,
             plan_row,
             plan_icon,
             notes,
             remux_row,
+            preview_row,
+            preview_btn,
+            preview_play,
             custom_card,
             custom_title,
             custom_subtitle,
@@ -362,7 +398,7 @@ fn speed_key(s: Speed) -> &'static str {
 }
 
 /// Settings of the "focused" scope: first selected item, else the defaults.
-fn scope_settings(ui: &Ui) -> (OutputSettings, String) {
+pub fn scope_settings(ui: &Ui) -> (OutputSettings, String) {
     let sel = ui.selected_ids();
     let st = ui.state.borrow();
     if let Some(item) = sel
@@ -447,6 +483,7 @@ pub fn wire(ui: &Ui) {
             if !u.demo {
                 let _ = u.settings.set_string("mode", "simple");
             }
+            update_plan_preview(&u);
         }
     });
     let u = ui.clone();
@@ -457,6 +494,7 @@ pub fn wire(ui: &Ui) {
                 let _ = u.settings.set_string("mode", "advanced");
             }
             crate::advanced::sync(&u);
+            update_plan_preview(&u);
         }
     });
 
@@ -556,6 +594,15 @@ pub fn wire(ui: &Ui) {
             }
         });
     });
+    ui.window.add_action(&a);
+    // Preview sample.
+    let a = gio::SimpleAction::new("preview", None);
+    let u = ui.clone();
+    a.connect_activate(move |_, _| crate::preview::start_or_stop(&u));
+    ui.window.add_action(&a);
+    let a = gio::SimpleAction::new("play-preview", None);
+    let u = ui.clone();
+    a.connect_activate(move |_, _| crate::preview::play(&u));
     ui.window.add_action(&a);
     crate::advanced::wire(ui);
 }
@@ -665,15 +712,6 @@ pub fn sync_from_state(ui: &Ui) {
         Speed::Smallest => 2,
     };
     sb.speed[speed_idx].set_active(true);
-    sb.speed_hint.set_text(&match settings.speed {
-        Speed::Fastest => {
-            gettext("Uses your GPU whenever a test proved it works; files are a bit larger.")
-        }
-        Speed::Balanced => gettext("Good quality at good speed; uses the GPU when available."),
-        Speed::Smallest => {
-            gettext("Slow CPU encoding with efficient settings for the smallest files.")
-        }
-    });
     let is_size = preset_id == "target-size";
     sb.size_row.set_visible(is_size);
     if let Some(v) = settings.video_encode() {
@@ -682,11 +720,12 @@ pub fn sync_from_state(ui: &Ui) {
         }
     }
     let folder = ui.settings.string("output-folder");
-    sb.folder_row.set_subtitle(&if folder.is_empty() {
-        gettext("Next to the original files")
+    sb.folder_label.set_text(&if folder.is_empty() {
+        gettext("Saved next to the original files")
     } else {
-        glib::markup_escape_text(&folder).to_string()
+        tr_fmt("Saved to {}", &[&folder])
     });
+    sb.folder_label.set_tooltip_text(Some(&folder));
     sb.folder_reset.set_visible(!folder.is_empty());
     ui.syncing.set(false);
     update_plan_preview(ui);
@@ -697,6 +736,7 @@ pub fn sync_from_state(ui: &Ui) {
 
 /// Show the plan for the focused item (first selected, else first ready).
 pub fn update_plan_preview(ui: &Ui) {
+    crate::preview::refresh(ui);
     let sb = &ui.sidebar;
     util::clear_box(&sb.notes);
     let sel = ui.selected_ids();
@@ -762,7 +802,9 @@ pub fn update_plan_preview(ui: &Ui) {
                 .as_ref()
                 .is_some_and(|e| e.can_remux(m, &item.settings.format))
         })
-        && item.settings.format != "auto-audio";
+        && item.settings.format != "auto-audio"
+        // Advanced users set stream copy themselves; keep the footer short.
+        && sb.stack.visible_child_name().as_deref() != Some("advanced");
     sb.remux_row.set_visible(remux_possible);
     if remux_possible {
         sb.remux_row.set_subtitle(&tr_fmt(
