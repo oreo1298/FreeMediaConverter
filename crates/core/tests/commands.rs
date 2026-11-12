@@ -302,6 +302,18 @@ fn advanced_settings() {
         HwPrefs::default(),
     );
 
+    // Second audio track becomes the default; no default subtitle.
+    let mut st = base.clone();
+    st.audio = AudioSettings::Copy;
+    st.default_audio = Some(2);
+    st.default_subtitle = Some(retort_core::settings::NO_DEFAULT_TRACK);
+    case(
+        "default track flags",
+        "sdr-1080p.mp4",
+        st,
+        HwPrefs::default(),
+    );
+
     // Bitmap subtitle burn-in (overlay).
     let mut st = base.clone();
     st.subtitles = SubtitleSettings::BurnIn { stream: None };
@@ -392,4 +404,70 @@ fn advanced_settings() {
     );
 
     insta::assert_snapshot!("advanced_settings", s);
+}
+
+#[test]
+fn advanced_mode_helpers() {
+    use retort_core::engine::Engine;
+    use retort_core::settings::{AudioSettings, SubtitleSettings, VideoSettings};
+    let p = Profile::load(&profiles_dir().join("hybrid-laptop")).unwrap();
+    let ff = p.ffmpeg().unwrap();
+    let engine = Engine::open(ff, None)
+        .unwrap()
+        .with_inventory(p.inventory().unwrap());
+
+    // Encoders: verified hardware first (per device), then software.
+    let enc = engine.encoder_options("hevc");
+    let names: Vec<String> = enc
+        .iter()
+        .map(|e| format!("{} [{}]", e.encoder, e.label))
+        .collect();
+    let first_sw = enc.iter().position(|e| !e.hardware).unwrap();
+    assert!(enc[..first_sw].iter().all(|e| e.hardware), "{names:?}");
+    assert!(
+        enc[..first_sw].iter().any(|e| e.encoder == "hevc_nvenc"),
+        "{names:?}"
+    );
+    assert_eq!(enc[first_sw].encoder, "libx265", "{names:?}");
+    // AV1 NVENC fails its probe on this Ampere laptop: never offered.
+    assert!(!engine
+        .encoder_options("av1")
+        .iter()
+        .any(|e| e.encoder == "av1_nvenc"));
+
+    // Container codecs.
+    let v = engine.codec_options("webm", retort_core::ffmpeg::MediaKind::Video);
+    assert!(
+        v.contains(&"vp9".to_string()) && !v.contains(&"h264".to_string()),
+        "{v:?}"
+    );
+
+    // Retarget MKV archive → MP4: HEVC kept, FLAC/Opus not allowed → default AAC.
+    let mut s = preset::find("mkv-archive").unwrap().settings;
+    s.trim = Some(Trim {
+        start: Some(1.0),
+        end: Some(5.0),
+    });
+    let r = engine.retarget(&s, "mp4").unwrap();
+    assert_eq!(r.format, "mp4");
+    assert_eq!(r.video_encode().unwrap().codec, "hevc");
+    assert_eq!(r.trim, s.trim);
+    // Copy stays copy; video → audio-only container drops video.
+    let mut c = s.clone();
+    c.video = VideoSettings::Copy;
+    c.audio = AudioSettings::Copy;
+    let r = engine.retarget(&c, "mkv").unwrap();
+    assert_eq!(
+        (r.video.clone(), r.audio.clone()),
+        (VideoSettings::Copy, AudioSettings::Copy)
+    );
+    let r = engine.retarget(&s, "mp3").unwrap();
+    assert_eq!(r.video, VideoSettings::Drop);
+    assert_eq!(r.subtitles, SubtitleSettings::Drop);
+    // WebM can't hold HEVC: VP9 default, filters carried over.
+    let mut f = s.clone();
+    f.video_encode_mut().unwrap().filters.flip_h = true;
+    let r = engine.retarget(&f, "webm").unwrap();
+    assert_eq!(r.video_encode().unwrap().codec, "vp9");
+    assert!(r.video_encode().unwrap().filters.flip_h);
 }

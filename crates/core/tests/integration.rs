@@ -14,7 +14,7 @@ use retort_core::engine::Engine;
 use retort_core::ffmpeg::MediaKind;
 use retort_core::hw::{Backend, DeviceRef};
 use retort_core::job::{self, JobEvent, JobOutcome};
-use retort_core::media::MediaInfo;
+use retort_core::media::{MediaInfo, StreamKind};
 use retort_core::plan::{DecodeOn, PipelineKind, Plan, VideoPlan};
 use retort_core::preset;
 use retort_core::process::SystemRunner;
@@ -725,5 +725,121 @@ fn hardware_probe_runs_without_gpu() {
             .iter()
             .filter(|x| x.eight_bit.passed())
             .collect::<Vec<_>>()
+    );
+}
+
+#[test]
+#[ignore]
+fn default_track_flags() {
+    let c = corpus();
+    let out = tempfile::tempdir().unwrap();
+    // Two audio tracks (the first flagged default by ffmpeg) + one subtitle.
+    let src = out.path().join("two-audio.mkv");
+    let sdr = format!("file:{}", c.dir.join("sdr.mkv").display());
+    gen(
+        &src,
+        &[
+            "-i",
+            &sdr,
+            "-f",
+            "lavfi",
+            "-i",
+            "sine=f=880:d=2",
+            "-map",
+            "0:v",
+            "-map",
+            "0:a",
+            "-map",
+            "1:a",
+            "-map",
+            "0:s",
+            "-c:v",
+            "copy",
+            "-c:a",
+            "aac",
+            "-c:s",
+            "copy",
+            "-disposition:a:0",
+            "default",
+            "-disposition:s:0",
+            "default",
+        ],
+    );
+    let m = probe(&src);
+    let audio: Vec<u32> = m
+        .streams
+        .iter()
+        .filter(|s| s.kind == StreamKind::Audio)
+        .map(|s| s.index)
+        .collect();
+    assert_eq!(audio.len(), 2);
+    let mut s = preset::find("remux").unwrap().settings;
+    s.format = "mkv".into();
+    s.default_audio = Some(audio[1]);
+    s.default_subtitle = Some(retort_core::settings::NO_DEFAULT_TRACK);
+    let dst = out.path().join("out");
+    std::fs::create_dir_all(&dst).unwrap();
+    let (path, _) = convert(&src, &s, &dst);
+    let r = probe(&path);
+    let flags: Vec<(StreamKind, bool)> = r
+        .streams
+        .iter()
+        .filter(|s| matches!(s.kind, StreamKind::Audio | StreamKind::Subtitle))
+        .map(|s| (s.kind, s.default))
+        .collect();
+    assert_eq!(
+        flags,
+        vec![
+            (StreamKind::Audio, false),
+            (StreamKind::Audio, true),
+            (StreamKind::Subtitle, false)
+        ]
+    );
+}
+
+#[test]
+#[ignore]
+fn preview_sample_and_estimate() {
+    use retort_core::preview;
+    let out = tempfile::tempdir().unwrap();
+    let src = out.path().join("long.mkv");
+    gen(
+        &src,
+        &[
+            "-f",
+            "lavfi",
+            "-i",
+            "testsrc2=s=320x240:r=25:d=30",
+            "-f",
+            "lavfi",
+            "-i",
+            "sine=d=30",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "ultrafast",
+            "-c:a",
+            "aac",
+        ],
+    );
+    let e = engine();
+    let media = probe(&src);
+    let settings = preset::find("mp4-compatible").unwrap().settings;
+    let plan = e.plan(&media, &settings).unwrap();
+    let sample = preview::sample_settings(&settings, &media, &plan).unwrap();
+    let start = sample.trim.unwrap().start.unwrap();
+    assert!((start - 10.0).abs() < 0.1, "sample starts at {start}");
+    let dst = out.path().join("p");
+    std::fs::create_dir_all(&dst).unwrap();
+    let (path, outcome) = convert(&src, &sample, &dst);
+    let m = probe(&path);
+    assert_duration(&m, 10.0);
+    let JobOutcome::Completed { size, seconds, .. } = outcome else {
+        unreachable!()
+    };
+    let est = preview::estimate(size, 10.0, seconds, 30.0, None).unwrap();
+    assert!(
+        est.bytes > size * 2 && est.bytes < size * 4,
+        "{est:?} from {size}"
     );
 }

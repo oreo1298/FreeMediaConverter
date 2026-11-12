@@ -17,6 +17,19 @@ use crate::plan::{self, HwPrefs, JobPlan, PlanContext};
 use crate::process::SharedRunner;
 use crate::settings::OutputSettings;
 
+/// An encoder the user can pin in Advanced mode.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EncoderOption {
+    pub encoder: String,
+    /// `GpuDevice::id` for hardware encoders tied to a GPU.
+    pub device: Option<String>,
+    /// "NVENC — NVIDIA GeForce RTX 4090" or "x265 (CPU)".
+    pub label: String,
+    pub hardware: bool,
+    /// Passed the 10-bit probe (hardware) / supports 10-bit (software: true).
+    pub ten_bit: bool,
+}
+
 /// Shared engine state. Cheap to clone.
 #[derive(Clone)]
 pub struct Engine {
@@ -87,6 +100,105 @@ impl Engine {
     pub fn settings_for_format(&self, id: &str) -> Option<OutputSettings> {
         let f = self.format(id)?;
         Some(crate::preset::for_format(f, self.compat.defaults(f)))
+    }
+
+    /// Codecs of `kind` the container can hold and this FFmpeg can encode.
+    pub fn codec_options(&self, format_id: &str, kind: MediaKind) -> Vec<String> {
+        match self.format(format_id) {
+            Some(f) => self.compat.codecs_for(f, kind),
+            None => Vec::new(),
+        }
+    }
+
+    /// Encoders that can be pinned for `codec`: hardware encoders that passed
+    /// a real probe on this machine (one entry per device), then software.
+    pub fn encoder_options(&self, codec: &str) -> Vec<EncoderOption> {
+        let mut v: Vec<EncoderOption> = Vec::new();
+        for e in self
+            .inventory
+            .probes
+            .encoders
+            .iter()
+            .filter(|e| e.codec == codec && e.works(false))
+        {
+            v.push(EncoderOption {
+                encoder: e.encoder.clone(),
+                device: e.device.gpu_id.clone(),
+                label: format!("{} — {}", e.backend.label(), e.device.label),
+                hardware: true,
+                ten_bit: e.works(true),
+            });
+        }
+        let mut sw: Vec<&crate::ffmpeg::CodecEntry> = self
+            .caps
+            .encoders_for(codec)
+            .filter(|e| crate::hw::Backend::from_codec_name(&e.name).is_none())
+            .collect();
+        // The preferred software encoder first, experimental ones last.
+        let best = crate::catalog::best_software_encoder(&self.caps, codec);
+        sw.sort_by_key(|e| (Some(&e.name) != best.as_ref(), e.experimental));
+        for e in sw {
+            let title = crate::plan::encoder_display(&e.name, codec);
+            v.push(EncoderOption {
+                encoder: e.name.clone(),
+                device: None,
+                label: format!("{title} (CPU)"),
+                hardware: false,
+                ten_bit: true,
+            });
+        }
+        v
+    }
+
+    /// Switch `current` to another container, keeping the codec choices,
+    /// filters, trim and track options the new container can carry.
+    pub fn retarget(&self, current: &OutputSettings, format_id: &str) -> Option<OutputSettings> {
+        use crate::settings::{AudioSettings, SubtitleSettings, VideoSettings};
+        let f = self.format(format_id)?;
+        let mut new = crate::preset::for_format(f, self.compat.defaults(f));
+        let video_ok = |c: &str| self.compat.can_hold(f, MediaKind::Video, c);
+        let audio_ok = |c: &str| self.compat.can_hold(f, MediaKind::Audio, c);
+        match (&current.video, &new.video) {
+            (VideoSettings::Encode(v), VideoSettings::Encode(_)) if video_ok(&v.codec) => {
+                new.video = current.video.clone()
+            }
+            (VideoSettings::Copy, VideoSettings::Encode(_)) => new.video = VideoSettings::Copy,
+            (VideoSettings::Encode(v), VideoSettings::Encode(n)) => {
+                // Different codec: keep the picture filters and HDR choice.
+                let mut n = n.clone();
+                n.filters = v.filters.clone();
+                n.hdr = v.hdr;
+                new.video = VideoSettings::Encode(n);
+            }
+            _ => {}
+        }
+        match (&current.audio, &new.audio) {
+            (AudioSettings::Encode(a), AudioSettings::Encode(_)) if audio_ok(&a.codec) => {
+                new.audio = current.audio.clone()
+            }
+            (AudioSettings::Copy, AudioSettings::Encode(_)) => new.audio = AudioSettings::Copy,
+            (AudioSettings::Drop, AudioSettings::Encode(_))
+                if !matches!(new.video, VideoSettings::Drop) =>
+            {
+                new.audio = AudioSettings::Drop
+            }
+            _ => {}
+        }
+        let keeps_subs = new.subtitles != SubtitleSettings::Drop
+            || matches!(current.subtitles, SubtitleSettings::BurnIn { .. });
+        if keeps_subs && !matches!(new.video, VideoSettings::Drop) {
+            new.subtitles = current.subtitles.clone();
+        }
+        new.audio_tracks = current.audio_tracks.clone();
+        new.subtitle_tracks = current.subtitle_tracks.clone();
+        new.metadata = current.metadata;
+        new.speed = current.speed;
+        new.trim = current.trim;
+        new.extra_input_args = current.extra_input_args.clone();
+        new.extra_output_args = current.extra_output_args.clone();
+        new.default_audio = current.default_audio;
+        new.default_subtitle = current.default_subtitle;
+        Some(new)
     }
 
     /// Plan a job.
