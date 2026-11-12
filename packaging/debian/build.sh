@@ -51,8 +51,8 @@ mkdir -p /out/$codename
 cp ../*.deb /out/$codename/
 # Smoke test: install with dependencies and run.
 apt-get install -y -qq ../*.deb >/dev/null
-retort-cli presets | head -3
-retort-cli list-formats | head -3
+retort-cli presets > /tmp/presets.txt && head -3 /tmp/presets.txt
+retort-cli list-formats > /tmp/formats.txt && head -3 /tmp/formats.txt
 test -x /usr/bin/'"$pkg_bin"'
 dpkg -L '"$pkg_bin"' | grep -E "\.desktop$|metainfo|gschema"
 ls -la /out/$codename

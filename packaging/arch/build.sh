@@ -26,7 +26,7 @@ grep -E "^(Ok|Fail):" /tmp/build.log || true
 echo "== namcap PKGBUILD"; namcap PKGBUILD || true
 for p in *.pkg.tar.zst; do echo "== namcap $p"; namcap "$p" || true; done
 pacman -U --noconfirm ./*.pkg.tar.zst >/dev/null
-retort-cli presets | head -3
+retort-cli presets > /tmp/presets.txt && head -3 /tmp/presets.txt
 cp ./*.pkg.tar.zst /out/
 ls -la /out
 '

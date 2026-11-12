@@ -58,7 +58,7 @@ case "$ID" in
   opensuse*) zypper -n -q --no-gpg-checks install $top/RPMS/*/*.rpm >/dev/null ;;
 esac
 rpm -q --whatprovides /usr/bin/ffmpeg
-retort-cli presets | head -3
+retort-cli presets > /tmp/presets.txt && head -3 /tmp/presets.txt
 rpm -ql '"$pkg_bin"' | grep -E "\.desktop$|metainfo"
 ls -la $dest
 '

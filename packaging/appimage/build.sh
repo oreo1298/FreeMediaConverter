@@ -60,7 +60,7 @@ export LDAI_OUTPUT="$APP_NAME-$PKGVER-$arch.AppImage"
   --exclude-library "libvpl*" >/tmp/ld.log 2>&1 || { tail -40 /tmp/ld.log; exit 1; }
 # Smoke test: the bundled CLI finds the bundled FFmpeg.
 ./$LDAI_OUTPUT --appimage-extract >/dev/null
-APPDIR=/tmp/squashfs-root /tmp/squashfs-root/usr/bin/$BIN-cli diagnose | head -8
+APPDIR=/tmp/squashfs-root /tmp/squashfs-root/usr/bin/$BIN-cli diagnose > /tmp/diag.txt; head -8 /tmp/diag.txt
 mv $LDAI_OUTPUT* /dist/
 ls -la /dist/*.AppImage*
 '

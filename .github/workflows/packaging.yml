@@ -76,4 +76,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v31
       - run: nix build .#retort -L
-      - run: ./result/bin/retort-cli presets | head -3
+      - run: ./result/bin/retort-cli presets > presets.txt && head -3 presets.txt
