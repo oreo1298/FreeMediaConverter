@@ -330,8 +330,8 @@ makepkg -si
 ```
 
 This builds and installs the `retort` and `retort-cli` packages. Dependencies
-(pulled in automatically): `gtk4`, `libadwaita` and `ffmpeg`; `cargo` and
-`meson` only for building.
+(pulled in automatically): `gtk4`, `libadwaita` and `ffmpeg`, plus `cargo`,
+`meson` and a few other tools for building.
 
 To update later, pull the new code and build again from the same folder
 (`-f` rebuilds even when the version number has not changed):
