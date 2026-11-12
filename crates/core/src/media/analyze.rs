@@ -196,8 +196,10 @@ pub fn waveform_peaks(ff: &Ffmpeg, info: &MediaInfo, buckets: usize) -> Result<V
 /// Reduce mono s16le samples to `buckets` normalised peak values.
 pub fn peaks_from_s16le(data: &[u8], buckets: usize) -> Vec<f32> {
     let samples: Vec<i16> = data
-        .chunks_exact(2)
-        .map(|c| i16::from_le_bytes([c[0], c[1]]))
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .map(|c| i16::from_le_bytes(*c))
         .collect();
     if samples.is_empty() || buckets == 0 {
         return vec![0.0; buckets];
