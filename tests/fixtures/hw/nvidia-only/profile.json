@@ -1,0 +1,122 @@
+{
+  "decode": {
+    "cuda@cuda0": [
+      "h264_8",
+      "hevc_8",
+      "hevc_10",
+      "av1_8",
+      "av1_10",
+      "vp9_8",
+      "vp9_10",
+      "vp8_8",
+      "mpeg2_8"
+    ],
+    "vaapi@renderD128": [
+      "h264_8",
+      "hevc_8",
+      "hevc_10",
+      "av1_8",
+      "av1_10",
+      "vp9_8",
+      "vp9_10",
+      "mpeg2_8",
+      "vp8_8"
+    ],
+    "vulkan@renderD128": [
+      "h264_8",
+      "hevc_8",
+      "hevc_10",
+      "av1_8",
+      "av1_10",
+      "vp9_8",
+      "vp9_10"
+    ]
+  },
+  "description": "Desktop, GeForce RTX 4090 (Ada), driver 580, nvidia-vaapi-driver",
+  "encode": {
+    "av1_nvenc@cuda0": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "cq",
+        "cbr"
+      ]
+    },
+    "av1_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileH264High (7)."
+    },
+    "av1_vulkan@renderD128": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "h264_nvenc@cuda0": {
+      "10": "fail: 10 bit encode not supported",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "cq",
+        "cbr"
+      ]
+    },
+    "h264_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileH264High (7)."
+    },
+    "h264_vulkan@renderD128": {
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "hevc_nvenc@cuda0": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "cq",
+        "cbr"
+      ]
+    },
+    "hevc_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileH264High (7)."
+    },
+    "hevc_vulkan@renderD128": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "mjpeg_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileH264High (7)."
+    },
+    "mpeg2_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileH264High (7)."
+    },
+    "vp8_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileH264High (7)."
+    },
+    "vp9_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileH264High (7)."
+    }
+  },
+  "ffmpeg": "9.0-full",
+  "filters": {
+    "libplacebo@renderD128": "pass",
+    "scale_cuda@cuda0": "pass",
+    "scale_vaapi@renderD128": "fail: vaInitialize failed with error code -1 (unknown libva error)",
+    "scale_vulkan@renderD128": "pass",
+    "tonemap_vaapi@renderD128": "fail: vaInitialize failed with error code -1 (unknown libva error)"
+  },
+  "nvidia_smi": "0, NVIDIA GeForce RTX 4090, 00000000:01:00.0, 580.95.05, GPU-4090\n",
+  "synthetic": true
+}

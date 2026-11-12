@@ -1,0 +1,79 @@
+{
+  "decode": {},
+  "default_fail": "Device does not support the VK_KHR_video_encode_queue extension",
+  "description": "Intel + NVIDIA desktop: no access to renderD128 (not in render group), libcuda missing, nvidia-smi missing",
+  "encode": {
+    "av1_nvenc@cuda0": {
+      "8": "fail: [AVHWDeviceContext @ 0x55d0] Cannot load libcuda.so.1\nDevice creation failed: -1."
+    },
+    "av1_qsv@renderD128": {
+      "8": "fail: Error creating a MFX session: -9."
+    },
+    "av1_vaapi@renderD128": {
+      "8": "fail: [AVHWDeviceContext @ 0x55d0] Failed to open /dev/dri/renderD128: Permission denied"
+    },
+    "av1_vaapi@renderD129": {
+      "8": "fail: vaInitialize failed with error code -1 (unknown libva error)"
+    },
+    "h264_nvenc@cuda0": {
+      "8": "fail: [AVHWDeviceContext @ 0x55d0] Cannot load libcuda.so.1\nDevice creation failed: -1."
+    },
+    "h264_qsv@renderD128": {
+      "8": "fail: Error creating a MFX session: -9."
+    },
+    "h264_vaapi@renderD128": {
+      "8": "fail: [AVHWDeviceContext @ 0x55d0] Failed to open /dev/dri/renderD128: Permission denied"
+    },
+    "h264_vaapi@renderD129": {
+      "8": "fail: vaInitialize failed with error code -1 (unknown libva error)"
+    },
+    "hevc_nvenc@cuda0": {
+      "8": "fail: [AVHWDeviceContext @ 0x55d0] Cannot load libcuda.so.1\nDevice creation failed: -1."
+    },
+    "hevc_qsv@renderD128": {
+      "8": "fail: Error creating a MFX session: -9."
+    },
+    "hevc_vaapi@renderD128": {
+      "8": "fail: [AVHWDeviceContext @ 0x55d0] Failed to open /dev/dri/renderD128: Permission denied"
+    },
+    "hevc_vaapi@renderD129": {
+      "8": "fail: vaInitialize failed with error code -1 (unknown libva error)"
+    },
+    "mjpeg_qsv@renderD128": {
+      "8": "fail: Error creating a MFX session: -9."
+    },
+    "mjpeg_vaapi@renderD128": {
+      "8": "fail: [AVHWDeviceContext @ 0x55d0] Failed to open /dev/dri/renderD128: Permission denied"
+    },
+    "mjpeg_vaapi@renderD129": {
+      "8": "fail: vaInitialize failed with error code -1 (unknown libva error)"
+    },
+    "mpeg2_qsv@renderD128": {
+      "8": "fail: Error creating a MFX session: -9."
+    },
+    "mpeg2_vaapi@renderD128": {
+      "8": "fail: [AVHWDeviceContext @ 0x55d0] Failed to open /dev/dri/renderD128: Permission denied"
+    },
+    "mpeg2_vaapi@renderD129": {
+      "8": "fail: vaInitialize failed with error code -1 (unknown libva error)"
+    },
+    "vp8_vaapi@renderD128": {
+      "8": "fail: [AVHWDeviceContext @ 0x55d0] Failed to open /dev/dri/renderD128: Permission denied"
+    },
+    "vp8_vaapi@renderD129": {
+      "8": "fail: vaInitialize failed with error code -1 (unknown libva error)"
+    },
+    "vp9_qsv@renderD128": {
+      "8": "fail: Error creating a MFX session: -9."
+    },
+    "vp9_vaapi@renderD128": {
+      "8": "fail: [AVHWDeviceContext @ 0x55d0] Failed to open /dev/dri/renderD128: Permission denied"
+    },
+    "vp9_vaapi@renderD129": {
+      "8": "fail: vaInitialize failed with error code -1 (unknown libva error)"
+    }
+  },
+  "ffmpeg": "9.0-full",
+  "filters": {},
+  "synthetic": true
+}

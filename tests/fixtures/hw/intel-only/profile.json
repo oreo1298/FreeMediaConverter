@@ -1,0 +1,149 @@
+{
+  "decode": {
+    "qsv@renderD128": [
+      "h264_8",
+      "hevc_8",
+      "hevc_10",
+      "av1_8",
+      "av1_10",
+      "vp9_8",
+      "vp9_10",
+      "mpeg2_8"
+    ],
+    "vaapi@renderD128": [
+      "h264_8",
+      "hevc_8",
+      "hevc_10",
+      "av1_8",
+      "av1_10",
+      "vp9_8",
+      "vp9_10",
+      "mpeg2_8"
+    ],
+    "vulkan@renderD128": [
+      "h264_8",
+      "hevc_8",
+      "hevc_10",
+      "av1_8",
+      "av1_10",
+      "vp9_8",
+      "vp9_10"
+    ]
+  },
+  "description": "Desktop, Intel UHD Graphics 770 (Alder Lake), intel-media-driver, Mesa ANV",
+  "encode": {
+    "av1_qsv@renderD128": {
+      "8": "fail: Error initializing the encoder: unsupported (-3)"
+    },
+    "av1_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileAV1Profile0 (32).",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "av1_vulkan@renderD128": {
+      "8": "fail: Device does not support the VK_KHR_video_encode_queue extension"
+    },
+    "h264_qsv@renderD128": {
+      "8": "pass",
+      "rc": [
+        "icq",
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "h264_vaapi@renderD128": {
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "icq",
+        "qvbr",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "h264_vulkan@renderD128": {
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "hevc_qsv@renderD128": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "icq",
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "hevc_vaapi@renderD128": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "icq",
+        "qvbr",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "hevc_vulkan@renderD128": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "mjpeg_qsv@renderD128": {
+      "8": "pass"
+    },
+    "mjpeg_vaapi@renderD128": {
+      "8": "pass"
+    },
+    "mpeg2_qsv@renderD128": {
+      "8": "fail: Error initializing the encoder: unsupported (-3)"
+    },
+    "mpeg2_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileMPEG2Main (1)."
+    },
+    "vp8_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileVP8Version0_3 (14)."
+    },
+    "vp9_qsv@renderD128": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "vp9_vaapi@renderD128": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    }
+  },
+  "ffmpeg": "9.0-full",
+  "filters": {
+    "libplacebo@renderD128": "pass",
+    "scale_vaapi@renderD128": "pass",
+    "scale_vulkan@renderD128": "pass",
+    "tonemap_vaapi@renderD128": "pass",
+    "vpp_qsv@renderD128": "pass"
+  },
+  "synthetic": true
+}

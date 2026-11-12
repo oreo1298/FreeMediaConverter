@@ -1,0 +1,9 @@
+{
+  "decode": {},
+  "default_fail": "vaInitialize failed with error code -1 (unknown libva error)",
+  "description": "MacBook Air M1, Asahi Linux (Fedora Asahi Remix): no hardware video encode",
+  "encode": {},
+  "ffmpeg": "9.0-full",
+  "filters": {},
+  "synthetic": true
+}

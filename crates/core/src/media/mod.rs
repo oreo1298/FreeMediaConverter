@@ -53,7 +53,10 @@ impl Hdr {
             Hdr::Hdr10 => Some("HDR10".into()),
             Hdr::Hdr10Plus => Some("HDR10+".into()),
             Hdr::Hlg => Some("HLG".into()),
-            Hdr::DolbyVision { profile, compatible } => Some(match compatible.as_deref() {
+            Hdr::DolbyVision {
+                profile,
+                compatible,
+            } => Some(match compatible.as_deref() {
                 Some(Hdr::Hdr10) => format!("Dolby Vision {profile}.1"),
                 Some(Hdr::Sdr) => format!("Dolby Vision {profile}.2"),
                 Some(Hdr::Hlg) => format!("Dolby Vision {profile}.4"),
@@ -292,7 +295,9 @@ impl MediaInfo {
         self.streams.iter().filter(|s| s.kind == StreamKind::Audio)
     }
     pub fn subtitle_streams(&self) -> impl Iterator<Item = &StreamInfo> {
-        self.streams.iter().filter(|s| s.kind == StreamKind::Subtitle)
+        self.streams
+            .iter()
+            .filter(|s| s.kind == StreamKind::Subtitle)
     }
     pub fn attachments(&self) -> impl Iterator<Item = &StreamInfo> {
         self.streams
@@ -303,7 +308,9 @@ impl MediaInfo {
         self.video_streams().next()
     }
     pub fn primary_audio(&self) -> Option<&StreamInfo> {
-        self.audio_streams().find(|s| s.default).or_else(|| self.audio_streams().next())
+        self.audio_streams()
+            .find(|s| s.default)
+            .or_else(|| self.audio_streams().next())
     }
     pub fn has_video(&self) -> bool {
         self.primary_video().is_some()
@@ -729,7 +736,8 @@ mod tests {
     use super::*;
 
     fn load(name: &str) -> MediaInfo {
-        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/ffprobe");
+        let dir =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/ffprobe");
         let json = std::fs::read_to_string(dir.join(format!("{name}.json"))).unwrap();
         parse_ffprobe_json(PathBuf::from(format!("/in/{name}")), &json).unwrap()
     }
@@ -759,7 +767,8 @@ mod tests {
         assert_eq!(sub.codec, "subrip");
         assert_eq!(m.tags.get("title").map(String::as_str), Some("Test"));
 
-        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/ffprobe");
+        let dir =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/ffprobe");
         let frames = std::fs::read_to_string(dir.join("hdr10.mkv.frames.json")).unwrap();
         merge_frame_side_data(&mut m, &frames);
         let vi = m.primary_video().unwrap().video.clone().unwrap();
@@ -768,7 +777,13 @@ mod tests {
             md.x265_string(),
             "G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)L(10000000,1)"
         );
-        assert_eq!(vi.content_light, Some(ContentLight { max_cll: 1000, max_fall: 400 }));
+        assert_eq!(
+            vi.content_light,
+            Some(ContentLight {
+                max_cll: 1000,
+                max_fall: 400
+            })
+        );
         assert_eq!(
             m.summary_pills(),
             ["1080p", "HEVC 10-bit", "HDR10", "5.1", "0:02"]
@@ -781,13 +796,22 @@ mod tests {
         let vi = m.primary_video().unwrap().video.clone().unwrap();
         assert_eq!(
             vi.hdr,
-            Hdr::DolbyVision { profile: 8, compatible: Some(Box::new(Hdr::Hdr10)) }
+            Hdr::DolbyVision {
+                profile: 8,
+                compatible: Some(Box::new(Hdr::Hdr10))
+            }
         );
         assert_eq!(vi.hdr.label().unwrap(), "Dolby Vision 8.1");
         assert_eq!(vi.hdr.base_layer(), Hdr::Hdr10);
         let m = load("dovi-p5.mkv");
         let vi = m.primary_video().unwrap().video.clone().unwrap();
-        assert_eq!(vi.hdr, Hdr::DolbyVision { profile: 5, compatible: None });
+        assert_eq!(
+            vi.hdr,
+            Hdr::DolbyVision {
+                profile: 5,
+                compatible: None
+            }
+        );
         assert_eq!(vi.hdr.base_layer(), Hdr::Sdr);
     }
 
@@ -811,7 +835,14 @@ mod tests {
     #[test]
     fn vfr_mp4() {
         let m = load("vfr.mp4");
-        assert!(m.primary_video().unwrap().video.as_ref().unwrap().vfr_likely);
+        assert!(
+            m.primary_video()
+                .unwrap()
+                .video
+                .as_ref()
+                .unwrap()
+                .vfr_likely
+        );
     }
 
     #[test]
@@ -834,7 +865,10 @@ mod tests {
         assert_eq!(format_duration(7984.4), "2:13:04");
         assert_eq!(format_duration(59.6), "1:00");
         assert_eq!(parse_hms("00:00:02.021000000"), Some(2.021));
-        assert_eq!(parse_rational("24000/1001").map(|x| (x * 1000.0).round()), Some(23976.0));
+        assert_eq!(
+            parse_rational("24000/1001").map(|x| (x * 1000.0).round()),
+            Some(23976.0)
+        );
         assert_eq!(parse_rational("0/0"), None);
     }
 

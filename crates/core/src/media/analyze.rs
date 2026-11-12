@@ -20,7 +20,10 @@ const IMAGE2_EXTS: &[&str] = &[
 /// Demuxer arguments needed *before* `-i` for this input path so that its
 /// name is never interpreted as a pattern.
 pub fn input_format_args(path: &Path) -> Vec<OsString> {
-    let name = path.file_name().map(|n| n.to_string_lossy()).unwrap_or_default();
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy())
+        .unwrap_or_default();
     let ext = path
         .extension()
         .map(|e| e.to_string_lossy().to_ascii_lowercase())
@@ -125,7 +128,11 @@ pub fn thumbnail_png(
     args.push("-i".into());
     args.push(paths::ffmpeg_url(&info.path));
     args.extend(["-map".into(), format!("0:{}", video.index).into()]);
-    let hdr = video.video.as_ref().map(|v| v.hdr.is_hdr()).unwrap_or(false);
+    let hdr = video
+        .video
+        .as_ref()
+        .map(|v| v.hdr.is_hdr())
+        .unwrap_or(false);
     let mut vf = String::new();
     if hdr && can_tonemap {
         vf.push_str(ZSCALE_TONEMAP);
@@ -145,7 +152,9 @@ pub fn thumbnail_png(
         "image2pipe".into(),
         "pipe:1".into(),
     ]);
-    let out = ff.run_args(args, Duration::from_secs(30))?.into_result("ffmpeg")?;
+    let out = ff
+        .run_args(args, Duration::from_secs(30))?
+        .into_result("ffmpeg")?;
     if out.stdout.starts_with(b"\x89PNG") {
         Ok(out.stdout)
     } else {
@@ -225,7 +234,10 @@ mod tests {
         assert!(input_format_args(Path::new("/x/a.png")).is_empty());
         assert!(input_format_args(Path::new("/x/100%.mp4")).is_empty());
         let a = input_format_args(Path::new("/x/100%.PNG"));
-        assert_eq!(a, ["-f", "image2", "-pattern_type", "none"].map(OsString::from));
+        assert_eq!(
+            a,
+            ["-f", "image2", "-pattern_type", "none"].map(OsString::from)
+        );
     }
 
     #[test]

@@ -101,8 +101,9 @@ pub fn locate(preferred: Option<&Path>) -> Result<Binaries> {
     for (path, source) in candidates {
         searched.push(path.display().to_string());
         if is_executable(&path) {
-            let ffprobe =
-                find_ffprobe(&path).ok_or_else(|| Error::FfprobeNotFound { ffmpeg: path.clone() })?;
+            let ffprobe = find_ffprobe(&path).ok_or_else(|| Error::FfprobeNotFound {
+                ffmpeg: path.clone(),
+            })?;
             return Ok(Binaries {
                 ffmpeg: path,
                 ffprobe,
@@ -280,7 +281,11 @@ impl Ffmpeg {
     }
 
     /// Run an ffmpeg command line with a timeout (for probes / thumbnails).
-    pub fn run_args(&self, args: Vec<OsString>, timeout: Duration) -> Result<crate::process::CmdOutput> {
+    pub fn run_args(
+        &self,
+        args: Vec<OsString>,
+        timeout: Duration,
+    ) -> Result<crate::process::CmdOutput> {
         let mut inv = self.cmd().timeout(Some(timeout));
         inv.args.extend(args);
         self.runner.run(&inv)
@@ -337,7 +342,7 @@ impl Caps {
 pub(crate) mod testutil {
     //! Build an [`Ffmpeg`] backed by a recorded fixture directory.
     use super::*;
-    use crate::process::{CmdOutput, FixtureRunner};
+    use crate::process::FixtureRunner;
 
     pub fn fixture_dir(name: &str) -> PathBuf {
         Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -347,32 +352,7 @@ pub(crate) mod testutil {
 
     /// A runner answering the standard ffmpeg queries from `tests/fixtures/ffmpeg/<name>`.
     pub fn fixture_runner(name: &str) -> FixtureRunner {
-        let dir = fixture_dir(name);
-        FixtureRunner::new()
-            .with_program("ffmpeg")
-            .rule(move |inv| {
-                if inv.program_name() != "ffmpeg" {
-                    return None;
-                }
-                let args = inv.args_lossy();
-                let read = |f: &str| std::fs::read(dir.join(f)).ok().map(CmdOutput::ok);
-                match args.as_slice() {
-                    [_, f] if f == "-version" => read("version.txt"),
-                    [_, f] if f == "-buildconf" => read("buildconf.txt"),
-                    [_, f] if f.starts_with('-') && !f.contains('=') => {
-                        read(&format!("{}.txt", &f[1..]))
-                    }
-                    [_, h, what] if h == "-h" => {
-                        let (kind, name) = what.split_once('=')?;
-                        Some(
-                            read(&format!("help_{kind}/{name}.txt")).unwrap_or_else(|| {
-                                CmdOutput::ok(format!("Unknown {kind} '{name}'."))
-                            }),
-                        )
-                    }
-                    _ => None,
-                }
-            })
+        crate::hw::simulate::ffmpeg_rules(FixtureRunner::new(), fixture_dir(name))
     }
 
     pub fn fixture_ffmpeg(name: &str) -> Ffmpeg {

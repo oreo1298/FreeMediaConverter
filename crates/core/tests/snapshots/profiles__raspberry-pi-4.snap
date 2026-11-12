@@ -1,0 +1,31 @@
+---
+source: crates/core/tests/profiles.rs
+expression: summary(& inv)
+---
+devices:
+  platform-v3dbus-v3d@7ec04000 | Broadcom GPU (v3d) | Some("v3d") | node=Some("/dev/dri/renderD128") access=Ok cuda=None
+  v4l2 /dev/video10 bcm2835-codec-decode
+  v4l2 /dev/video11 bcm2835-codec-encode
+  v4l2 /dev/video12 bcm2835-codec-isp
+  v4l2 /dev/video19 rpivid
+summary:
+  bcm2835-codec-encode — encode: V4L2 · decode: 
+encoders:
+  av1_vaapi      @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h263_v4l2m2m   @default    8bit=FAIL(Device not available) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_v4l2m2m   @default    8bit=ok 10bit=skip(10-bit not supported by this encoder) bf=Some(false) rc=[]
+  h264_vaapi     @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_v4l2m2m   @default    8bit=FAIL(Device not available) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_vaapi     @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mjpeg_vaapi    @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mpeg2_vaapi    @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mpeg4_v4l2m2m  @default    8bit=FAIL(Device not available) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp8_v4l2m2m    @default    8bit=FAIL(Device not available) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp8_vaapi      @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp9_vaapi      @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+decoders (passing):
+filters:
+  scale_vaapi@renderD128 FAIL(VA-API driver failed to load)
+  tonemap_vaapi@renderD128 FAIL(VA-API driver failed to load)
+  scale_vulkan@renderD128 FAIL(VA-API driver failed to load)
+  libplacebo@renderD128 FAIL(VA-API driver failed to load)

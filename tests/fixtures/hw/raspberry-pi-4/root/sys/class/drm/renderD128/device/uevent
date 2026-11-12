@@ -1,0 +1,2 @@
+DRIVER=v3d
+OF_FULLNAME=/v3dbus/v3d@7ec04000

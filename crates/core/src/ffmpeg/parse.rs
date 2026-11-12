@@ -47,7 +47,9 @@ pub struct CodecEntry {
 
 fn codec_line_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"^ ([VASDT.])([F.])([S.])([X.])([B.])([D.]) (\S+)\s+(.*)$").unwrap())
+    RE.get_or_init(|| {
+        Regex::new(r"^ ([VASDT.])([F.])([S.])([X.])([B.])([D.]) (\S+)\s+(.*)$").unwrap()
+    })
 }
 
 fn codec_suffix_re() -> &'static Regex {
@@ -142,7 +144,10 @@ pub fn parse_formats(text: &str) -> Vec<FormatEntry> {
         };
         out.push(FormatEntry {
             name: c[4].to_string(),
-            description: c.get(5).map(|m| m.as_str().trim().to_string()).unwrap_or_default(),
+            description: c
+                .get(5)
+                .map(|m| m.as_str().trim().to_string())
+                .unwrap_or_default(),
             demux: &c[1] == "D",
             mux: &c[2] == "E",
             device: c.get(3).map(|m| m.as_str() == "d").unwrap_or(false),
@@ -479,19 +484,38 @@ mod tests {
     #[test]
     fn lists_90() {
         let enc = parse_codec_list(&fixture90("encoders.txt"));
-        for name in ["h264_nvenc", "hevc_vaapi", "av1_qsv", "h264_vulkan", "hevc_amf", "libsvtav1"] {
+        for name in [
+            "h264_nvenc",
+            "hevc_vaapi",
+            "av1_qsv",
+            "h264_vulkan",
+            "hevc_amf",
+            "libsvtav1",
+        ] {
             assert!(enc.iter().any(|e| e.name == name), "missing {name}");
         }
         let mux = parse_formats(&fixture90("muxers.txt"));
         let alsa = mux.iter().find(|m| m.name == "alsa");
-        assert!(alsa.map(|a| a.device).unwrap_or(true), "alsa should be a device if present");
-        assert!(mux.iter().any(|m| m.name == "matroska" && m.mux && !m.device));
+        assert!(
+            alsa.map(|a| a.device).unwrap_or(true),
+            "alsa should be a device if present"
+        );
+        assert!(mux
+            .iter()
+            .any(|m| m.name == "matroska" && m.mux && !m.device));
         assert_eq!(
             parse_hwaccels(&fixture90("hwaccels.txt")),
             ["cuda", "vaapi", "qsv", "drm", "vulkan", "amf"]
         );
         let filters = parse_filters(&fixture90("filters.txt"));
-        for f in ["scale_vaapi", "vpp_qsv", "scale_vulkan", "libplacebo", "tonemap_vaapi", "zscale"] {
+        for f in [
+            "scale_vaapi",
+            "vpp_qsv",
+            "scale_vulkan",
+            "libplacebo",
+            "tonemap_vaapi",
+            "zscale",
+        ] {
             assert!(filters.iter().any(|x| x.name == f), "missing filter {f}");
         }
     }
@@ -502,7 +526,10 @@ mod tests {
         let presets = h.option_values("preset");
         assert!(presets.contains(&"p1".to_string()) && presets.contains(&"p7".to_string()));
         for legacy in ["llhq", "hp", "bd", "losslesshp", "default"] {
-            assert!(!presets.contains(&legacy.to_string()), "{legacy} still present");
+            assert!(
+                !presets.contains(&legacy.to_string()),
+                "{legacy} still present"
+            );
         }
         let rc = h.option_values("rc");
         assert!(rc.contains(&"vbr".to_string()) && !rc.contains(&"vbr_hq".to_string()));
@@ -538,7 +565,9 @@ mod tests {
         let aac = list.iter().find(|e| e.name == "aac").unwrap();
         assert_eq!(aac.codec, "aac");
         assert_eq!(aac.kind, MediaKind::Audio);
-        assert!(list.iter().any(|e| e.kind == MediaKind::Subtitle && e.name == "mov_text"));
+        assert!(list
+            .iter()
+            .any(|e| e.kind == MediaKind::Subtitle && e.name == "mov_text"));
     }
 
     #[test]
@@ -546,14 +575,21 @@ mod tests {
         let list = parse_codec_list(&fixture("decoders.txt"));
         assert!(list.len() > 400);
         assert!(list.iter().any(|d| d.name == "h264" && d.codec == "h264"));
-        assert!(list.iter().any(|d| d.name == "h264_qsv" && d.codec == "h264"));
-        assert!(list.iter().any(|d| d.name == "libdav1d" && d.codec == "av1"));
+        assert!(list
+            .iter()
+            .any(|d| d.name == "h264_qsv" && d.codec == "h264"));
+        assert!(list
+            .iter()
+            .any(|d| d.name == "libdav1d" && d.codec == "av1"));
     }
 
     #[test]
     fn hwaccels_61() {
         let list = parse_hwaccels(&fixture("hwaccels.txt"));
-        assert_eq!(list, ["vdpau", "cuda", "vaapi", "qsv", "drm", "opencl", "vulkan"]);
+        assert_eq!(
+            list,
+            ["vdpau", "cuda", "vaapi", "qsv", "drm", "opencl", "vulkan"]
+        );
     }
 
     #[test]
@@ -585,7 +621,9 @@ mod tests {
         assert_eq!(zscale.io, "V->V");
         assert!(list.iter().any(|f| f.name == "scale_vaapi"));
         assert!(list.iter().any(|f| f.name == "libplacebo"));
-        assert!(list.iter().any(|f| f.name == "testsrc2" && f.io.starts_with('|')));
+        assert!(list
+            .iter()
+            .any(|f| f.name == "testsrc2" && f.io.starts_with('|')));
     }
 
     #[test]

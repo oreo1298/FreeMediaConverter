@@ -1,0 +1,26 @@
+{
+  "decode": {},
+  "default_fail": "vaInitialize failed with error code -1 (unknown libva error)",
+  "description": "Raspberry Pi 4 (bcm2835-codec H.264 V4L2 M2M encoder), Raspberry Pi OS",
+  "encode": {
+    "h263_v4l2m2m": {
+      "8": "fail: Could not find a valid device"
+    },
+    "h264_v4l2m2m": {
+      "8": "pass",
+      "bf": false
+    },
+    "hevc_v4l2m2m": {
+      "8": "fail: Could not find a valid device"
+    },
+    "mpeg4_v4l2m2m": {
+      "8": "fail: Could not find a valid device"
+    },
+    "vp8_v4l2m2m": {
+      "8": "fail: Could not find a valid device"
+    }
+  },
+  "ffmpeg": "6.1-ubuntu",
+  "filters": {},
+  "synthetic": true
+}

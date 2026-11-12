@@ -8,10 +8,13 @@
 //! `docs/ARCHITECTURE.md`.
 
 pub mod branding;
+pub mod catalog;
 pub mod error;
 pub mod ffmpeg;
+pub mod hw;
 pub mod media;
 pub mod paths;
 pub mod process;
+pub mod quality;
 
 pub use error::{Error, Result};

@@ -18,10 +18,23 @@ fn main() {
         let Some((key, value)) = line.split_once('=') else {
             panic!("malformed line in branding.env: {line}");
         };
-        println!("cargo:rustc-env=RETORT_BRAND_{}={}", key.trim(), value.trim());
+        println!(
+            "cargo:rustc-env=RETORT_BRAND_{}={}",
+            key.trim(),
+            value.trim()
+        );
         seen.push(key.trim().to_string());
     }
-    for required in ["APP_NAME", "APP_ID", "APP_BIN", "APP_SUMMARY", "APP_HOMEPAGE"] {
-        assert!(seen.iter().any(|k| k == required), "branding.env lacks {required}");
+    for required in [
+        "APP_NAME",
+        "APP_ID",
+        "APP_BIN",
+        "APP_SUMMARY",
+        "APP_HOMEPAGE",
+    ] {
+        assert!(
+            seen.iter().any(|k| k == required),
+            "branding.env lacks {required}"
+        );
     }
 }

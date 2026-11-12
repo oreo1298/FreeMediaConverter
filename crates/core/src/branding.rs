@@ -30,7 +30,10 @@ mod tests {
 
     #[test]
     fn branding_is_consistent() {
-        assert!(APP_ID.ends_with(APP_NAME), "{APP_ID} should end with {APP_NAME}");
+        assert!(
+            APP_ID.ends_with(APP_NAME),
+            "{APP_ID} should end with {APP_NAME}"
+        );
         assert_eq!(APP_BIN, APP_NAME.to_lowercase());
         assert!(ffmpeg_env_var().ends_with("_FFMPEG"));
     }

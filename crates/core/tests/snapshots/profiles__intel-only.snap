@@ -1,0 +1,41 @@
+---
+source: crates/core/tests/profiles.rs
+expression: summary(& inv)
+---
+devices:
+  pci-0000:00:02.0 | Intel UHD Graphics 770 | Some("i915") | node=Some("/dev/dri/renderD128") access=Ok cuda=None
+summary:
+  Intel UHD Graphics 770 — encode: VAAPI/QSV/Vulkan · decode: VAAPI/QSV/Vulkan
+encoders:
+  av1_qsv        @renderD128 8bit=FAIL(Error initializing the encoder: unsupported (-3)) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  av1_vaapi      @renderD128 8bit=FAIL(Driver cannot encode this codec (decode-only driver?)) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  ffv1_vulkan    @renderD128 8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h263_v4l2m2m   @default    8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_qsv       @renderD128 8bit=ok 10bit=skip(10-bit not supported by this encoder) bf=Some(true) rc=[Icq, ConstQp, Vbr, Cbr]
+  h264_v4l2m2m   @default    8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_vaapi     @renderD128 8bit=ok 10bit=skip(10-bit not supported by this encoder) bf=Some(true) rc=[ConstQp, Icq, Qvbr, Vbr, Cbr]
+  h264_vulkan    @renderD128 8bit=ok 10bit=skip(10-bit not supported by this encoder) bf=Some(true) rc=[ConstQp, Vbr, Cbr]
+  hevc_qsv       @renderD128 8bit=ok 10bit=ok bf=Some(true) rc=[Icq, ConstQp, Vbr, Cbr]
+  hevc_v4l2m2m   @default    8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_vaapi     @renderD128 8bit=ok 10bit=ok bf=Some(true) rc=[ConstQp, Icq, Qvbr, Vbr, Cbr]
+  hevc_vulkan    @renderD128 8bit=ok 10bit=ok bf=Some(true) rc=[ConstQp, Vbr, Cbr]
+  mjpeg_qsv      @renderD128 8bit=ok 10bit=skip(10-bit not supported by this encoder) bf=None rc=[]
+  mjpeg_vaapi    @renderD128 8bit=ok 10bit=skip(10-bit not supported by this encoder) bf=None rc=[]
+  mpeg2_qsv      @renderD128 8bit=FAIL(Error initializing the encoder: unsupported (-3)) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mpeg2_vaapi    @renderD128 8bit=FAIL(Driver cannot encode this codec (decode-only driver?)) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mpeg4_v4l2m2m  @default    8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  prores_ks_vulkan @renderD128 8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp8_v4l2m2m    @default    8bit=FAIL(Could not initialise the hardware device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp8_vaapi      @renderD128 8bit=FAIL(Driver cannot encode this codec (decode-only driver?)) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp9_vaapi      @renderD128 8bit=ok 10bit=ok bf=Some(true) rc=[ConstQp, Vbr, Cbr]
+  vp9_qsv        @renderD128 8bit=ok 10bit=ok bf=Some(true) rc=[ConstQp, Vbr, Cbr]
+decoders (passing):
+  QSV@renderD128: h264/8 hevc/8 hevc/10 av1/8 av1/10 vp9/8 vp9/10 mpeg2video/8
+  VAAPI@renderD128: h264/8 hevc/8 hevc/10 av1/8 av1/10 vp9/8 vp9/10 mpeg2video/8
+  Vulkan@renderD128: h264/8 hevc/8 hevc/10 av1/8 av1/10 vp9/8 vp9/10
+filters:
+  scale_vaapi@renderD128 ok
+  tonemap_vaapi@renderD128 ok
+  vpp_qsv@renderD128 ok
+  scale_vulkan@renderD128 ok
+  libplacebo@renderD128 ok

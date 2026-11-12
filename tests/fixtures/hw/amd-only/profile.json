@@ -1,0 +1,106 @@
+{
+  "decode": {
+    "vaapi@renderD128": [
+      "h264_8",
+      "hevc_8",
+      "hevc_10",
+      "av1_8",
+      "av1_10",
+      "vp9_8",
+      "vp9_10"
+    ],
+    "vulkan@renderD128": [
+      "h264_8",
+      "hevc_8",
+      "hevc_10",
+      "av1_8",
+      "av1_10",
+      "vp9_8",
+      "vp9_10"
+    ]
+  },
+  "description": "Desktop, Radeon RX 7900 XTX (RDNA3), Mesa radeonsi + RADV, no AMF runtime",
+  "encode": {
+    "av1_amf@renderD128": {
+      "8": "fail: DLL libamfrt64.so.1 failed to open"
+    },
+    "av1_vaapi@renderD128": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "av1_vulkan@renderD128": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "h264_amf@renderD128": {
+      "8": "fail: DLL libamfrt64.so.1 failed to open"
+    },
+    "h264_vaapi@renderD128": {
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "h264_vulkan@renderD128": {
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "hevc_amf@renderD128": {
+      "8": "fail: DLL libamfrt64.so.1 failed to open"
+    },
+    "hevc_vaapi@renderD128": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "hevc_vulkan@renderD128": {
+      "10": "pass",
+      "8": "pass",
+      "rc": [
+        "const_qp",
+        "vbr",
+        "cbr"
+      ]
+    },
+    "mjpeg_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileJPEGBaseline (12)."
+    },
+    "mpeg2_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileMPEG2Main (1)."
+    },
+    "vp8_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileVP8Version0_3 (14)."
+    },
+    "vp9_vaapi@renderD128": {
+      "8": "fail: No usable encoding entrypoint found for profile VAProfileVP9Profile0 (19)."
+    }
+  },
+  "ffmpeg": "9.0-full",
+  "filters": {
+    "libplacebo@renderD128": "pass",
+    "scale_vaapi@renderD128": "pass",
+    "scale_vulkan@renderD128": "pass",
+    "tonemap_vaapi@renderD128": "fail: No VAAPI VPP tone-mapping support"
+  },
+  "synthetic": true
+}

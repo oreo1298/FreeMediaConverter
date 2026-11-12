@@ -1,0 +1,56 @@
+---
+source: crates/core/tests/profiles.rs
+expression: summary(& inv)
+---
+devices:
+  pci-0000:00:02.0 | Intel UHD Graphics 770 | Some("i915") | node=Some("/dev/dri/renderD128") access=Denied cuda=None
+  pci-0000:01:00.0 | NVIDIA GeForce RTX 3060 | Some("nvidia") | node=Some("/dev/dri/renderD129") access=Ok cuda=Some(0)
+summary:
+encoders:
+  av1_nvenc      @cuda0      8bit=FAIL(CUDA driver library (libcuda.so.1) not found) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  av1_qsv        @renderD128 8bit=FAIL(Intel oneVPL/QSV runtime unavailable for this device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  av1_vaapi      @renderD128 8bit=FAIL(Permission denied opening the device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  av1_vaapi      @renderD129 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  ffv1_vulkan    @renderD128 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  ffv1_vulkan    @renderD129 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h263_v4l2m2m   @default    8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_nvenc     @cuda0      8bit=FAIL(CUDA driver library (libcuda.so.1) not found) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_qsv       @renderD128 8bit=FAIL(Intel oneVPL/QSV runtime unavailable for this device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_v4l2m2m   @default    8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_vaapi     @renderD128 8bit=FAIL(Permission denied opening the device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_vaapi     @renderD129 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_vulkan    @renderD128 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_vulkan    @renderD129 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_nvenc     @cuda0      8bit=FAIL(CUDA driver library (libcuda.so.1) not found) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_qsv       @renderD128 8bit=FAIL(Intel oneVPL/QSV runtime unavailable for this device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_v4l2m2m   @default    8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_vaapi     @renderD128 8bit=FAIL(Permission denied opening the device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_vaapi     @renderD129 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_vulkan    @renderD128 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_vulkan    @renderD129 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mjpeg_qsv      @renderD128 8bit=FAIL(Intel oneVPL/QSV runtime unavailable for this device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mjpeg_vaapi    @renderD128 8bit=FAIL(Permission denied opening the device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mjpeg_vaapi    @renderD129 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mpeg2_qsv      @renderD128 8bit=FAIL(Intel oneVPL/QSV runtime unavailable for this device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mpeg2_vaapi    @renderD128 8bit=FAIL(Permission denied opening the device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mpeg2_vaapi    @renderD129 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mpeg4_v4l2m2m  @default    8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  prores_ks_vulkan @renderD128 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  prores_ks_vulkan @renderD129 8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp8_v4l2m2m    @default    8bit=FAIL(Vulkan driver lacks the required video extensions) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp8_vaapi      @renderD128 8bit=FAIL(Permission denied opening the device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp8_vaapi      @renderD129 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp9_vaapi      @renderD128 8bit=FAIL(Permission denied opening the device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp9_vaapi      @renderD129 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp9_qsv        @renderD128 8bit=FAIL(Intel oneVPL/QSV runtime unavailable for this device) 10bit=skip(8-bit probe failed) bf=None rc=[]
+decoders (passing):
+filters:
+  scale_vaapi@renderD128 FAIL(Vulkan driver lacks the required video extensions)
+  tonemap_vaapi@renderD128 FAIL(Vulkan driver lacks the required video extensions)
+  scale_vaapi@renderD129 FAIL(Vulkan driver lacks the required video extensions)
+  tonemap_vaapi@renderD129 FAIL(Vulkan driver lacks the required video extensions)
+  vpp_qsv@renderD128 FAIL(Vulkan driver lacks the required video extensions)
+  scale_vulkan@renderD128 FAIL(Vulkan driver lacks the required video extensions)
+  libplacebo@renderD128 FAIL(Vulkan driver lacks the required video extensions)
+  scale_vulkan@renderD129 FAIL(Vulkan driver lacks the required video extensions)
+  libplacebo@renderD129 FAIL(Vulkan driver lacks the required video extensions)

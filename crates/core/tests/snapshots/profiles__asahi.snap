@@ -1,0 +1,30 @@
+---
+source: crates/core/tests/profiles.rs
+expression: summary(& inv)
+---
+devices:
+  platform-soc-gpu@206400000 | Apple GPU (asahi) | Some("asahi") | node=Some("/dev/dri/renderD128") access=Ok cuda=None
+summary:
+encoders:
+  av1_vaapi      @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  ffv1_vulkan    @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h263_v4l2m2m   @default    8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_v4l2m2m   @default    8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_vaapi     @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  h264_vulkan    @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_v4l2m2m   @default    8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_vaapi     @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  hevc_vulkan    @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mjpeg_vaapi    @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mpeg2_vaapi    @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  mpeg4_v4l2m2m  @default    8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  prores_ks_vulkan @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp8_v4l2m2m    @default    8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp8_vaapi      @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+  vp9_vaapi      @renderD128 8bit=FAIL(VA-API driver failed to load) 10bit=skip(8-bit probe failed) bf=None rc=[]
+decoders (passing):
+filters:
+  scale_vaapi@renderD128 FAIL(VA-API driver failed to load)
+  tonemap_vaapi@renderD128 FAIL(VA-API driver failed to load)
+  scale_vulkan@renderD128 FAIL(VA-API driver failed to load)
+  libplacebo@renderD128 FAIL(VA-API driver failed to load)

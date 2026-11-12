@@ -162,7 +162,8 @@ mod tests {
         assert_eq!((x.major, x.minor), (9, 0));
         assert_eq!(x.lavc, Some((63, 4, 100)));
 
-        let out = "ffmpeg version n8.1-dev-123-gabc Copyright\nlibavcodec     62. 20.100 / 62. 20.100\n";
+        let out =
+            "ffmpeg version n8.1-dev-123-gabc Copyright\nlibavcodec     62. 20.100 / 62. 20.100\n";
         let x = v(out);
         assert!(x.git);
         assert_eq!((x.major, x.minor), (8, 1));

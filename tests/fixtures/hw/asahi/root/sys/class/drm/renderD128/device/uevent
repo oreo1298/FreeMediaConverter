@@ -1,0 +1,2 @@
+DRIVER=asahi
+OF_FULLNAME=/soc/gpu@206400000
