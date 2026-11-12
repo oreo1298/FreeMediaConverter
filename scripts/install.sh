@@ -12,8 +12,9 @@ NAME=Retort
 BIN=retort
 OWNER=oreo1298
 REPO=FreeMediaConverter
-PAGES="https://$OWNER.github.io/$REPO"
-RELEASES="https://github.com/$OWNER/$REPO/releases/latest/download"
+# Overridable for testing against a local mirror (scripts/test-docs.sh).
+PAGES=${RETORT_INSTALL_BASE:-"https://$OWNER.github.io/$REPO"}
+RELEASES=${RETORT_INSTALL_RELEASES:-"https://github.com/$OWNER/$REPO/releases/latest/download"}
 
 mode="" cli_only=0 dry=0
 for a in "$@"; do

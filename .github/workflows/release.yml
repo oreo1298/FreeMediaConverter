@@ -170,6 +170,11 @@ jobs:
             arch=$(echo "$f" | sed -E 's/.*-(x86_64|aarch64)-linux\.tar\.xz/\1/')
             cp "$f" "retort-linux-$arch.tar.xz"
           done
+          for f in Retort-*-x86_64.AppImage Retort-*-aarch64.AppImage; do
+            [ -f "$f" ] || continue
+            arch=$(echo "$f" | sed -E 's/.*-(x86_64|aarch64)\.AppImage/\1/')
+            cp "$f" "Retort-$arch.AppImage"
+          done
           sha256sum * > SHA256SUMS
       - name: Release notes from CHANGELOG.md
         run: |
