@@ -725,6 +725,26 @@ impl Ctx<'_> {
         }
     }
 
+    /// Default-track flags: the chosen track gets `default`, the others
+    /// lose it (players otherwise pick the first flagged one).
+    fn disposition_args(&self, args: &mut Vec<OsString>) {
+        let audio: Vec<u32> = self.job.audio.iter().map(|a| a.input_stream).collect();
+        let subs: Vec<u32> = self.job.subtitles.iter().map(|s| s.input_stream).collect();
+        for (kind, chosen, streams) in [
+            ("a", self.settings.default_audio, audio),
+            ("s", self.settings.default_subtitle, subs),
+        ] {
+            let Some(chosen) = chosen else { continue };
+            if chosen != crate::settings::NO_DEFAULT_TRACK && !streams.contains(&chosen) {
+                continue;
+            }
+            for (k, input) in streams.iter().enumerate() {
+                let flag = if *input == chosen { "default" } else { "0" };
+                push(args, [format!("-disposition:{kind}:{k}"), flag.to_string()]);
+            }
+        }
+    }
+
     fn metadata_args(&self, args: &mut Vec<OsString>) {
         let m = &self.settings.metadata;
         push(
@@ -1003,6 +1023,7 @@ pub fn build(
         }
         c.audio_args(&mut args);
         c.subtitle_args(&mut args);
+        c.disposition_args(&mut args);
         if job.copy_attachments {
             push(&mut args, ["-c:t", "copy"]);
         }

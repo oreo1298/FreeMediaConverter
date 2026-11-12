@@ -390,7 +390,17 @@ pub struct OutputSettings {
     /// Extra raw args before the output (advanced; shown with a warning).
     #[serde(default)]
     pub extra_output_args: Vec<String>,
+    /// Input stream index of the audio track to flag as default (others
+    /// lose the flag). None keeps the source's flags.
+    #[serde(default)]
+    pub default_audio: Option<u32>,
+    /// Same for subtitles; `Some(u32::MAX)` clears every default flag.
+    #[serde(default)]
+    pub default_subtitle: Option<u32>,
 }
+
+/// `default_subtitle` value meaning "no subtitle track is default".
+pub const NO_DEFAULT_TRACK: u32 = u32::MAX;
 
 impl OutputSettings {
     pub fn video_encode(&self) -> Option<&VideoEncode> {
@@ -416,5 +426,119 @@ impl OutputSettings {
         !matches!(self.video, VideoSettings::Encode(_))
             && !matches!(self.audio, AudioSettings::Encode(_))
             && !matches!(self.subtitles, SubtitleSettings::BurnIn { .. })
+    }
+}
+
+/// Split user-typed extra arguments into argv words. Whitespace separates
+/// words; single and double quotes group (no shell is ever involved, so
+/// there is no expansion). Errors on an unterminated quote.
+pub fn split_args(s: &str) -> std::result::Result<Vec<String>, String> {
+    let mut out = Vec::new();
+    let mut cur = String::new();
+    let mut in_word = false;
+    let mut quote: Option<char> = None;
+    let mut chars = s.chars();
+    while let Some(c) = chars.next() {
+        match (quote, c) {
+            (Some(q), c) if c == q => quote = None,
+            (Some('"'), '\\') => match chars.next() {
+                Some(n) => cur.push(n),
+                None => return Err("trailing backslash".into()),
+            },
+            (Some(_), c) => cur.push(c),
+            (None, '\'' | '"') => {
+                quote = Some(c);
+                in_word = true;
+            }
+            (None, '\\') => {
+                if let Some(n) = chars.next() {
+                    cur.push(n);
+                    in_word = true;
+                }
+            }
+            (None, c) if c.is_whitespace() => {
+                if in_word {
+                    out.push(std::mem::take(&mut cur));
+                    in_word = false;
+                }
+            }
+            (None, c) => {
+                cur.push(c);
+                in_word = true;
+            }
+        }
+    }
+    if quote.is_some() {
+        return Err("unterminated quote".into());
+    }
+    if in_word {
+        out.push(cur);
+    }
+    Ok(out)
+}
+
+/// Warnings for extra arguments that conflict with what Retort manages.
+pub fn extra_args_warnings(args: &[String]) -> Vec<String> {
+    let mut w = Vec::new();
+    for a in args {
+        match a.as_str() {
+            "-y" | "-n" => w.push(format!(
+                "{a}: overwriting is controlled by the conflict setting"
+            )),
+            "-i" => {
+                w.push("-i: extra inputs are not supported and may break stream mapping".into())
+            }
+            "-f" => w.push("-f: the container is chosen by the output format".into()),
+            "-map" => w.push(
+                "-map: track selection is managed by Retort; extra maps can duplicate streams"
+                    .into(),
+            ),
+            "-hwaccel" | "-init_hw_device" | "-filter_hw_device" => w.push(format!(
+                "{a}: hardware devices are managed by Retort and may break the fallback"
+            )),
+            "-vf" | "-filter:v" | "-filter_complex" | "-af" | "-filter:a" => w.push(format!(
+                "{a}: replaces Retort's filter chain (scaling, HDR handling, burn-in)"
+            )),
+            _ => {}
+        }
+    }
+    w
+}
+
+#[cfg(test)]
+mod arg_tests {
+    use super::*;
+
+    #[test]
+    fn split_args_handles_quotes_without_a_shell() {
+        assert_eq!(split_args("").unwrap(), Vec::<String>::new());
+        assert_eq!(split_args("  -tune  film ").unwrap(), vec!["-tune", "film"]);
+        assert_eq!(
+            split_args(r#"-metadata "title=My Film" -metadata 'comment=it''s' a\ b"#).unwrap(),
+            vec![
+                "-metadata",
+                "title=My Film",
+                "-metadata",
+                "comment=its",
+                "a b"
+            ]
+        );
+        assert_eq!(split_args(r#""" x"#).unwrap(), vec!["", "x"]);
+        assert_eq!(split_args(r#""a \"q\"""#).unwrap(), vec![r#"a "q""#]);
+        assert_eq!(
+            split_args("$(rm -rf /) `x` ; |").unwrap(),
+            vec!["$(rm", "-rf", "/)", "`x`", ";", "|"]
+        );
+        assert!(split_args("'open").is_err());
+    }
+
+    #[test]
+    fn extra_args_conflicts_are_flagged() {
+        let w = extra_args_warnings(&split_args("-y -vf scale=2 -tune film").unwrap());
+        assert_eq!(w.len(), 2, "{w:?}");
+        assert!(
+            extra_args_warnings(&split_args("-tune film -x265-params aq-mode=3").unwrap())
+                .is_empty()
+        );
     }
 }

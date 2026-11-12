@@ -98,3 +98,9 @@ Whether the encoder copies `AV_FRAME_DATA_MASTERING_DISPLAY_METADATA` /
 
 Colour signalling (`-color_primaries/-color_trc/-colorspace/-color_range`)
 is always set explicitly when HDR is preserved.
+
+## Muxing options
+
+| Option | 6.1 | 9.0.2 | Notes |
+|---|---|---|---|
+| `-disposition:<a\|s>:<n> default\|0` | `set_dispositions()` in `fftools/ffmpeg_mux_init.c` evaluates the value with `av_opt_eval_flags` on the stream's `disposition` flags | per-stream `opt_match_per_stream_str(... &o->disposition ...)` then `av_opt_set(st, "disposition", ...)` | `0` clears all flags, `default` sets only "default". Used for the Advanced "default track" choice; checked by the `default_track_flags` integration test on 6.1 and 9.0.2. |

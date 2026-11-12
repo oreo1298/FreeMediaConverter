@@ -60,6 +60,8 @@ fn base(format: &str, video: VideoSettings, audio: AudioSettings) -> OutputSetti
         animation: None,
         extra_input_args: Vec::new(),
         extra_output_args: Vec::new(),
+        default_audio: None,
+        default_subtitle: None,
     }
 }
 
