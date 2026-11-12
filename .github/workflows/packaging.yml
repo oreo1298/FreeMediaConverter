@@ -1,0 +1,71 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Packaging smoke tests (a subset of the release matrix) whenever packaging,
+# build or data files change, weekly, and on demand. Each job builds the
+# package in a container of its target distro, installs it there and runs it.
+name: Packaging
+
+on:
+  push:
+    paths:
+      - "packaging/**"
+      - "scripts/make-dist.sh"
+      - "meson.build"
+      - "meson_options.txt"
+      - "data/**"
+      - "Cargo.lock"
+      - "build-aux/**"
+      - ".github/workflows/packaging.yml"
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dist:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: scripts/check-versions.sh
+      - run: scripts/make-dist.sh
+      - uses: actions/upload-artifact@v4
+        with: { name: dist-src, path: dist/* }
+
+  build:
+    name: ${{ matrix.name }}
+    needs: dist
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: "deb Ubuntu 24.04", script: debian/build.sh, arg: "ubuntu:24.04", runner: ubuntu-24.04 }
+          - { name: "deb Debian 13 arm64", script: debian/build.sh, arg: "debian:trixie", runner: ubuntu-24.04-arm }
+          - { name: "rpm Fedora 45", script: rpm/build.sh, arg: "fedora:45", runner: ubuntu-24.04 }
+          - { name: "rpm openSUSE Tumbleweed", script: rpm/build.sh, arg: "opensuse/tumbleweed", runner: ubuntu-24.04 }
+          - { name: "Arch PKGBUILD + namcap", script: arch/build.sh, arg: "", runner: ubuntu-24.04 }
+          - { name: "portable tarball", script: tarball/build.sh, arg: "", runner: ubuntu-24.04 }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: dist-src, path: dist }
+      - run: packaging/${{ matrix.script }} ${{ matrix.arg }}
+
+  flatpak:
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: Retort-x86_64.flatpak
+          manifest-path: packaging/flatpak/io.github.oreo1298.Retort.json
+          cache-key: flatpak-x86_64-${{ hashFiles('packaging/flatpak/*.json') }}
+      - name: Lint manifest and repo
+        run: |
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest packaging/flatpak/io.github.oreo1298.Retort.json || true
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo || true
