@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: CC0-1.0 -->
+<component type="desktop-application">
+  <id>@APP_ID@</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>@APP_NAME@</name>
+  <summary>@APP_SUMMARY@</summary>
+  <developer id="io.github.@APP_REPO_OWNER@">
+    <name>@APP_NAME@ contributors</name>
+  </developer>
+  <description>
+    <p>
+      @APP_NAME@ converts any audio or video file into any format FFmpeg can write — from
+      “make this an MP4 for my phone” to HEVC 10-bit on your second GPU with custom encoder settings.
+    </p>
+    <p>Highlights:</p>
+    <ul>
+      <li>Simple presets: MP4 that plays everywhere, smaller HEVC, AV1, WebM, Apple-friendly, editing intermediates, GIF, audio formats and more</li>
+      <li>Fit a video under a size limit for chats or email</li>
+      <li>Hardware acceleration with NVIDIA NVENC, Intel Quick Sync, VA-API, Vulkan Video and more — only when a real test proved it works on your machine, with automatic fallback to software</li>
+      <li>HDR10, HLG and Dolby Vision aware: keep HDR or tone-map to SDR</li>
+      <li>Batch queue with pause, resume, per-file settings and progress with ETA</li>
+      <li>Advanced mode for full control: encoder, rate control, scaling, cropping, deinterlacing, loudness normalisation, subtitles and metadata</li>
+      <li>See and copy the exact FFmpeg command for every conversion</li>
+      <li>A system check that explains driver and permission problems with fix commands for your distribution</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">@APP_ID@.desktop</launchable>
+  <provides>
+    <binary>@APP_BIN@</binary>
+    <binary>@APP_BIN@-cli</binary>
+  </provides>
+  <url type="homepage">@APP_HOMEPAGE@</url>
+  <url type="bugtracker">@APP_HOMEPAGE@/issues</url>
+  <url type="vcs-browser">@APP_HOMEPAGE@</url>
+  <url type="contribute">@APP_HOMEPAGE@/blob/main/CONTRIBUTING.md</url>
+  <translation type="gettext">@APP_BIN@</translation>
+  <content_rating type="oars-1.1"/>
+  <branding>
+    <color type="primary" scheme_preference="light">#c9b6f2</color>
+    <color type="primary" scheme_preference="dark">#3d2a6b</color>
+  </branding>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+  </supports>
+  <screenshots>
+    <screenshot type="default">
+      <caption>The conversion queue with hardware acceleration</caption>
+      <image>https://raw.githubusercontent.com/@APP_REPO_OWNER@/@APP_REPO_NAME@/main/docs/screenshots/queue-running-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Simple presets</caption>
+      <image>https://raw.githubusercontent.com/@APP_REPO_OWNER@/@APP_REPO_NAME@/main/docs/screenshots/queue-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Advanced settings</caption>
+      <image>https://raw.githubusercontent.com/@APP_REPO_OWNER@/@APP_REPO_NAME@/main/docs/screenshots/advanced-dark.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Verified hardware capabilities</caption>
+      <image>https://raw.githubusercontent.com/@APP_REPO_OWNER@/@APP_REPO_NAME@/main/docs/screenshots/hardware-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>System check with fix commands</caption>
+      <image>https://raw.githubusercontent.com/@APP_REPO_OWNER@/@APP_REPO_NAME@/main/docs/screenshots/system-check-dark.png</image>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.1.0" date="2026-11-12">
+      <description>
+        <p>First release.</p>
+      </description>
+    </release>
+  </releases>
+  <keywords>
+    <keyword>video</keyword>
+    <keyword>audio</keyword>
+    <keyword>convert</keyword>
+    <keyword>transcode</keyword>
+    <keyword>FFmpeg</keyword>
+  </keywords>
+</component>

@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=@APP_NAME@
+GenericName=Media Converter
+Comment=@APP_SUMMARY@
+# Translators: search terms (separated by semicolons)
+Keywords=video;audio;convert;converter;transcode;ffmpeg;encode;mp4;mkv;webm;mp3;hevc;av1;gif;
+Exec=@APP_BIN@ %U
+Icon=@APP_ID@
+Terminal=false
+Type=Application
+Categories=AudioVideo;Audio;Video;AudioVideoEditing;GTK;GNOME;
+MimeType=audio/*;video/*;
+StartupNotify=true
+DBusActivatable=false
+X-GNOME-UsesNotifications=true
