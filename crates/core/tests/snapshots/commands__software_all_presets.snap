@@ -1,0 +1,596 @@
+---
+source: crates/core/tests/commands.rs
+expression: s
+---
+== sdr-1080p.mp4 → mp4-compatible
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -vf format=yuv420p -map 0:0 -map 0:1 -map 0:2 -map 0:3 -c:v libx264 -crf 23 -preset medium -profile:v high -c:a:0 aac -b:a:0 96k -c:a:1 aac -b:a:1 384k -c:s:0 copy -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/sdr-1080p.mp4
+== sdr-1080p.mp4 → mp4-small
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -vf format=yuv420p -map 0:0 -map 0:1 -map 0:2 -map 0:3 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -x265-params log-level=error -c:a:0 aac -b:a:0 80k -c:a:1 aac -b:a:1 320k -c:s:0 copy -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/sdr-1080p.mp4
+== sdr-1080p.mp4 → mkv-archive
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -map 0:3 -c:v libx265 -crf 21 -preset slow -x265-params log-level=error -c:a:0 copy -c:a:1 copy -c:s:0 srt -map_metadata 0 -map_chapters 0 -f matroska file:/out/sdr-1080p.mkv
+== sdr-1080p.mp4 → av1-smallest
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: SVT-AV1 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -vf format=yuv420p -map 0:0 -map 0:1 -map 0:2 -map 0:3 -c:v libsvtav1 -crf 32 -preset 5 -c:a:0 libopus -b:a:0 64k -c:a:1 libopus -b:a:1 256k -filter:a:1 'aformat=channel_layouts=7.1|5.1|5.0|quad|3.0|stereo|mono' -c:s:0 srt -map_metadata 0 -map_chapters 0 -f matroska file:/out/sdr-1080p.mkv
+== sdr-1080p.mp4 → apple
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -vf format=yuv420p -map 0:0 -map 0:1 -map 0:2 -map 0:3 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -x265-params log-level=error -c:a:0 aac -b:a:0 96k -c:a:1 aac -b:a:1 384k -c:s:0 copy -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/sdr-1080p.mp4
+== sdr-1080p.mp4 → webm
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libvpx VP9 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -vf format=yuv420p -map 0:0 -map 0:1 -map 0:2 -map 0:3 -c:v libvpx-vp9 -crf 32 -b:v 0 -cpu-used 3 -row-mt 1 -deadline good -c:a:0 libopus -b:a:0 64k -c:a:1 libopus -b:a:1 256k -filter:a:1 'aformat=channel_layouts=7.1|5.1|5.0|quad|3.0|stereo|mono' -c:s:0 webvtt -map_metadata 0 -map_chapters 0 -f webm file:/out/sdr-1080p.webm
+== sdr-1080p.mp4 → target-size
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -y -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -vf format=yuv420p -map 0:0 -c:v libx264 -b:v 11658k -preset medium -pass 1 -passlogfile /tmp/work/passlog -an -sn -dn -f null -
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -vf format=yuv420p -map 0:0 -map 0:1 -c:v libx264 -b:v 11658k -preset medium -pass 2 -passlogfile /tmp/work/passlog -c:a:0 aac -b:a:0 48k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/sdr-1080p.mp4
+== sdr-1080p.mp4 → prores
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: ProRes (prores_ks) (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -vf format=yuv422p10le -map 0:0 -map 0:1 -map 0:2 -map 0:3 -c:v prores_ks -profile:v 3 -c:a:0 pcm_s24le -c:a:1 pcm_s24le -c:s:0 copy -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/sdr-1080p.mov
+== sdr-1080p.mp4 → dnxhr
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: dnxhd (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -vf format=yuv422p -map 0:0 -map 0:1 -map 0:2 -map 0:3 -c:v dnxhd -profile:v dnxhr_hq -c:a:0 pcm_s16le -c:a:1 pcm_s16le -c:s:0 copy -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/sdr-1080p.mov
+== sdr-1080p.mp4 → gif
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: gif (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -filter_complex '[0:0]fps=15,scale='\''min(480,iw)'\'':-1:flags=lanczos,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle[v]' -map '[v]' -c:v gif -map_metadata 0 -map_chapters 0 -loop 0 -f gif file:/out/sdr-1080p.gif
+== sdr-1080p.mp4 → webp-anim
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libwebp_anim (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -vf 'fps=20,scale='\''min(640,iw)'\'':-2:flags=lanczos,format=yuv420p' -map 0:0 -c:v libwebp_anim -quality 80 -map_metadata 0 -map_chapters 0 -loop 0 -f webp file:/out/sdr-1080p.webp
+== sdr-1080p.mp4 → mp3
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -map 0:1 -map 0:2 -c:a:0 libmp3lame -q:a:0 2 -c:a:1 libmp3lame -q:a:1 2 -map_metadata 0 -map_chapters 0 -id3v2_version 3 -f mp3 file:/out/sdr-1080p.mp3
+== sdr-1080p.mp4 → m4a
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -map 0:1 -map 0:2 -c:a:0 aac -b:a:0 128k -c:a:1 aac -b:a:1 512k -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/sdr-1080p.m4a
+== sdr-1080p.mp4 → opus
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -map 0:1 -map 0:2 -c:a:0 libopus -b:a:0 64k -c:a:1 libopus -b:a:1 256k -filter:a:1 'aformat=channel_layouts=7.1|5.1|5.0|quad|3.0|stereo|mono' -map_metadata 0 -map_chapters 0 -f opus file:/out/sdr-1080p.opus
+== sdr-1080p.mp4 → flac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -map 0:1 -map 0:2 -c:a:0 flac -c:a:1 flac -map_metadata 0 -map_chapters 0 -f flac file:/out/sdr-1080p.flac
+== sdr-1080p.mp4 → wav
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -map 0:1 -map 0:2 -c:a:0 pcm_s16le -c:a:1 pcm_s16le -map_metadata 0 -map_chapters 0 -f wav file:/out/sdr-1080p.wav
+== sdr-1080p.mp4 → alac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -map 0:1 -map 0:2 -c:a:0 alac -c:a:1 alac -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/sdr-1080p.m4a
+== sdr-1080p.mp4 → extract-audio
+  [1] CPU | Copy streams (no re-encode)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -map 0:1 -c:a:0 copy -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/sdr-1080p.m4a
+== sdr-1080p.mp4 → remux
+  [1] CPU | Video: copy (instant, lossless)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/sdr-1080p.mp4 -map 0:0 -map 0:1 -map 0:2 -map 0:3 -c:v copy -c:a:0 copy -c:a:1 copy -c:s:0 srt -map_metadata 0 -map_chapters 0 -f matroska file:/out/sdr-1080p.mkv
+== hdr10.mkv → mp4-compatible
+  note: H.264 / AVC in MP4 can't keep HDR; tone mapping to SDR
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p -map 0:0 -map 0:1 -map 0:2 -c:v libx264 -crf 23 -preset medium -profile:v high -color_primaries bt709 -color_trc bt709 -colorspace bt709 -c:a:0 aac -b:a:0 384k -c:s:0 mov_text -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/hdr10.mp4
+== hdr10.mkv → mp4-small
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -x265-params 'log-level=error:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:hdr10=1:repeat-headers=1:master-display=G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)L(10000000,1):max-cll=1000,400' -c:a:0 aac -b:a:0 320k -c:s:0 mov_text -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/hdr10.mp4
+== hdr10.mkv → mkv-archive
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -c:v libx265 -crf 21 -preset slow -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -x265-params 'log-level=error:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:hdr10=1:repeat-headers=1:master-display=G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)L(10000000,1):max-cll=1000,400' -c:a:0 copy -c:s:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/hdr10.mkv
+== hdr10.mkv → av1-smallest
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: SVT-AV1 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -c:v libsvtav1 -crf 32 -preset 5 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -svtav1-params 'mastering-display=G(0.2650,0.6900)B(0.1500,0.0600)R(0.6800,0.3200)WP(0.3127,0.3290)L(1000.0000,0.0001):content-light=1000,400' -c:a:0 libopus -b:a:0 256k -filter:a:0 'aformat=channel_layouts=7.1|5.1|5.0|quad|3.0|stereo|mono' -c:s:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/hdr10.mkv
+== hdr10.mkv → apple
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -x265-params 'log-level=error:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:hdr10=1:repeat-headers=1:master-display=G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)L(10000000,1):max-cll=1000,400' -c:a:0 aac -b:a:0 384k -c:s:0 mov_text -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/hdr10.mp4
+== hdr10.mkv → webm
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libvpx VP9 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -c:v libvpx-vp9 -crf 32 -b:v 0 -cpu-used 3 -row-mt 1 -deadline good -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -c:a:0 libopus -b:a:0 256k -filter:a:0 'aformat=channel_layouts=7.1|5.1|5.0|quad|3.0|stereo|mono' -c:s:0 webvtt -map_metadata 0 -map_chapters 0 -f webm file:/out/hdr10.webm
+== hdr10.mkv → target-size
+  note: H.264 / AVC in MP4 can't keep HDR; tone mapping to SDR
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -y -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p -map 0:0 -c:v libx264 -b:v 9317k -preset medium -color_primaries bt709 -color_trc bt709 -colorspace bt709 -pass 1 -passlogfile /tmp/work/passlog -an -sn -dn -f null -
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p -map 0:0 -map 0:1 -c:v libx264 -b:v 9317k -preset medium -color_primaries bt709 -color_trc bt709 -colorspace bt709 -pass 2 -passlogfile /tmp/work/passlog -c:a:0 aac -b:a:0 96k -ac:a:0 2 -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/hdr10.mp4
+== hdr10.mkv → prores
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: ProRes (prores_ks) (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -vf format=yuv422p10le -map 0:0 -map 0:1 -map 0:2 -c:v prores_ks -profile:v 3 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -c:a:0 pcm_s24le -c:s:0 mov_text -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/hdr10.mov
+== hdr10.mkv → dnxhr
+  note: Avid DNxHD / DNxHR in QuickTime (MOV) can't keep HDR; tone mapping to SDR
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: dnxhd (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv422p -map 0:0 -map 0:1 -map 0:2 -c:v dnxhd -profile:v dnxhr_hq -color_primaries bt709 -color_trc bt709 -colorspace bt709 -c:a:0 pcm_s16le -c:s:0 mov_text -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/hdr10.mov
+== hdr10.mkv → gif
+  note: GIF in GIF can't keep HDR; tone mapping to SDR
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: gif (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -filter_complex '[0:0]zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,fps=15,scale='\''min(480,iw)'\'':-1:flags=lanczos,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle[v]' -map '[v]' -c:v gif -color_primaries bt709 -color_trc bt709 -colorspace bt709 -map_metadata 0 -map_chapters 0 -loop 0 -f gif file:/out/hdr10.gif
+== hdr10.mkv → webp-anim
+  note: WebP in Animated WebP can't keep HDR; tone mapping to SDR
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libwebp_anim (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -vf 'fps=20,scale='\''min(640,iw)'\'':-2:flags=lanczos,zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p' -map 0:0 -c:v libwebp_anim -quality 80 -color_primaries bt709 -color_trc bt709 -colorspace bt709 -map_metadata 0 -map_chapters 0 -loop 0 -f webp file:/out/hdr10.webp
+== hdr10.mkv → mp3
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -map 0:1 -c:a:0 libmp3lame -q:a:0 2 -map_metadata 0 -map_chapters 0 -id3v2_version 3 -f mp3 file:/out/hdr10.mp3
+== hdr10.mkv → m4a
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -map 0:1 -c:a:0 aac -b:a:0 512k -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/hdr10.m4a
+== hdr10.mkv → opus
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -map 0:1 -c:a:0 libopus -b:a:0 256k -filter:a:0 'aformat=channel_layouts=7.1|5.1|5.0|quad|3.0|stereo|mono' -map_metadata 0 -map_chapters 0 -f opus file:/out/hdr10.opus
+== hdr10.mkv → flac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -map 0:1 -c:a:0 flac -map_metadata 0 -map_chapters 0 -f flac file:/out/hdr10.flac
+== hdr10.mkv → wav
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -map 0:1 -c:a:0 pcm_s16le -map_metadata 0 -map_chapters 0 -f wav file:/out/hdr10.wav
+== hdr10.mkv → alac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -map 0:1 -c:a:0 alac -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/hdr10.m4a
+== hdr10.mkv → extract-audio
+  [1] CPU | Copy streams (no re-encode)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -map 0:1 -c:a:0 copy -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/hdr10.m4a
+== hdr10.mkv → remux
+  [1] CPU | Video: copy (instant, lossless)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/hdr10.mkv -map 0:0 -map 0:1 -map 0:2 -c:v copy -c:a:0 copy -c:s:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/hdr10.mkv
+== dovi-p8.mkv → mp4-compatible
+  note: H.264 / AVC in MP4 can't keep HDR; tone mapping to SDR
+  note: Dolby Vision dynamic metadata is dropped when re-encoding; the HDR10/HLG base layer is kept
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p -map 0:0 -map 0:1 -map 0:2 -c:v libx264 -crf 23 -preset medium -profile:v high -color_primaries bt709 -color_trc bt709 -colorspace bt709 -c:a:0 aac -b:a:0 384k -c:s:0 mov_text -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/dovi-p8.mp4
+== dovi-p8.mkv → mp4-small
+  note: Dolby Vision dynamic metadata is dropped when re-encoding; the HDR10/HLG base layer is kept
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -x265-params log-level=error:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:hdr10=1:repeat-headers=1 -c:a:0 aac -b:a:0 320k -c:s:0 mov_text -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/dovi-p8.mp4
+== dovi-p8.mkv → mkv-archive
+  note: Dolby Vision dynamic metadata is dropped when re-encoding; the HDR10/HLG base layer is kept
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -c:v libx265 -crf 21 -preset slow -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -x265-params log-level=error:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:hdr10=1:repeat-headers=1 -c:a:0 copy -c:s:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/dovi-p8.mkv
+== dovi-p8.mkv → av1-smallest
+  note: Dolby Vision dynamic metadata is dropped when re-encoding; the HDR10/HLG base layer is kept
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: SVT-AV1 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -c:v libsvtav1 -crf 32 -preset 5 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -c:a:0 libopus -b:a:0 256k -filter:a:0 'aformat=channel_layouts=7.1|5.1|5.0|quad|3.0|stereo|mono' -c:s:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/dovi-p8.mkv
+== dovi-p8.mkv → apple
+  note: Dolby Vision dynamic metadata is dropped when re-encoding; the HDR10/HLG base layer is kept
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -x265-params log-level=error:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:hdr10=1:repeat-headers=1 -c:a:0 aac -b:a:0 384k -c:s:0 mov_text -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/dovi-p8.mp4
+== dovi-p8.mkv → webm
+  note: Dolby Vision dynamic metadata is dropped when re-encoding; the HDR10/HLG base layer is kept
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libvpx VP9 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -c:v libvpx-vp9 -crf 32 -b:v 0 -cpu-used 3 -row-mt 1 -deadline good -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -c:a:0 libopus -b:a:0 256k -filter:a:0 'aformat=channel_layouts=7.1|5.1|5.0|quad|3.0|stereo|mono' -c:s:0 webvtt -map_metadata 0 -map_chapters 0 -f webm file:/out/dovi-p8.webm
+== dovi-p8.mkv → target-size
+  note: H.264 / AVC in MP4 can't keep HDR; tone mapping to SDR
+  note: Dolby Vision dynamic metadata is dropped when re-encoding; the HDR10/HLG base layer is kept
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -y -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p -map 0:0 -c:v libx264 -b:v 9317k -preset medium -color_primaries bt709 -color_trc bt709 -colorspace bt709 -pass 1 -passlogfile /tmp/work/passlog -an -sn -dn -f null -
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p -map 0:0 -map 0:1 -c:v libx264 -b:v 9317k -preset medium -color_primaries bt709 -color_trc bt709 -colorspace bt709 -pass 2 -passlogfile /tmp/work/passlog -c:a:0 aac -b:a:0 96k -ac:a:0 2 -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/dovi-p8.mp4
+== dovi-p8.mkv → prores
+  note: Dolby Vision dynamic metadata is dropped when re-encoding; the HDR10/HLG base layer is kept
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: ProRes (prores_ks) (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -vf format=yuv422p10le -map 0:0 -map 0:1 -map 0:2 -c:v prores_ks -profile:v 3 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -c:a:0 pcm_s24le -c:s:0 mov_text -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/dovi-p8.mov
+== dovi-p8.mkv → dnxhr
+  note: Avid DNxHD / DNxHR in QuickTime (MOV) can't keep HDR; tone mapping to SDR
+  note: Dolby Vision dynamic metadata is dropped when re-encoding; the HDR10/HLG base layer is kept
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: dnxhd (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv422p -map 0:0 -map 0:1 -map 0:2 -c:v dnxhd -profile:v dnxhr_hq -color_primaries bt709 -color_trc bt709 -colorspace bt709 -c:a:0 pcm_s16le -c:s:0 mov_text -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/dovi-p8.mov
+== dovi-p8.mkv → gif
+  note: GIF in GIF can't keep HDR; tone mapping to SDR
+  note: Dolby Vision dynamic metadata is dropped when re-encoding; the HDR10/HLG base layer is kept
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: gif (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -filter_complex '[0:0]zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,fps=15,scale='\''min(480,iw)'\'':-1:flags=lanczos,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle[v]' -map '[v]' -c:v gif -color_primaries bt709 -color_trc bt709 -colorspace bt709 -map_metadata 0 -map_chapters 0 -loop 0 -f gif file:/out/dovi-p8.gif
+== dovi-p8.mkv → webp-anim
+  note: WebP in Animated WebP can't keep HDR; tone mapping to SDR
+  note: Dolby Vision dynamic metadata is dropped when re-encoding; the HDR10/HLG base layer is kept
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libwebp_anim (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -vf 'fps=20,scale='\''min(640,iw)'\'':-2:flags=lanczos,zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p' -map 0:0 -c:v libwebp_anim -quality 80 -color_primaries bt709 -color_trc bt709 -colorspace bt709 -map_metadata 0 -map_chapters 0 -loop 0 -f webp file:/out/dovi-p8.webp
+== dovi-p8.mkv → mp3
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -map 0:1 -c:a:0 libmp3lame -q:a:0 2 -map_metadata 0 -map_chapters 0 -id3v2_version 3 -f mp3 file:/out/dovi-p8.mp3
+== dovi-p8.mkv → m4a
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -map 0:1 -c:a:0 aac -b:a:0 512k -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/dovi-p8.m4a
+== dovi-p8.mkv → opus
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -map 0:1 -c:a:0 libopus -b:a:0 256k -filter:a:0 'aformat=channel_layouts=7.1|5.1|5.0|quad|3.0|stereo|mono' -map_metadata 0 -map_chapters 0 -f opus file:/out/dovi-p8.opus
+== dovi-p8.mkv → flac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -map 0:1 -c:a:0 flac -map_metadata 0 -map_chapters 0 -f flac file:/out/dovi-p8.flac
+== dovi-p8.mkv → wav
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -map 0:1 -c:a:0 pcm_s16le -map_metadata 0 -map_chapters 0 -f wav file:/out/dovi-p8.wav
+== dovi-p8.mkv → alac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -map 0:1 -c:a:0 alac -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/dovi-p8.m4a
+== dovi-p8.mkv → extract-audio
+  [1] CPU | Copy streams (no re-encode)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -map 0:1 -c:a:0 copy -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/dovi-p8.m4a
+== dovi-p8.mkv → remux
+  [1] CPU | Video: copy (instant, lossless)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/dovi-p8.mkv -map 0:0 -map 0:1 -map 0:2 -c:v copy -c:a:0 copy -c:s:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/dovi-p8.mkv
+== rotated.mp4 → mp4-compatible
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -vf format=yuv420p -map 0:0 -map 0:1 -c:v libx264 -crf 23 -preset medium -profile:v high -c:a:0 aac -b:a:0 192k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/rotated.mp4
+== rotated.mp4 → mp4-small
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -vf format=yuv420p -map 0:0 -map 0:1 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -x265-params log-level=error -c:a:0 aac -b:a:0 160k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/rotated.mp4
+== rotated.mp4 → mkv-archive
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -vf format=yuv420p10le -map 0:0 -map 0:1 -c:v libx265 -crf 21 -preset slow -x265-params log-level=error -c:a:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/rotated.mkv
+== rotated.mp4 → av1-smallest
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: SVT-AV1 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -vf format=yuv420p -map 0:0 -map 0:1 -c:v libsvtav1 -crf 32 -preset 5 -c:a:0 libopus -b:a:0 128k -map_metadata 0 -map_chapters 0 -f matroska file:/out/rotated.mkv
+== rotated.mp4 → apple
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -vf format=yuv420p -map 0:0 -map 0:1 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -x265-params log-level=error -c:a:0 aac -b:a:0 192k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/rotated.mp4
+== rotated.mp4 → webm
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libvpx VP9 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -vf format=yuv420p -map 0:0 -map 0:1 -c:v libvpx-vp9 -crf 32 -b:v 0 -cpu-used 3 -row-mt 1 -deadline good -c:a:0 libopus -b:a:0 128k -map_metadata 0 -map_chapters 0 -f webm file:/out/rotated.webm
+== rotated.mp4 → target-size
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -y -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -vf format=yuv420p -map 0:0 -c:v libx264 -b:v 5182k -preset medium -pass 1 -passlogfile /tmp/work/passlog -an -sn -dn -f null -
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -vf format=yuv420p -map 0:0 -map 0:1 -c:v libx264 -b:v 5182k -preset medium -pass 2 -passlogfile /tmp/work/passlog -c:a:0 aac -b:a:0 96k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/rotated.mp4
+== rotated.mp4 → prores
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: ProRes (prores_ks) (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -vf format=yuv422p10le -map 0:0 -map 0:1 -c:v prores_ks -profile:v 3 -c:a:0 pcm_s24le -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/rotated.mov
+== rotated.mp4 → dnxhr
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: dnxhd (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -vf format=yuv422p -map 0:0 -map 0:1 -c:v dnxhd -profile:v dnxhr_hq -c:a:0 pcm_s16le -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/rotated.mov
+== rotated.mp4 → gif
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: gif (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -filter_complex '[0:0]fps=15,scale='\''min(480,iw)'\'':-1:flags=lanczos,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle[v]' -map '[v]' -c:v gif -map_metadata 0 -map_chapters 0 -loop 0 -f gif file:/out/rotated.gif
+== rotated.mp4 → webp-anim
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libwebp_anim (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -vf 'fps=20,scale='\''min(640,iw)'\'':-2:flags=lanczos,format=yuv420p' -map 0:0 -c:v libwebp_anim -quality 80 -map_metadata 0 -map_chapters 0 -loop 0 -f webp file:/out/rotated.webp
+== rotated.mp4 → mp3
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -map 0:1 -c:a:0 libmp3lame -q:a:0 2 -map_metadata 0 -map_chapters 0 -id3v2_version 3 -f mp3 file:/out/rotated.mp3
+== rotated.mp4 → m4a
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -map 0:1 -c:a:0 aac -b:a:0 256k -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/rotated.m4a
+== rotated.mp4 → opus
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -map 0:1 -c:a:0 libopus -b:a:0 128k -map_metadata 0 -map_chapters 0 -f opus file:/out/rotated.opus
+== rotated.mp4 → flac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -map 0:1 -c:a:0 flac -map_metadata 0 -map_chapters 0 -f flac file:/out/rotated.flac
+== rotated.mp4 → wav
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -map 0:1 -c:a:0 pcm_s16le -map_metadata 0 -map_chapters 0 -f wav file:/out/rotated.wav
+== rotated.mp4 → alac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -map 0:1 -c:a:0 alac -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/rotated.m4a
+== rotated.mp4 → extract-audio
+  [1] CPU | Copy streams (no re-encode)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -map 0:1 -c:a:0 copy -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/rotated.m4a
+== rotated.mp4 → remux
+  [1] CPU | Video: copy (instant, lossless)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/rotated.mp4 -map 0:0 -map 0:1 -c:v copy -c:a:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/rotated.mkv
+== interlaced.ts → mp4-compatible
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -vf bwdif=mode=send_frame:parity=auto:deint=interlaced,format=yuv420p -map 0:0 -c:v libx264 -crf 23 -preset medium -profile:v high -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/interlaced.mp4
+== interlaced.ts → mp4-small
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -vf bwdif=mode=send_frame:parity=auto:deint=interlaced,format=yuv420p -map 0:0 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -x265-params log-level=error -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/interlaced.mp4
+== interlaced.ts → mkv-archive
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -vf bwdif=mode=send_frame:parity=auto:deint=interlaced,format=yuv420p10le -map 0:0 -c:v libx265 -crf 21 -preset slow -x265-params log-level=error -map_metadata 0 -map_chapters 0 -f matroska file:/out/interlaced.mkv
+== interlaced.ts → av1-smallest
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: SVT-AV1 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -vf bwdif=mode=send_frame:parity=auto:deint=interlaced,format=yuv420p -map 0:0 -c:v libsvtav1 -crf 32 -preset 5 -map_metadata 0 -map_chapters 0 -f matroska file:/out/interlaced.mkv
+== interlaced.ts → apple
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -vf bwdif=mode=send_frame:parity=auto:deint=interlaced,format=yuv420p -map 0:0 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -x265-params log-level=error -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/interlaced.mp4
+== interlaced.ts → webm
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libvpx VP9 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -vf bwdif=mode=send_frame:parity=auto:deint=interlaced,format=yuv420p -map 0:0 -c:v libvpx-vp9 -crf 32 -b:v 0 -cpu-used 3 -row-mt 1 -deadline good -map_metadata 0 -map_chapters 0 -f webm file:/out/interlaced.webm
+== interlaced.ts → target-size
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -y -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -vf bwdif=mode=send_frame:parity=auto:deint=interlaced,format=yuv420p -map 0:0 -c:v libx264 -b:v 933k -preset medium -pass 1 -passlogfile /tmp/work/passlog -an -sn -dn -f null -
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -vf bwdif=mode=send_frame:parity=auto:deint=interlaced,format=yuv420p -map 0:0 -c:v libx264 -b:v 933k -preset medium -pass 2 -passlogfile /tmp/work/passlog -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/interlaced.mp4
+== interlaced.ts → prores
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: ProRes (prores_ks) (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -vf bwdif=mode=send_frame:parity=auto:deint=interlaced,format=yuv422p10le -map 0:0 -c:v prores_ks -profile:v 3 -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/interlaced.mov
+== interlaced.ts → dnxhr
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: dnxhd (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -vf bwdif=mode=send_frame:parity=auto:deint=interlaced,format=yuv422p -map 0:0 -c:v dnxhd -profile:v dnxhr_hq -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/interlaced.mov
+== interlaced.ts → gif
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: gif (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -filter_complex '[0:0]bwdif=mode=send_frame:parity=auto:deint=interlaced,fps=15,scale='\''min(480,iw)'\'':-1:flags=lanczos,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle[v]' -map '[v]' -c:v gif -map_metadata 0 -map_chapters 0 -loop 0 -f gif file:/out/interlaced.gif
+== interlaced.ts → webp-anim
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libwebp_anim (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -vf 'fps=20,scale='\''min(640,iw)'\'':-2:flags=lanczos,bwdif=mode=send_frame:parity=auto:deint=interlaced,format=yuv420p' -map 0:0 -c:v libwebp_anim -quality 80 -map_metadata 0 -map_chapters 0 -loop 0 -f webp file:/out/interlaced.webp
+== interlaced.ts → mp3
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== interlaced.ts → m4a
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== interlaced.ts → opus
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== interlaced.ts → flac
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== interlaced.ts → wav
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== interlaced.ts → alac
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== interlaced.ts → extract-audio
+  ERROR: invalid settings: the file has no audio
+== interlaced.ts → remux
+  [1] CPU | Video: copy (instant, lossless)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/interlaced.ts -map 0:0 -c:v copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/interlaced.mkv
+== vfr.mp4 → mp4-compatible
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -vf format=yuv420p -map 0:0 -c:v libx264 -crf 23 -preset medium -profile:v high -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/vfr.mp4
+== vfr.mp4 → mp4-small
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -vf format=yuv420p -map 0:0 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -x265-params log-level=error -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/vfr.mp4
+== vfr.mp4 → mkv-archive
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -vf format=yuv420p10le -map 0:0 -c:v libx265 -crf 21 -preset slow -x265-params log-level=error -map_metadata 0 -map_chapters 0 -f matroska file:/out/vfr.mkv
+== vfr.mp4 → av1-smallest
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: SVT-AV1 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -vf format=yuv420p -map 0:0 -c:v libsvtav1 -crf 32 -preset 5 -map_metadata 0 -map_chapters 0 -f matroska file:/out/vfr.mkv
+== vfr.mp4 → apple
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -vf format=yuv420p -map 0:0 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -x265-params log-level=error -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/vfr.mp4
+== vfr.mp4 → webm
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libvpx VP9 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -vf format=yuv420p -map 0:0 -c:v libvpx-vp9 -crf 32 -b:v 0 -cpu-used 3 -row-mt 1 -deadline good -map_metadata 0 -map_chapters 0 -f webm file:/out/vfr.webm
+== vfr.mp4 → target-size
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -y -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -vf format=yuv420p -map 0:0 -c:v libx264 -b:v 456k -preset medium -pass 1 -passlogfile /tmp/work/passlog -an -sn -dn -f null -
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -vf format=yuv420p -map 0:0 -c:v libx264 -b:v 456k -preset medium -pass 2 -passlogfile /tmp/work/passlog -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/vfr.mp4
+== vfr.mp4 → prores
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: ProRes (prores_ks) (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -vf format=yuv422p10le -map 0:0 -c:v prores_ks -profile:v 3 -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/vfr.mov
+== vfr.mp4 → dnxhr
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: dnxhd (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -vf format=yuv422p -map 0:0 -c:v dnxhd -profile:v dnxhr_hq -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/vfr.mov
+== vfr.mp4 → gif
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: gif (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -filter_complex '[0:0]fps=15,scale='\''min(480,iw)'\'':-1:flags=lanczos,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle[v]' -map '[v]' -c:v gif -map_metadata 0 -map_chapters 0 -loop 0 -f gif file:/out/vfr.gif
+== vfr.mp4 → webp-anim
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libwebp_anim (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -vf 'fps=20,scale='\''min(640,iw)'\'':-2:flags=lanczos,format=yuv420p' -map 0:0 -c:v libwebp_anim -quality 80 -map_metadata 0 -map_chapters 0 -loop 0 -f webp file:/out/vfr.webp
+== vfr.mp4 → mp3
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== vfr.mp4 → m4a
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== vfr.mp4 → opus
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== vfr.mp4 → flac
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== vfr.mp4 → wav
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== vfr.mp4 → alac
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== vfr.mp4 → extract-audio
+  ERROR: invalid settings: the file has no audio
+== vfr.mp4 → remux
+  [1] CPU | Video: copy (instant, lossless)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/vfr.mp4 -map 0:0 -c:v copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/vfr.mkv
+== odd-dims.mkv → mp4-compatible
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -vf format=yuv420p -map 0:0 -map 0:1 -c:v libx264 -crf 23 -preset medium -profile:v high -c:a:0 aac -b:a:0 96k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/odd-dims.mp4
+== odd-dims.mkv → mp4-small
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -vf format=yuv420p -map 0:0 -map 0:1 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -x265-params log-level=error -c:a:0 aac -b:a:0 80k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/odd-dims.mp4
+== odd-dims.mkv → mkv-archive
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -c:v libx265 -crf 21 -preset slow -x265-params log-level=error -c:a:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/odd-dims.mkv
+== odd-dims.mkv → av1-smallest
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: SVT-AV1 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -vf format=yuv420p -map 0:0 -map 0:1 -c:v libsvtav1 -crf 32 -preset 5 -c:a:0 libopus -b:a:0 64k -map_metadata 0 -map_chapters 0 -f matroska file:/out/odd-dims.mkv
+== odd-dims.mkv → apple
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -vf format=yuv420p -map 0:0 -map 0:1 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -x265-params log-level=error -c:a:0 aac -b:a:0 96k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/odd-dims.mp4
+== odd-dims.mkv → webm
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libvpx VP9 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -vf format=yuv420p -map 0:0 -map 0:1 -c:v libvpx-vp9 -crf 32 -b:v 0 -cpu-used 3 -row-mt 1 -deadline good -c:a:0 libopus -b:a:0 64k -map_metadata 0 -map_chapters 0 -f webm file:/out/odd-dims.webm
+== odd-dims.mkv → target-size
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -y -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -vf format=yuv420p -map 0:0 -c:v libx264 -b:v 4299k -preset medium -pass 1 -passlogfile /tmp/work/passlog -an -sn -dn -f null -
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -vf format=yuv420p -map 0:0 -map 0:1 -c:v libx264 -b:v 4299k -preset medium -pass 2 -passlogfile /tmp/work/passlog -c:a:0 aac -b:a:0 48k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/odd-dims.mp4
+== odd-dims.mkv → prores
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: ProRes (prores_ks) (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -vf format=yuv422p10le -map 0:0 -map 0:1 -c:v prores_ks -profile:v 3 -c:a:0 pcm_s24le -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/odd-dims.mov
+== odd-dims.mkv → dnxhr
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: dnxhd (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -vf format=yuv422p -map 0:0 -map 0:1 -c:v dnxhd -profile:v dnxhr_hq -c:a:0 pcm_s16le -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/odd-dims.mov
+== odd-dims.mkv → gif
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: gif (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -filter_complex '[0:0]fps=15,scale='\''min(480,iw)'\'':-1:flags=lanczos,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle[v]' -map '[v]' -c:v gif -map_metadata 0 -map_chapters 0 -loop 0 -f gif file:/out/odd-dims.gif
+== odd-dims.mkv → webp-anim
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libwebp_anim (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -vf 'fps=20,scale='\''min(640,iw)'\'':-2:flags=lanczos,format=yuv420p' -map 0:0 -c:v libwebp_anim -quality 80 -map_metadata 0 -map_chapters 0 -loop 0 -f webp file:/out/odd-dims.webp
+== odd-dims.mkv → mp3
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -map 0:1 -c:a:0 libmp3lame -q:a:0 2 -map_metadata 0 -map_chapters 0 -id3v2_version 3 -f mp3 file:/out/odd-dims.mp3
+== odd-dims.mkv → m4a
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -map 0:1 -c:a:0 aac -b:a:0 128k -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/odd-dims.m4a
+== odd-dims.mkv → opus
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -map 0:1 -c:a:0 libopus -b:a:0 64k -map_metadata 0 -map_chapters 0 -f opus file:/out/odd-dims.opus
+== odd-dims.mkv → flac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -map 0:1 -c:a:0 flac -map_metadata 0 -map_chapters 0 -f flac file:/out/odd-dims.flac
+== odd-dims.mkv → wav
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -map 0:1 -c:a:0 pcm_s16le -map_metadata 0 -map_chapters 0 -f wav file:/out/odd-dims.wav
+== odd-dims.mkv → alac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -map 0:1 -c:a:0 alac -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/odd-dims.m4a
+== odd-dims.mkv → extract-audio
+  [1] CPU | Copy streams (no re-encode)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -map 0:1 -c:a:0 copy -map_metadata 0 -map_chapters 0 -f opus file:/out/odd-dims.opus
+== odd-dims.mkv → remux
+  [1] CPU | Video: copy (instant, lossless)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/odd-dims.mkv -map 0:0 -map 0:1 -c:v copy -c:a:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/odd-dims.mkv
+== pgs-subs.mkv → mp4-compatible
+  note: 1 subtitle track(s) can't be stored in MP4 and will be left out (use burn-in or MKV to keep them)
+  note: H.264 / AVC in MP4 can't keep HDR; tone mapping to SDR
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p -map 0:0 -map 0:1 -c:v libx264 -crf 23 -preset medium -profile:v high -color_primaries bt709 -color_trc bt709 -colorspace bt709 -c:a:0 aac -b:a:0 384k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/pgs-subs.mp4
+== pgs-subs.mkv → mp4-small
+  note: 1 subtitle track(s) can't be stored in MP4 and will be left out (use burn-in or MKV to keep them)
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -x265-params log-level=error:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:hdr10=1:repeat-headers=1 -c:a:0 aac -b:a:0 320k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/pgs-subs.mp4
+== pgs-subs.mkv → mkv-archive
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -c:v libx265 -crf 21 -preset slow -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -x265-params log-level=error:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:hdr10=1:repeat-headers=1 -c:a:0 copy -c:s:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/pgs-subs.mkv
+== pgs-subs.mkv → av1-smallest
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: SVT-AV1 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -map 0:2 -c:v libsvtav1 -crf 32 -preset 5 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -c:a:0 libopus -b:a:0 256k -filter:a:0 'aformat=channel_layouts=7.1|5.1|5.0|quad|3.0|stereo|mono' -c:s:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/pgs-subs.mkv
+== pgs-subs.mkv → apple
+  note: 1 subtitle track(s) can't be stored in MP4 and will be left out (use burn-in or MKV to keep them)
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x265 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -c:v libx265 -crf 26 -preset medium -tag:v hvc1 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -x265-params log-level=error:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:hdr10=1:repeat-headers=1 -c:a:0 aac -b:a:0 384k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/pgs-subs.mp4
+== pgs-subs.mkv → webm
+  note: 1 subtitle track(s) can't be stored in WebM and will be left out (use burn-in or MKV to keep them)
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libvpx VP9 (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -vf format=yuv420p10le -map 0:0 -map 0:1 -c:v libvpx-vp9 -crf 32 -b:v 0 -cpu-used 3 -row-mt 1 -deadline good -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -c:a:0 libopus -b:a:0 256k -filter:a:0 'aformat=channel_layouts=7.1|5.1|5.0|quad|3.0|stereo|mono' -map_metadata 0 -map_chapters 0 -f webm file:/out/pgs-subs.webm
+== pgs-subs.mkv → target-size
+  note: H.264 / AVC in MP4 can't keep HDR; tone mapping to SDR
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: x264 (CPU)
+      ffmpeg -hide_banner -y -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p -map 0:0 -c:v libx264 -b:v 9317k -preset medium -color_primaries bt709 -color_trc bt709 -colorspace bt709 -pass 1 -passlogfile /tmp/work/passlog -an -sn -dn -f null -
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p -map 0:0 -map 0:1 -c:v libx264 -b:v 9317k -preset medium -color_primaries bt709 -color_trc bt709 -colorspace bt709 -pass 2 -passlogfile /tmp/work/passlog -c:a:0 aac -b:a:0 96k -ac:a:0 2 -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/pgs-subs.mp4
+== pgs-subs.mkv → prores
+  note: 1 subtitle track(s) can't be stored in QuickTime (MOV) and will be left out (use burn-in or MKV to keep them)
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: ProRes (prores_ks) (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -vf format=yuv422p10le -map 0:0 -map 0:1 -c:v prores_ks -profile:v 3 -color_primaries bt2020 -color_trc smpte2084 -colorspace bt2020nc -color_range tv -c:a:0 pcm_s24le -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/pgs-subs.mov
+== pgs-subs.mkv → dnxhr
+  note: 1 subtitle track(s) can't be stored in QuickTime (MOV) and will be left out (use burn-in or MKV to keep them)
+  note: Avid DNxHD / DNxHR in QuickTime (MOV) can't keep HDR; tone mapping to SDR
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: dnxhd (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv422p -map 0:0 -map 0:1 -c:v dnxhd -profile:v dnxhr_hq -color_primaries bt709 -color_trc bt709 -colorspace bt709 -c:a:0 pcm_s16le -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/pgs-subs.mov
+== pgs-subs.mkv → gif
+  note: GIF in GIF can't keep HDR; tone mapping to SDR
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: gif (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -filter_complex '[0:0]zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,fps=15,scale='\''min(480,iw)'\'':-1:flags=lanczos,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle[v]' -map '[v]' -c:v gif -color_primaries bt709 -color_trc bt709 -colorspace bt709 -map_metadata 0 -map_chapters 0 -loop 0 -f gif file:/out/pgs-subs.gif
+== pgs-subs.mkv → webp-anim
+  note: WebP in Animated WebP can't keep HDR; tone mapping to SDR
+  [1] CPU | Decode: CPU · Filters: CPU · Encode: libwebp_anim (CPU)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -vf 'fps=20,scale='\''min(640,iw)'\'':-2:flags=lanczos,zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p' -map 0:0 -c:v libwebp_anim -quality 80 -color_primaries bt709 -color_trc bt709 -colorspace bt709 -map_metadata 0 -map_chapters 0 -loop 0 -f webp file:/out/pgs-subs.webp
+== pgs-subs.mkv → mp3
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -map 0:1 -c:a:0 libmp3lame -q:a:0 2 -map_metadata 0 -map_chapters 0 -id3v2_version 3 -f mp3 file:/out/pgs-subs.mp3
+== pgs-subs.mkv → m4a
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -map 0:1 -c:a:0 aac -b:a:0 512k -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/pgs-subs.m4a
+== pgs-subs.mkv → opus
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -map 0:1 -c:a:0 libopus -b:a:0 256k -filter:a:0 'aformat=channel_layouts=7.1|5.1|5.0|quad|3.0|stereo|mono' -map_metadata 0 -map_chapters 0 -f opus file:/out/pgs-subs.opus
+== pgs-subs.mkv → flac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -map 0:1 -c:a:0 flac -map_metadata 0 -map_chapters 0 -f flac file:/out/pgs-subs.flac
+== pgs-subs.mkv → wav
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -map 0:1 -c:a:0 pcm_s16le -map_metadata 0 -map_chapters 0 -f wav file:/out/pgs-subs.wav
+== pgs-subs.mkv → alac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -map 0:1 -c:a:0 alac -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/pgs-subs.m4a
+== pgs-subs.mkv → extract-audio
+  [1] CPU | Copy streams (no re-encode)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -map 0:1 -c:a:0 copy -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/pgs-subs.m4a
+== pgs-subs.mkv → remux
+  [1] CPU | Video: copy (instant, lossless)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/pgs-subs.mkv -map 0:0 -map 0:1 -map 0:2 -c:v copy -c:a:0 copy -c:s:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/pgs-subs.mkv
+== audio.flac → mp4-compatible
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 aac -b:a:0 96k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/audio.mp4
+== audio.flac → mp4-small
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 aac -b:a:0 80k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/audio.mp4
+== audio.flac → mkv-archive
+  [1] CPU | Copy streams (no re-encode)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/audio.mkv
+== audio.flac → av1-smallest
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 libopus -b:a:0 64k -map_metadata 0 -map_chapters 0 -f matroska file:/out/audio.mkv
+== audio.flac → apple
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 aac -b:a:0 96k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/audio.mp4
+== audio.flac → webm
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 libopus -b:a:0 64k -map_metadata 0 -map_chapters 0 -f webm file:/out/audio.webm
+== audio.flac → target-size
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 aac -b:a:0 48k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/audio.mp4
+== audio.flac → prores
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 pcm_s24le -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/audio.mov
+== audio.flac → dnxhr
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 pcm_s16le -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/audio.mov
+== audio.flac → gif
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== audio.flac → webp-anim
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== audio.flac → mp3
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 libmp3lame -q:a:0 2 -map_metadata 0 -map_chapters 0 -id3v2_version 3 -f mp3 file:/out/audio.mp3
+== audio.flac → m4a
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 aac -b:a:0 128k -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/audio.m4a
+== audio.flac → opus
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 libopus -b:a:0 64k -map_metadata 0 -map_chapters 0 -f opus file:/out/audio.opus
+== audio.flac → flac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 flac -map_metadata 0 -map_chapters 0 -f flac file:/out/audio.flac
+== audio.flac → wav
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 pcm_s16le -map_metadata 0 -map_chapters 0 -f wav file:/out/audio.wav
+== audio.flac → alac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 alac -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/audio.m4a
+== audio.flac → extract-audio
+  [1] CPU | Copy streams (no re-encode)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 copy -map_metadata 0 -map_chapters 0 -f flac file:/out/audio.flac
+== audio.flac → remux
+  [1] CPU | Copy streams (no re-encode)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/audio.flac -map 0:0 -c:a:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/audio.mkv
+== cover.mp3 → mp4-compatible
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:0 -c:a:0 aac -b:a:0 96k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/cover.mp4
+== cover.mp3 → mp4-small
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:0 -c:a:0 aac -b:a:0 80k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/cover.mp4
+== cover.mp3 → mkv-archive
+  [1] CPU | Copy streams (no re-encode)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:0 -c:a:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/cover.mkv
+== cover.mp3 → av1-smallest
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:0 -c:a:0 libopus -b:a:0 64k -map_metadata 0 -map_chapters 0 -f matroska file:/out/cover.mkv
+== cover.mp3 → apple
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:0 -c:a:0 aac -b:a:0 96k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/cover.mp4
+== cover.mp3 → webm
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:0 -c:a:0 libopus -b:a:0 64k -map_metadata 0 -map_chapters 0 -f webm file:/out/cover.webm
+== cover.mp3 → target-size
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:0 -c:a:0 aac -b:a:0 48k -map_metadata 0 -map_chapters 0 -movflags +faststart -f mp4 file:/out/cover.mp4
+== cover.mp3 → prores
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:0 -c:a:0 pcm_s24le -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/cover.mov
+== cover.mp3 → dnxhr
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:0 -c:a:0 pcm_s16le -map_metadata 0 -map_chapters 0 -movflags +faststart -f mov file:/out/cover.mov
+== cover.mp3 → gif
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== cover.mp3 → webp-anim
+  ERROR: invalid settings: nothing to convert: no streams would be written
+== cover.mp3 → mp3
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:1 -map 0:0 -c:v:0 copy -disposition:v:0 attached_pic -c:a:0 libmp3lame -q:a:0 2 -map_metadata 0 -map_chapters 0 -id3v2_version 3 -f mp3 file:/out/cover.mp3
+== cover.mp3 → m4a
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:1 -map 0:0 -c:v:0 copy -disposition:v:0 attached_pic -c:a:0 aac -b:a:0 128k -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/cover.m4a
+== cover.mp3 → opus
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:0 -c:a:0 libopus -b:a:0 64k -map_metadata 0 -map_chapters 0 -f opus file:/out/cover.opus
+== cover.mp3 → flac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:1 -map 0:0 -c:v:0 copy -disposition:v:0 attached_pic -c:a:0 flac -map_metadata 0 -map_chapters 0 -f flac file:/out/cover.flac
+== cover.mp3 → wav
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:0 -c:a:0 pcm_s16le -map_metadata 0 -map_chapters 0 -f wav file:/out/cover.wav
+== cover.mp3 → alac
+  [1] CPU | Audio: CPU
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:1 -map 0:0 -c:v:0 copy -disposition:v:0 attached_pic -c:a:0 alac -map_metadata 0 -map_chapters 0 -movflags +faststart -f ipod file:/out/cover.m4a
+== cover.mp3 → extract-audio
+  [1] CPU | Copy streams (no re-encode)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:1 -map 0:0 -c:v:0 copy -disposition:v:0 attached_pic -c:a:0 copy -map_metadata 0 -map_chapters 0 -id3v2_version 3 -f mp3 file:/out/cover.mp3
+== cover.mp3 → remux
+  [1] CPU | Copy streams (no re-encode)
+      ffmpeg -hide_banner -n -progress pipe:1 -stats_period 0.5 -nostats -i file:/media/cover.mp3 -map 0:0 -c:a:0 copy -map_metadata 0 -map_chapters 0 -f matroska file:/out/cover.mkv

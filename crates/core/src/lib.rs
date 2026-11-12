@@ -9,12 +9,20 @@
 
 pub mod branding;
 pub mod catalog;
+pub mod command;
+pub mod engine;
 pub mod error;
 pub mod ffmpeg;
 pub mod hw;
+pub mod job;
 pub mod media;
+pub mod naming;
 pub mod paths;
+pub mod plan;
+pub mod preset;
 pub mod process;
+pub mod progress;
 pub mod quality;
+pub mod settings;
 
 pub use error::{Error, Result};

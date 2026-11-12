@@ -78,3 +78,23 @@ On Linux the QSV child device defaults to VAAPI with `vendor_id=0x8086,driver=iH
 
 - `*_v4l2m2m`: only `num_capture_buffers`, `qmin`, `qmax` + global `-b:v`. Bitrate-only RC.
 - `*_rkmpp` encoders exist only in forks (e.g. nyanmisaka/ffmpeg-rockchip); treated generically.
+
+## HDR static metadata (mastering display / content light) passthrough
+
+Whether the encoder copies `AV_FRAME_DATA_MASTERING_DISPLAY_METADATA` /
+`CONTENT_LIGHT_LEVEL` frame side data into the bitstream by itself
+(verified by grepping each encoder source for `MASTERING_DISPLAY`):
+
+| Encoder | 6.1 | 7.1 | 8.0 | 9.0 | What Retort does |
+|---|---|---|---|---|---|
+| hevc_vaapi | ✓ | ✓ | ✓ | ✓ | nothing extra |
+| hevc_qsv | ✓ | ✓ | ✓ | ✓ | nothing extra |
+| av1_vaapi, av1_qsv | ✗ | ✓ | ✓ | ✓ | warn on < 7.1 |
+| hevc_vulkan, av1_vulkan | n/a | ✓ | ✓ | ✓ | nothing extra |
+| libx265 | ✗ | ✓ | ✓ | ✓ | always pass `-x265-params hdr10=1:master-display=…:max-cll=…` |
+| libsvtav1 | ✗ | ✓ | ✓ | ✓ | always pass `-svtav1-params mastering-display=…:content-light=…` |
+| hevc_nvenc, av1_nvenc | ✗ | ✗ | ✓ | ✓ | warn on < 8.0 (colour tags still written) |
+| libaom-av1 | ✗ | ✗ | ✗ | ✗ | warn (colour tags only) |
+
+Colour signalling (`-color_primaries/-color_trc/-colorspace/-color_range`)
+is always set explicitly when HDR is preserved.
