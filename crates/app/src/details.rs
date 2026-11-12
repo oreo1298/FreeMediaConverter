@@ -303,6 +303,15 @@ pub fn show(ui: &Ui, id: u64) {
         label.set_hexpand(true);
         b.set_margin_top(6);
         g.add(&b);
+        let note = gtk::Label::new(Some(&gettext(
+            "While converting, the output is written to a hidden temporary file and renamed when FFmpeg succeeds; the log shows that exact command.",
+        )));
+        note.add_css_class("dim-label");
+        note.add_css_class("caption");
+        note.set_wrap(true);
+        note.set_xalign(0.0);
+        note.set_margin_top(6);
+        g.add(&note);
     }
     if !item.log.is_empty() {
         let exp = adw::ExpanderRow::builder()

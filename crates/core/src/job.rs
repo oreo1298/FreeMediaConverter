@@ -503,10 +503,13 @@ fn run(req: JobRequest, ctl: &Arc<Control>, sink: &Sink) -> JobOutcome {
             }
         };
         let shown = display.display(&req.ff.bins.ffmpeg);
+        // The log records the argv that actually runs (temporary output
+        // name); the copyable command uses the final name.
         logln(&format!(
-            "\n# plan {}: {}\n{shown}\n",
+            "\n# plan {}: {}\n# runs as (renamed to the final name on success):\n{}\n",
             index + 1,
-            plan.summary
+            plan.summary,
+            set.display(&req.ff.bins.ffmpeg)
         ));
         sink(JobEvent::PlanStarted {
             index,
