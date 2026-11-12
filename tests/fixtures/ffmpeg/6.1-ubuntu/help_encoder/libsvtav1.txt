@@ -1,0 +1,20 @@
+Encoder libsvtav1 [SVT-AV1(Scalable Video Technology for AV1) encoder]:
+    General capabilities: delay threads 
+    Threading capabilities: other
+    Supported pixel formats: yuv420p yuv420p10le
+libsvtav1 AVOptions:
+  -hielevel          <int>        E..V......P Hierarchical prediction levels setting (Deprecated, use svtav1-params) (from -1 to 4) (default -1)
+     3level          3            E..V.......
+     4level          4            E..V.......
+  -la_depth          <int>        E..V......P Look ahead distance [0, 120] (Deprecated, use svtav1-params) (from -1 to 120) (default -1)
+  -tier              <int>        E..V......P Set operating point tier (Deprecated, use svtav1-params) (from -1 to 1) (default -1)
+     main            0            E..V.......
+     high            1            E..V.......
+  -preset            <int>        E..V....... Encoding preset (from -2 to 13) (default -2)
+  -crf               <int>        E..V....... Constant Rate Factor value (from 0 to 63) (default 0)
+  -qp                <int>        E..V....... Initial Quantizer level value (from 0 to 63) (default 0)
+  -sc_detection      <boolean>    E..V......P Scene change detection (Deprecated, use svtav1-params) (default auto)
+  -tile_columns      <int>        E..V......P Log2 of number of tile columns to use (Deprecated, use svtav1-params) (from -1 to 4) (default -1)
+  -tile_rows         <int>        E..V......P Log2 of number of tile rows to use (Deprecated, use svtav1-params) (from -1 to 6) (default -1)
+  -svtav1-params     <dictionary> E..V....... Set the SVT-AV1 configuration using a :-separated list of key=value parameters
+

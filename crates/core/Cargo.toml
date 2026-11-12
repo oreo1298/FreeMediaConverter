@@ -1,0 +1,27 @@
+[package]
+name = "retort-core"
+description = "Retort conversion engine: FFmpeg discovery, hardware probing, planning and job running"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+build = "build.rs"
+
+[lib]
+name = "retort_core"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+log.workspace = true
+regex.workspace = true
+sha2.workspace = true
+hex.workspace = true
+libc.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
+tempfile.workspace = true

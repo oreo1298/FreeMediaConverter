@@ -1,0 +1,33 @@
+[package]
+name = "retort"
+description = "Retort GTK application"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "retort"
+path = "src/main.rs"
+
+[features]
+default = []
+# Enabled by meson when the installed libadwaita is new enough.
+adw_1_6 = ["adw/v1_6"]
+adw_1_7 = ["adw_1_6", "adw/v1_7"]
+adw_1_8 = ["adw_1_7", "adw/v1_8"]
+# Opt-in update notifier, only for AppImage / tarball builds.
+update-check = []
+
+[dependencies]
+retort-core.workspace = true
+gtk.workspace = true
+adw.workspace = true
+gettext-rs.workspace = true
+async-channel.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+log.workspace = true
+anyhow.workspace = true

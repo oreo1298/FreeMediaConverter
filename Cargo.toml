@@ -1,0 +1,42 @@
+[workspace]
+resolver = "2"
+members = ["crates/core", "crates/cli", "crates/app"]
+default-members = ["crates/core", "crates/cli", "crates/app"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.92"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/oreo1298/FreeMediaConverter"
+authors = ["Retort contributors"]
+
+[workspace.dependencies]
+retort-core = { path = "crates/core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+anyhow = "1"
+log = "0.4"
+regex = "1"
+sha2 = "0.10"
+hex = "0.4"
+libc = "0.2"
+clap = { version = "4", features = ["derive"] }
+insta = { version = "1", features = ["yaml", "json"] }
+tempfile = "3"
+gtk = { package = "gtk4", version = "0.11", features = ["v4_14"] }
+adw = { package = "libadwaita", version = "0.9", features = ["v1_5"] }
+gettext-rs = { version = "0.7", features = ["gettext-system"] }
+async-channel = "2"
+
+[profile.release]
+lto = "thin"
+codegen-units = 4
+strip = true
+panic = "unwind"
+
+[profile.dev.package.insta]
+opt-level = 3
+[profile.dev.package.similar]
+opt-level = 3

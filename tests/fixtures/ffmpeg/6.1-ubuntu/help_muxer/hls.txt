@@ -1,0 +1,65 @@
+Muxer hls [Apple HTTP Live Streaming]:
+    Common extensions: m3u8.
+    Default video codec: h264.
+    Default audio codec: aac.
+    Default subtitle codec: webvtt.
+hls muxer AVOptions:
+  -start_number      <int64>      E.......... set first number in the sequence (from 0 to I64_MAX) (default 0)
+  -hls_time          <duration>   E.......... set segment length (default 2)
+  -hls_init_time     <duration>   E.......... set segment length at init list (default 0)
+  -hls_list_size     <int>        E.......... set maximum number of playlist entries (from 0 to INT_MAX) (default 5)
+  -hls_delete_threshold <int>        E.......... set number of unreferenced segments to keep before deleting (from 1 to INT_MAX) (default 1)
+  -hls_vtt_options   <string>     E.......... set hls vtt list of options for the container format used for hls
+  -hls_allow_cache   <int>        E.......... explicitly set whether the client MAY (1) or MUST NOT (0) cache media segments (from INT_MIN to INT_MAX) (default -1)
+  -hls_base_url      <string>     E.......... url to prepend to each playlist entry
+  -hls_segment_filename <string>     E.......... filename template for segment files
+  -hls_segment_options <dictionary> E.......... set segments files format options of hls
+  -hls_segment_size  <int>        E.......... maximum size per segment file, (in bytes) (from 0 to INT_MAX) (default 0)
+  -hls_key_info_file <string>     E.......... file with key URI and key file path
+  -hls_enc           <boolean>    E.......... enable AES128 encryption support (default false)
+  -hls_enc_key       <string>     E.......... hex-coded 16 byte key to encrypt the segments
+  -hls_enc_key_url   <string>     E.......... url to access the key to decrypt the segments
+  -hls_enc_iv        <string>     E.......... hex-coded 16 byte initialization vector
+  -hls_subtitle_path <string>     E.......... set path of hls subtitles
+  -hls_segment_type  <int>        E.......... set hls segment files type (from 0 to 1) (default mpegts)
+     mpegts          0            E.......... make segment file to mpegts files in m3u8
+     fmp4            1            E.......... make segment file to fragment mp4 files in m3u8
+  -hls_fmp4_init_filename <string>     E.......... set fragment mp4 file init filename (default "init.mp4")
+  -hls_fmp4_init_resend <boolean>    E.......... resend fragment mp4 init file after refresh m3u8 every time (default false)
+  -hls_flags         <flags>      E.......... set flags affecting HLS playlist and media file generation (default 0)
+     single_file                  E.......... generate a single media file indexed with byte ranges
+     temp_file                    E.......... write segment and playlist to temporary file and rename when complete
+     delete_segments              E.......... delete segment files that are no longer part of the playlist
+     round_durations              E.......... round durations in m3u8 to whole numbers
+     discont_start                E.......... start the playlist with a discontinuity tag
+     omit_endlist                 E.......... Do not append an endlist when ending stream
+     split_by_time                E.......... split the hls segment by time which user set by hls_time
+     append_list                  E.......... append the new segments into old hls segment list
+     program_date_time              E.......... add EXT-X-PROGRAM-DATE-TIME
+     second_level_segment_index              E.......... include segment index in segment filenames when use_localtime
+     second_level_segment_duration              E.......... include segment duration in segment filenames when use_localtime
+     second_level_segment_size              E.......... include segment size in segment filenames when use_localtime
+     periodic_rekey               E.......... reload keyinfo file periodically for re-keying
+     independent_segments              E.......... add EXT-X-INDEPENDENT-SEGMENTS, whenever applicable
+     iframes_only                 E.......... add EXT-X-I-FRAMES-ONLY, whenever applicable
+  -strftime          <boolean>    E.......... set filename expansion with strftime at segment creation (default false)
+  -strftime_mkdir    <boolean>    E.......... create last directory component in strftime-generated filename (default false)
+  -hls_playlist_type <int>        E.......... set the HLS playlist type (from 0 to 2) (default 0)
+     event           1            E.......... EVENT playlist
+     vod             2            E.......... VOD playlist
+  -method            <string>     E.......... set the HTTP method(default: PUT)
+  -hls_start_number_source <int>        E.......... set source of first number in sequence (from 0 to 3) (default generic)
+     generic         0            E.......... start_number value (default)
+     epoch           1            E.......... seconds since epoch
+     epoch_us        3            E.......... microseconds since epoch
+     datetime        2            E.......... current datetime as YYYYMMDDhhmmss
+  -http_user_agent   <string>     E.......... override User-Agent field in HTTP header
+  -var_stream_map    <string>     E.......... Variant stream map string
+  -cc_stream_map     <string>     E.......... Closed captions stream map string
+  -master_pl_name    <string>     E.......... Create HLS master playlist with this name
+  -master_pl_publish_rate <int>        E.......... Publish master play list every after this many segment intervals (from 0 to UINT32_MAX) (default 0)
+  -http_persistent   <boolean>    E.......... Use persistent HTTP connections (default false)
+  -timeout           <duration>   E.......... set timeout for socket I/O operations (default -0.000001)
+  -ignore_io_errors  <boolean>    E.......... Ignore IO errors for stable long-duration runs with network output (default false)
+  -headers           <string>     E.......... set custom HTTP headers, can override built in default headers
+
