@@ -32,6 +32,10 @@ jobs:
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo clippy -p retort --features update-check -- -D warnings
       - run: scripts/check-no-shell.sh
+      - name: Docs are generated and every command is covered by the doc test
+        run: |
+          python3 scripts/gen-install.py --check
+          python3 scripts/doc_test.py --list > /dev/null
 
   deny:
     name: cargo-deny

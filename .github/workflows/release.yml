@@ -148,10 +148,35 @@ jobs:
           cache-key: flatpak-${{ matrix.arch }}-${{ hashFiles('packaging/flatpak/*.json') }}
           upload-artifact: true
 
+  docs:
+    name: documentation test (every documented command)
+    needs: [deb, rpm, tarball, appimage]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: artifacts }
+      - name: Arrange artifacts as dist/
+        run: |
+          mkdir -p dist/deb dist/rpm
+          for d in artifacts/deb-*; do cp -r "$d"/. dist/deb/; done
+          for d in artifacts/rpm-*; do cp -r "$d"/. dist/rpm/; done
+          find artifacts -name '*-linux.tar.xz' -exec cp {} dist/ \;
+          find artifacts -name '*.AppImage' -exec cp {} dist/ \;
+      - name: Run every documented command (the Flatpak section runs in the Flatpak job)
+        run: |
+          sections=$(python3 -c "import tomllib; print(' '.join(s['id'] for s in tomllib.load(open('docs/install/install.toml','rb'))['section'] if s['id'] != 'flatpak'))")
+          scripts/test-docs.sh $sections install cli dev
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: doc-test-logs
+          path: dist/doc-test
+
   publish:
     name: GitHub release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [deb, rpm, arch, tarball, appimage, flatpak]
+    needs: [deb, rpm, arch, tarball, appimage, flatpak, docs]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
