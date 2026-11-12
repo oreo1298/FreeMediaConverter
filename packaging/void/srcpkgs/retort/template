@@ -1,0 +1,22 @@
+# Template file for 'retort'
+pkgname=retort
+version=0.1.0
+revision=1
+build_style=meson
+configure_args="-Doffline=true"
+hostmakedepends="pkg-config cargo glib-devel gettext desktop-file-utils AppStream python3"
+makedepends="gtk4-devel libadwaita-devel"
+depends="ffmpeg"
+checkdepends="desktop-file-utils AppStream"
+short_desc="Convert video and audio files with FFmpeg, using verified hardware acceleration"
+maintainer="Retort contributors <noreply@users.noreply.github.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/oreo1298/FreeMediaConverter"
+distfiles="https://github.com/oreo1298/FreeMediaConverter/releases/download/v${version}/${pkgname}-${version}.tar.xz
+ https://github.com/oreo1298/FreeMediaConverter/releases/download/v${version}/${pkgname}-${version}-vendor.tar.xz"
+checksum="@SHA256_SRC@
+ @SHA256_VENDOR@"
+
+post_install() {
+	vlicense LICENSE
+}
