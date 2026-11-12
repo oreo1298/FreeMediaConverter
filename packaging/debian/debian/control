@@ -1,0 +1,43 @@
+Source: retort
+Section: video
+Priority: optional
+Maintainer: Retort contributors <noreply@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13),
+               meson (>= 0.62),
+               ninja-build,
+               pkg-config,
+               python3,
+               gettext,
+               appstream,
+               desktop-file-utils,
+               libglib2.0-dev-bin,
+               libgtk-4-dev (>= 4.14),
+               libadwaita-1-dev (>= 1.5)
+Standards-Version: 4.7.0
+Homepage: https://github.com/oreo1298/FreeMediaConverter
+Vcs-Browser: https://github.com/oreo1298/FreeMediaConverter
+Rules-Requires-Root: no
+X-Rust-Note: built with a rustup toolchain (MSRV 1.92) and vendored crates; see packaging/debian/build.sh
+
+Package: retort
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ffmpeg
+Recommends: retort-cli
+Suggests: vainfo, vulkan-tools
+Description: Convert video and audio files with FFmpeg
+ Retort converts any audio or video file into any format FFmpeg can write,
+ with simple presets ("MP4 that plays everywhere", "Fit under 10 MB", …) and
+ an advanced mode that exposes almost every FFmpeg option.
+ .
+ Hardware acceleration (NVENC, VA-API, Quick Sync, Vulkan, AMF, V4L2) is used
+ only where a real test encode proved it works on this computer, with an
+ automatic fallback to software.
+
+Package: retort-cli
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ffmpeg
+Description: Convert video and audio files with FFmpeg (command line)
+ retort-cli is the headless companion of Retort: system check, hardware
+ probing, format listing and batch conversion with the same presets and the
+ same verified hardware acceleration. It has no GTK dependency, so it suits
+ servers.

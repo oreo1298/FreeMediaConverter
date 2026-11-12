@@ -1,0 +1,28 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Cargo must be on PATH (rustup toolchain >= 1.92); crates are vendored
+# (.cargo/config.toml from the -vendor tarball), so the build is offline.
+export DH_VERBOSE = 1
+export CARGO_HOME = $(CURDIR)/debian/cargo-home
+
+%:
+	dh $@ --buildsystem=meson
+
+override_dh_auto_configure:
+	dh_auto_configure -- -Doffline=true --buildtype=release
+
+override_dh_auto_test:
+	# meson test validates the desktop file, AppStream metadata and schema.
+	dh_auto_test
+
+override_dh_dwz:
+	# Rust debug info is not dwz-friendly.
+
+override_dh_install:
+	dh_install
+	# Translations exist only once po/LINGUAS lists languages.
+	if [ -d debian/tmp/usr/share/locale ]; then dh_install -pretort usr/share/locale; fi
+
+override_dh_clean:
+	# Vendored crates contain Cargo.toml.orig files covered by their checksums.
+	dh_clean -Xvendor/
