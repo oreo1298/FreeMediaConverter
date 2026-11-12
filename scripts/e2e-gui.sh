@@ -40,4 +40,22 @@ if [ ${#leftovers[@]} -gt 0 ]; then
   echo "e2e: temporary files left behind: ${leftovers[*]}" >&2
   exit 1
 fi
+# Advanced mode through its widgets: rotate 90°, trim to 1.5 s, mono audio.
+adv="$work/adv"
+mkdir -p "$adv"
+cp "$media/clip one.mkv" "$adv/clip.mkv"
+# Fresh profile: the first run's queue must not be restored here.
+mkdir -p "$work/home2"
+export HOME="$work/home2" XDG_CONFIG_HOME="$work/home2/.config" XDG_DATA_HOME="$work/home2/.local/share" \
+  XDG_CACHE_HOME="$work/home2/.cache"
+status=0
+RETORT_E2E_ADVANCED=1 xvfb-run -a dbus-run-session -- "$bin" "$adv/clip.mkv" || status=$?
+[ "$status" -eq 0 ] || { echo "e2e: advanced run exited with $status" >&2; exit 1; }
+dims=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 "file:$adv/clip.mp4")
+chans=$(ffprobe -v error -select_streams a:0 -show_entries stream=channels -of csv=p=0 "file:$adv/clip.mp4")
+dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "file:$adv/clip.mp4")
+echo "e2e: advanced output ${dims} channels=${chans} duration=${dur}"
+[ "$dims" = "360,640" ] || { echo "e2e: expected 360x640 after rotation, got $dims" >&2; exit 1; }
+[ "$chans" = "1" ] || { echo "e2e: expected mono, got $chans channels" >&2; exit 1; }
+awk -v d="$dur" 'BEGIN { exit !(d > 1.2 && d < 1.9) }' || { echo "e2e: expected ~1.5 s, got $dur" >&2; exit 1; }
 echo "e2e: ok"

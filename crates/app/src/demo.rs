@@ -349,10 +349,28 @@ pub fn run(ui: Ui, dir: PathBuf) {
         steps.push(Box::new(|d: &Demo| d.shot("system-check")));
         steps.push(Box::new(|d: &Demo| {
             d.close_dialog();
+            if let Some(row) = d.ui.list.row_at_index(0) {
+                d.ui.list.unselect_all();
+                d.ui.list.select_row(Some(&row));
+            }
             d.ui.sidebar.mode_advanced.set_active(true);
         }));
         steps.push(Box::new(|d: &Demo| d.shot("advanced")));
         steps.push(Box::new(|d: &Demo| {
+            if let Ok(sw) =
+                d.ui.sidebar
+                    .advanced
+                    .root
+                    .clone()
+                    .downcast::<gtk::ScrolledWindow>()
+            {
+                let adj = sw.vadjustment();
+                adj.set_value(adj.upper() * 0.52);
+            }
+        }));
+        steps.push(Box::new(|d: &Demo| d.shot("advanced-audio")));
+        steps.push(Box::new(|d: &Demo| {
+            d.ui.list.unselect_all();
             d.ui.sidebar.mode_simple.set_active(true);
             d.ui.window.set_default_size(380, 780);
         }));
@@ -413,6 +431,13 @@ pub fn e2e(ui: Ui) {
                     .all(|i| !matches!(i.status, Status::Analyzing) && !i.preparing);
             drop(st);
             if ready {
+                if std::env::var_os("RETORT_E2E_ADVANCED").is_some() {
+                    crate::advanced::e2e_apply(&ui);
+                    // Let the re-plan finish before converting.
+                    if ui.state.borrow().items.iter().any(|i| i.preparing) {
+                        return glib::ControlFlow::Continue;
+                    }
+                }
                 eprintln!("E2E: starting conversion");
                 started.set(true);
                 gtk::prelude::WidgetExt::activate_action(&ui.window, "win.convert", None).ok();
