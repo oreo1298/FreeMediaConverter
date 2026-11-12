@@ -16,3 +16,4 @@ crates/core/src/catalog/formats.rs
 crates/core/src/preset.rs
 crates/app/src/preview.rs
 crates/app/src/advanced.rs
+crates/app/src/updates.rs

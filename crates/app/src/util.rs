@@ -25,19 +25,34 @@ pub fn spawn_worker<T: Send + 'static>(
 
 /// The app's GSettings. Uses the installed schema, else the one build.rs
 /// compiled (uninstalled runs). `memory` keeps changes in memory (screenshots).
+/// `<prefix>/share` for the running executable (`<prefix>/bin/<exe>`).
+pub fn exe_share_dir() -> Option<std::path::PathBuf> {
+    let exe = std::env::current_exe().ok()?;
+    let share = exe.parent()?.parent()?.join("share");
+    share.is_dir().then_some(share)
+}
+
 pub fn settings(memory: bool) -> gio::Settings {
     let default = gio::SettingsSchemaSource::default();
     let schema = default
         .as_ref()
         .and_then(|s| s.lookup(APP_ID, true))
         .or_else(|| {
-            gio::SettingsSchemaSource::from_directory(
-                env!("RETORT_DEV_SCHEMA_DIR"),
-                default.as_ref(),
-                false,
-            )
-            .ok()
-            .and_then(|s| s.lookup(APP_ID, false))
+            // Relocatable installs (portable tarball, AppImage) ship a compiled
+            // schema next to the binary; uninstalled builds use the one
+            // build.rs compiled.
+            let mut dirs = Vec::new();
+            if let Some(share) = exe_share_dir() {
+                dirs.push(share.join("glib-2.0/schemas"));
+            }
+            dirs.push(std::path::PathBuf::from(env!("RETORT_DEV_SCHEMA_DIR")));
+            dirs.into_iter()
+                .filter(|d| d.join("gschemas.compiled").is_file())
+                .find_map(|d| {
+                    gio::SettingsSchemaSource::from_directory(&d, default.as_ref(), false)
+                        .ok()
+                        .and_then(|s| s.lookup(APP_ID, false))
+                })
         })
         .expect("GSettings schema not found (install the app or build with cargo)");
     if memory {

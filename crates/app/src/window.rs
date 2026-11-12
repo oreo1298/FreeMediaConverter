@@ -157,6 +157,8 @@ pub fn present(app: &adw::Application, files: Vec<PathBuf>, demo: bool) -> Ui {
     if !demo {
         start_engine(&ui);
         restore_queue(&ui);
+        #[cfg(feature = "update-check")]
+        crate::updates::maybe_check(&ui);
     }
     add_files(&ui, files);
     ui

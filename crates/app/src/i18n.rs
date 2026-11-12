@@ -3,6 +3,24 @@
 
 pub use gettextrs::{gettext, ngettext};
 
+/// Where translations live: the build-time path, or `../share/locale` next
+/// to the executable for relocatable installs (portable tarball, AppImage).
+fn locale_dir() -> std::path::PathBuf {
+    let built = std::path::PathBuf::from(env!("RETORT_LOCALEDIR"));
+    if built.is_dir() {
+        return built;
+    }
+    std::env::current_exe()
+        .ok()
+        .and_then(|exe| {
+            exe.parent()
+                .and_then(|bin| bin.parent())
+                .map(|p| p.join("share/locale"))
+        })
+        .filter(|p| p.is_dir())
+        .unwrap_or(built)
+}
+
 /// Initialise translations for the app's text domain.
 pub fn init() {
     let domain = retort_core::branding::APP_BIN;
@@ -10,7 +28,7 @@ pub fn init() {
     unsafe {
         gettextrs::setlocale(gettextrs::LocaleCategory::LcAll, "");
     }
-    let _ = gettextrs::bindtextdomain(domain, env!("RETORT_LOCALEDIR"));
+    let _ = gettextrs::bindtextdomain(domain, locale_dir());
     let _ = gettextrs::bind_textdomain_codeset(domain, "UTF-8");
     let _ = gettextrs::textdomain(domain);
 }

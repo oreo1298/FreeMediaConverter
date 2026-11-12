@@ -27,5 +27,6 @@
     <key name="show-all-formats" type="b"><default>false</default><summary>Show exotic formats in the format picker</summary></key>
     <key name="import-extensions" type="s"><default>"mp4,m4v,mkv,mov,avi,webm,mpg,mpeg,ts,m2ts,mts,wmv,flv,3gp,ogv,mxf,vob,dv,mp3,m4a,aac,flac,wav,ogg,oga,opus,wma,aiff,aif,ape,wv,mka,ac3,eac3,dts,amr,gif,webp,apng,avif"</default><summary>File extensions picked up when a folder is added</summary></key>
     <key name="check-updates" type="b"><default>false</default><summary>Check for new versions (AppImage and tarball builds only)</summary></key>
+    <key name="last-update-check" type="x"><default>0</default><summary>Unix time of the last update check</summary></key>
   </schema>
 </schemalist>

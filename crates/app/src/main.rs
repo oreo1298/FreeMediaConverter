@@ -14,6 +14,8 @@ mod preview;
 mod runner;
 mod sidebar;
 mod syscheck;
+#[cfg(feature = "update-check")]
+mod updates;
 mod util;
 mod window;
 mod wrapbox;
@@ -38,6 +40,10 @@ fn load_css() {
         // Uninstalled runs: find the app icon in the build tree.
         let theme = gtk::IconTheme::for_display(&display);
         if !theme.has_icon(APP_ID) {
+            // Relocatable install (icons next to the binary), else the build tree.
+            if let Some(share) = util::exe_share_dir() {
+                theme.add_search_path(share.join("icons"));
+            }
             theme.add_search_path(env!("RETORT_DEV_ICON_DIR"));
         }
     }

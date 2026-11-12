@@ -147,6 +147,21 @@ pub fn show(ui: &Ui) -> adw::PreferencesDialog {
     });
     queue.add(&exts);
     general.add(&queue);
+    #[cfg(feature = "update-check")]
+    {
+        let updates = adw::PreferencesGroup::builder()
+            .title(gettext("Updates"))
+            .build();
+        let check = adw::SwitchRow::builder()
+            .title(gettext("Check for Updates"))
+            .subtitle(gettext(
+                "Once a day, ask GitHub whether a newer release exists. Nothing else is sent.",
+            ))
+            .build();
+        s.bind("check-updates", &check, "active").build();
+        updates.add(&check);
+        general.add(&updates);
+    }
     dialog.add(&general);
 
     // ---- Hardware.
