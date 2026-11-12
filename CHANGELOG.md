@@ -20,6 +20,7 @@ First release.
   mapping to SDR (libplacebo, tonemap_vaapi or zscale).
 - Queue with thumbnails/waveforms, progress, pause/resume, cancel,
   notifications and suspend inhibition; the queue survives restarts.
+  Selected finished files convert again with Convert (into a new file).
 - 10-second preview with size and time estimates; target-size encodes.
 - System Check with distro-specific, copyable fix commands.
 - `retort-cli`: diagnose, probe-hw, list-formats, analyze, presets, convert

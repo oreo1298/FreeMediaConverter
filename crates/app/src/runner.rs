@@ -16,13 +16,17 @@ use crate::window::{refresh, Ui};
 use retort_core::job::{self, JobEvent, JobOutcome};
 use retort_core::naming::{ConflictPolicy, OutputFolder, Resolution};
 
-/// Start converting every convertible item.
+/// Start converting every convertible item, plus the selected finished ones
+/// (converted again; the output naming policy keeps the earlier file).
 pub fn start_batch(ui: &Ui) {
+    let selected = ui.selected_ids();
     let any = {
         let mut st = ui.state.borrow_mut();
         let mut any = false;
         for it in st.items.iter_mut() {
-            if it.status.is_convertible() {
+            if it.status.is_convertible()
+                || (it.status.can_convert_again() && selected.contains(&it.id))
+            {
                 it.status = Status::Queued;
                 it.prepared = None;
                 it.live = Default::default();

@@ -61,6 +61,10 @@ impl Status {
             Status::Ready | Status::Failed { .. } | Status::Cancelled
         )
     }
+    /// Finished, but "Convert" runs it again when it is selected.
+    pub fn can_convert_again(&self) -> bool {
+        matches!(self, Status::Done { .. } | Status::Skipped { .. })
+    }
 }
 
 /// Live progress of a running item.

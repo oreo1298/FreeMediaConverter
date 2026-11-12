@@ -513,10 +513,13 @@ fn wire(ui: &Ui) {
     });
     ui.list.add_controller(keys);
 
-    // Selection → sidebar scope.
+    // Selection → sidebar scope, and what Convert would do (selected
+    // finished files can be converted again).
     let u = ui.clone();
-    ui.list
-        .connect_selected_rows_changed(move |_| crate::sidebar::sync_from_state(&u));
+    ui.list.connect_selected_rows_changed(move |_| {
+        crate::sidebar::sync_from_state(&u);
+        refresh(&u);
+    });
     let u = ui.clone();
     ui.list.connect_row_activated(move |_, row| {
         let id = u
@@ -596,8 +599,15 @@ pub fn refresh(ui: &Ui) {
         .iter()
         .filter(|i| i.status.is_convertible())
         .count();
+    // Finished files that are selected: Convert runs them again.
+    let selected = ui.selected_ids();
+    let again = st
+        .items
+        .iter()
+        .filter(|i| i.status.can_convert_again() && selected.contains(&i.id))
+        .count();
     let active = st.items.iter().filter(|i| i.status.is_active()).count();
-    let can_convert = convertible > 0 && st.engine.is_some() && !st.batch;
+    let can_convert = convertible + again > 0 && st.engine.is_some() && !st.batch;
     if let Some(a) = ui
         .window
         .lookup_action("convert")
@@ -618,7 +628,8 @@ pub fn refresh(ui: &Ui) {
     let finished = st.items.iter().filter(|i| i.status.is_finished()).count();
     // Nothing left to convert: offer to clear the finished files instead.
     let all_finished = !st.batch && convertible == 0 && finished > 0;
-    ui.convert_btn.set_visible(!st.batch && !all_finished);
+    ui.convert_btn
+        .set_visible(!st.batch && (!all_finished || again > 0));
     ui.clear_btn.set_visible(all_finished);
     ui.content_view.set_reveal_bottom_bars(n > 0);
     ui.stop_btn.set_visible(st.batch);

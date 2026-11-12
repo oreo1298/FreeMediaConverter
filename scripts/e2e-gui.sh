@@ -35,7 +35,9 @@ if [ "$status" -ne 0 ]; then
   echo "e2e: app exited with $status" >&2
   exit 1
 fi
-for f in "$media/clip one.mp4" "$media/tone #2.mp4"; do
+# "clip one (1).mp4": the finished file converted again while selected (the
+# first output is kept; default naming policy).
+for f in "$media/clip one.mp4" "$media/tone #2.mp4" "$media/clip one (1).mp4"; do
   ffprobe -v error -show_entries format=format_name,duration -of csv=p=0 "file:$f" \
     || { echo "e2e: missing or unreadable output: $f" >&2; ls -la "$media" >&2; exit 1; }
 done

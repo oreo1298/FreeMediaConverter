@@ -405,24 +405,28 @@ pub static E2E_STATUS: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI
 pub fn e2e(ui: Ui) {
     use crate::window::HwStatus;
     use std::sync::atomic::Ordering;
-    let started = std::cell::Cell::new(false);
+    // 0: waiting to start, 1: first batch, 2: the selected file converted
+    // again (regular run only).
+    let phase = std::cell::Cell::new(0u8);
+    let first_outputs: std::cell::RefCell<Vec<(u64, PathBuf)>> = Default::default();
     let deadline = std::time::Instant::now() + Duration::from_secs(600);
+    let finish = |ui: &Ui, code: i32| {
+        E2E_STATUS.store(code, Ordering::SeqCst);
+        ui.app.quit();
+        glib::ControlFlow::Break
+    };
     glib::timeout_add_local(Duration::from_millis(300), move || {
         if std::time::Instant::now() > deadline {
             eprintln!("E2E: timed out");
-            E2E_STATUS.store(3, Ordering::SeqCst);
-            ui.app.quit();
-            return glib::ControlFlow::Break;
+            return finish(&ui, 3);
         }
         let st = ui.state.borrow();
         if let Some(e) = &st.engine_error {
             eprintln!("E2E: engine error: {e}");
             drop(st);
-            E2E_STATUS.store(4, Ordering::SeqCst);
-            ui.app.quit();
-            return glib::ControlFlow::Break;
+            return finish(&ui, 4);
         }
-        if !started.get() {
+        if phase.get() == 0 {
             let ready = st.engine.is_some()
                 && matches!(st.hw, HwStatus::Ready | HwStatus::Disabled)
                 && !st.items.is_empty()
@@ -440,7 +444,7 @@ pub fn e2e(ui: Ui) {
                     }
                 }
                 eprintln!("E2E: starting conversion");
-                started.set(true);
+                phase.set(1);
                 gtk::prelude::WidgetExt::activate_action(&ui.window, "win.convert", None).ok();
             }
             return glib::ControlFlow::Continue;
@@ -475,9 +479,59 @@ pub fn e2e(ui: Ui) {
                 eprintln!("E2E:   {c}");
             }
         }
+        let outputs: Vec<(u64, PathBuf)> = st
+            .items
+            .iter()
+            .filter_map(|i| match &i.status {
+                Status::Done { output, .. } => Some((i.id, output.clone())),
+                _ => None,
+            })
+            .collect();
         drop(st);
-        E2E_STATUS.store(if ok { 0 } else { 1 }, Ordering::SeqCst);
-        ui.app.quit();
-        glib::ControlFlow::Break
+        if !ok {
+            return finish(&ui, 1);
+        }
+        if std::env::var_os("RETORT_E2E_ADVANCED").is_some() || outputs.len() < 2 {
+            return finish(&ui, 0);
+        }
+        if phase.get() == 1 {
+            // A finished file that is still selected converts again.
+            let id = outputs[0].0;
+            let row = ui.cards.borrow().get(&id).map(|c| c.row.clone());
+            ui.list.unselect_all();
+            ui.list.select_row(row.as_ref());
+            let enabled = ui
+                .window
+                .lookup_action("convert")
+                .is_some_and(|a| a.is_enabled());
+            if !enabled {
+                eprintln!("E2E: Convert is disabled with a finished file selected");
+                return finish(&ui, 5);
+            }
+            eprintln!("E2E: converting the selected finished file again");
+            *first_outputs.borrow_mut() = outputs;
+            phase.set(2);
+            gtk::prelude::WidgetExt::activate_action(&ui.window, "win.convert", None).ok();
+            return glib::ControlFlow::Continue;
+        }
+        // Phase 2: only the selected file ran again, into a new file.
+        let before = first_outputs.borrow().clone();
+        let again_ok =
+            outputs[0].1 != before[0].1 && outputs[0].1.is_file() && before[0].1.is_file();
+        let other_ok = outputs[1] == before[1];
+        eprintln!(
+            "E2E: converted again: {} (first output kept: {}), other file untouched: {other_ok}",
+            outputs[0].1.display(),
+            before[0].1.is_file()
+        );
+        if !again_ok || !other_ok {
+            return finish(&ui, 6);
+        }
+        // Removing the selected file must not take the app down.
+        let (id, n) = (outputs[0].0, ui.state.borrow().items.len());
+        gtk::prelude::WidgetExt::activate_action(&ui.window, "win.remove-selected", None).ok();
+        let gone = ui.item_index(id).is_none() && ui.state.borrow().items.len() == n - 1;
+        eprintln!("E2E: removed the selected file: {gone}");
+        finish(&ui, if gone { 0 } else { 7 })
     });
 }
