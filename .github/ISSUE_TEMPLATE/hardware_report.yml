@@ -1,0 +1,30 @@
+name: Hardware report
+description: Share what Retort found on your GPU(s) so it can be tested in CI.
+labels: [hardware]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you! Run `scripts/collect-hw-report.sh` from a checkout and
+        attach the `.tar.gz` it creates. It contains FFmpeg's capability
+        lists, GPU names, driver versions and the probe results (and your
+        host name in the file name) — no personal files. Look through it first.
+  - type: input
+    id: machine
+    attributes:
+      label: Machine
+      placeholder: "e.g. Desktop with RTX 4070 + Ryzen iGPU, Ubuntu 24.04"
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: Report
+      description: Drag the tarball here.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything wrong in what Retort found?
+      description: For example an encoder shown as working that fails, or one missing that works with ffmpeg by hand.

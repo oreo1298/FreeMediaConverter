@@ -1,0 +1,32 @@
+name: Bug report
+description: A conversion failed, the app misbehaved, or something looks wrong.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: For a failed conversion, open the file's details, press "Copy Diagnostics" and paste here.
+      render: text
+  - type: textarea
+    id: diagnose
+    attributes:
+      label: System Check
+      description: Output of `retort-cli diagnose` (or "Copy Report" in System Check).
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install Retort?
+      options: [Flatpak, .deb, .rpm, AUR, AppImage, Portable tarball, Nix, Gentoo, Void, Built from source]
+    validations:
+      required: true
