@@ -16,8 +16,8 @@ Re-run before each release: `DOCKER_ARGS=… scripts/research/verify-packages.sh
 | Ubuntu 22.04 LTS | 4.6.9 | 1.1.7 | 4.4.2 | ❌ Flatpak/AppImage only |
 | Fedora 45 | 4.24.1 | 1.10.0 | ffmpeg-free 9.0.2 (fedora) / ffmpeg 9.0.2 (RPM Fusion) | ✅ .rpm |
 | AlmaLinux / RHEL 10 | 4.16.7 | 1.6.10 | ffmpeg-free 7.1.5 (EPEL) / ffmpeg 7.1.5 (RPM Fusion) | ✅ .rpm |
-| openSUSE Tumbleweed | 4.24.1 | 1.10.0 | ffmpeg 9.0.2 (Packman only) | ✅ .rpm |
-| openSUSE Leap 16.0 | 4.18.6 | 1.7.5 | ffmpeg-8 8.1.3 (Packman only) | ✅ .rpm |
+| openSUSE Tumbleweed | 4.24.1 | 1.10.0 | `ffmpeg` 9.0.2 (OSS, H.264/HEVC encoders removed) / full build from Packman | ✅ .rpm |
+| openSUSE Leap 16.0 | 4.18.6 | 1.7.5 | `ffmpeg-7` 7.1.5 (OSS, restricted codecs) / `ffmpeg-8` 8.1.3 (Packman) | ✅ .rpm |
 | Arch Linux | 4.24.1 | 1.10.0 | 9.0.2 (extra) | ✅ PKGBUILD |
 
 ## Hardware-acceleration packages
@@ -41,6 +41,11 @@ Re-run before each release: `DOCKER_ARGS=… scripts/research/verify-packages.sh
   `dnf swap mesa-va-drivers …` no longer works because `mesa-va-drivers` was
   folded into `mesa-dri-drivers`.
 - Ubuntu 26.04: `apt-get install -s mesa-va-drivers` resolves to `mesa-libgallium`.
+- openSUSE (re-checked while building packages): the OSS repositories do ship
+  FFmpeg — Tumbleweed `ffmpeg` 9.0.2, Leap 16 `ffmpeg-7` 7.1.5 — without the
+  patent-encumbered encoders, like Fedora's `ffmpeg-free`; Retort's RPM
+  (`Requires: /usr/bin/ffmpeg`) installs against them. Packman supplies the
+  full builds.
 - openSUSE: Packman URLs `…/openSUSE_Tumbleweed/` and `…/openSUSE_Leap_16.0/`
   both refresh; Tumbleweed's Packman package is `ffmpeg` (9.0.2), Leap 16's is `ffmpeg-8`.
 - NVIDIA repos: `https://download.nvidia.com/opensuse/{tumbleweed,leap/16.0}`
