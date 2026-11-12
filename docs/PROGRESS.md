@@ -12,7 +12,7 @@ Read this first in a new session. Requirements: `docs/SPEC.md`. Code map:
 | M2 GUI | done |
 | M3 Advanced mode, planner, HDR, preview, target size | done |
 | M4 Packaging + release CI | done (see checklist for what is verified locally vs. on CI only) |
-| M5 Docs + polish | not started |
+| M5 Docs + polish | done |
 
 ## Milestone checklist
 
@@ -178,9 +178,20 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 - Packaging (M4): `dh_clean` deletes `*.orig` files — vendored crates contain `Cargo.toml.orig` covered by checksums (`dh_clean -Xvendor/`); debhelper 13 runs with its own `HOME`, hiding rustup (`RUSTUP_HOME`); `cargo vendor` prints an absolute path; openSUSE's rpmbuild uses `/usr/src/packages` (`--define _topdir`); `meson install` re-runs the always-stale Cargo target unless `--no-rebuild`; Ubuntu's rpmsign needs `--define "__gpg …"`.
 - Flatpak's `/tmp` is always private (even with `--filesystem=/tmp`); System Check reads granted devices from `/.flatpak-info` instead of inferring from `/dev/dri`.
 
+## Documentation test (last local run, 2026-11-12)
+
+`scripts/test-docs.sh` against a local signed mirror built from the packages above:
+
+- PASS: quick install script on Ubuntu 24.04, Fedora 45, Tumbleweed; Flatpak bundle; APT on Ubuntu 24.04, 26.04, Debian 13 (incl. non-free + Intel/AMD driver installs); Fedora 45 (incl. RPM Fusion swap, Intel/AMD drivers); EL 10 (EPEL, CRB, RPM Fusion); Tumbleweed and Leap 16 (incl. Packman FFmpeg swap); Arch driver packages; AppImage (GUI started under Xvfb); portable tarball (install + uninstall); build from source; README CLI examples; CONTRIBUTING (fmt, clippy, tests, integration, screenshots, translation template); TESTING; MAINTAINER (key creation, version check, dist tarballs, rename).
+- Resolved only (no GPU in containers): NVIDIA driver packages on Debian 13, Fedora 45, EL 10, Arch.
+- Skipped with reasons in the report: `ubuntu-drivers install` (needs NVIDIA hardware); AUR helper/`makepkg` lines (the same PKGBUILD is built, namcap-checked, installed and run by `packaging/arch/build.sh`); `nix run` (the Packaging workflow builds the flake); `cargo insta review` (interactive); release tagging/pushing and Docker-based packaging commands in MAINTAINER.md (run by the workflows).
+- Bugs it found and that are fixed: Leap 16 Packman `ffmpeg-8` conflicts with OSS `ffmpeg-7` (System Check's fix was wrong too); `sudo meson install` re-ran Cargo as root without rustup on PATH; `install.sh` printed the distro name instead of the app name.
+
 ## Open questions (for the maintainer)
 
-- None blocking. Real hardware reports (below) will replace the synthetic profiles.
+- One-time setup before the first tag (details in MAINTAINER.md): enable GitHub Pages (source: GitHub Actions) and add the `REPO_SIGNING_KEY` secret; without it the Pages job of the Release workflow fails on purpose.
+- Publishing to the AUR, Flathub, GURU and void-packages needs your accounts; the files are ready (`packaging/`), steps in MAINTAINER.md.
+- Real hardware reports (below) will replace the synthetic profiles.
 
 ## Hardware test list
 
