@@ -390,7 +390,7 @@ pub fn codec_display_name(codec: &str) -> String {
         "dvd_subtitle" => "VobSub",
         "gif" => "GIF",
         "png" => "PNG",
-        "webp" => "WebP",
+        "webp" | "webp_anim" => "WebP",
         "ffv1" => "FFV1",
         "theora" => "Theora",
         other => return other.to_ascii_uppercase(),

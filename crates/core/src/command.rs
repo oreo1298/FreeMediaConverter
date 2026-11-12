@@ -289,12 +289,37 @@ impl Ctx<'_> {
                 }
             }
         }
+        // Tag colour properties on the frames: since FFmpeg 8/9 the encoder
+        // takes them from frames, and `-color_*` output options alone no longer
+        // tag the stream. (The output options are still emitted for 6.1/7.x.)
+        if let Some(sp) = self.color_setparams(vp) {
+            f.push(sp);
+        }
         match (vp.backend, &vp.pix_fmt) {
             (Some(b), _) => f.push(hwargs::upload_chain(b, vp.ten_bit)),
             (None, Some(p)) => f.push(format!("format={p}")),
             (None, None) => {}
         }
         f
+    }
+
+    /// `setparams=…` tagging the output colour properties, if they must be set.
+    fn color_setparams(&self, vp: &VideoPlan) -> Option<String> {
+        if vp.keep_hdr {
+            let vi = self
+                .src(vp.input_stream)
+                .and_then(|s| s.video.clone())
+                .unwrap_or_default();
+            return Some(format!(
+                "setparams=color_primaries={}:color_trc={}:colorspace={}",
+                vi.color_primaries.as_deref().unwrap_or("bt2020"),
+                vi.color_transfer.as_deref().unwrap_or("smpte2084"),
+                vi.color_space.as_deref().unwrap_or("bt2020nc")
+            ));
+        }
+        vp.tonemap
+            .as_ref()
+            .map(|_| "setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709".to_string())
     }
 
     /// GPU filters for a full-GPU plan.
@@ -755,11 +780,9 @@ impl Ctx<'_> {
     }
 
     fn output_url(&self) -> OsString {
-        if self.job.format.muxer == "image2" {
-            paths::ffmpeg_url_image2(&self.paths.output)
-        } else {
-            paths::ffmpeg_url(&self.paths.output)
-        }
+        // Single-image outputs use `-update 1`, with which the image2 muxer
+        // takes the name literally: no `%` escaping (unlike sequence patterns).
+        paths::ffmpeg_url(&self.paths.output)
     }
 }
 
@@ -950,6 +973,11 @@ pub fn build(
         // Codecs.
         if let Some(vp) = vp {
             c.video_codec_args(&mut args, vp, pass)?;
+            if pass.is_some() {
+                // Both passes must see identical frames: the null muxer would
+                // otherwise pass timestamps through while MP4 forces CFR.
+                push(&mut args, ["-fps_mode", "vfr"]);
+            }
             if matches!(job.format.kind, FormatKind::Image) {
                 push(&mut args, ["-frames:v", "1", "-update", "1"]);
             }

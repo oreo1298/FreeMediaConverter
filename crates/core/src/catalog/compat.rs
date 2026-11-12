@@ -51,6 +51,8 @@ const MKV_VIDEO: &[&str] = &[
     "huffyuv",
     "dnxhd",
 ];
+// dts/truehd encoders are experimental in FFmpeg (need -strict -2): they are
+// copy-only (see `copy_only`), never offered for encoding.
 const MKV_AUDIO: &[&str] = &[
     "aac",
     "mp3",
@@ -64,9 +66,17 @@ const MKV_AUDIO: &[&str] = &[
     "pcm_s24le",
     "mp2",
     "wavpack",
-    "dts",
-    "truehd",
     "tta",
+];
+const NUT_AUDIO: &[&str] = &[
+    "aac",
+    "mp3",
+    "opus",
+    "vorbis",
+    "flac",
+    "ac3",
+    "pcm_s16le",
+    "mp2",
 ];
 const MKV_SUBS: &[&str] = &[
     "subrip",
@@ -121,6 +131,34 @@ const fn rules(
     }
 }
 
+/// Codecs a container can hold when *copied*, beyond what we offer to encode
+/// (experimental encoders).
+pub fn copy_only(format_id: &str, kind: MediaKind) -> &'static [&'static str] {
+    match (format_id, kind) {
+        ("mkv" | "mka" | "mp4" | "mov" | "ts" | "m2ts", MediaKind::Audio) => &["dts", "truehd"],
+        _ => &[],
+    }
+}
+
+/// Bitmap subtitle codecs: copy only (cannot be produced from text).
+pub fn is_bitmap_subtitle_codec(codec: &str) -> bool {
+    matches!(
+        codec,
+        "dvb_subtitle" | "dvd_subtitle" | "hdmv_pgs_subtitle" | "xsub"
+    )
+}
+
+/// Encoder settings that make a tiny test encode valid for picky codecs.
+fn test_encoder_args(codec: &str) -> &'static [&'static str] {
+    match codec {
+        "dnxhd" => &["-profile:v", "dnxhr_lb", "-pix_fmt", "yuv422p"],
+        "prores" => &["-pix_fmt", "yuv422p10le"],
+        "mpeg2video" | "mpeg4" => &["-b:v", "2M"],
+        "wmv2" | "msmpeg4v3" => &["-b:v", "1M"],
+        _ => &[],
+    }
+}
+
 /// Curated rules, keyed by *format id* (see `formats::CURATED`).
 pub fn curated(format_id: &str) -> Option<ContainerRules> {
     let r = match format_id {
@@ -134,7 +172,7 @@ pub fn curated(format_id: &str) -> Option<ContainerRules> {
         ),
         "m4v" => rules(
             &["h264", "mpeg4"],
-            &["aac", "alac", "ac3", "eac3"],
+            &["aac", "alac", "ac3"],
             &["mov_text"],
             Some("h264"),
             Some("aac"),
@@ -239,7 +277,7 @@ pub fn curated(format_id: &str) -> Option<ContainerRules> {
             Some("wmav2"),
             None,
         ),
-        "nut" => rules(MKV_VIDEO, MKV_AUDIO, NONE, Some("h264"), Some("aac"), None),
+        "nut" => rules(MKV_VIDEO, NUT_AUDIO, NONE, Some("h264"), Some("aac"), None),
         "mp3" => rules(NONE, &["mp3"], NONE, None, Some("mp3"), None),
         "flac" => rules(NONE, &["flac"], NONE, None, Some("flac"), None),
         "wav" => rules(
@@ -271,7 +309,7 @@ pub fn curated(format_id: &str) -> Option<ContainerRules> {
         ),
         "caf" => rules(
             NONE,
-            &["alac", "pcm_s16le", "pcm_s24le", "aac"],
+            &["alac", "pcm_s16le", "pcm_s24le"],
             NONE,
             None,
             Some("alac"),
@@ -295,7 +333,7 @@ pub fn curated(format_id: &str) -> Option<ContainerRules> {
         "bmp" => rules(&["bmp"], NONE, NONE, Some("bmp"), None, None),
         "jxl" => rules(&["jpegxl"], NONE, NONE, Some("jpegxl"), None, None),
         "mxf" => rules(
-            &["dnxhd", "prores", "h264", "mpeg2video"],
+            &["dnxhd", "prores", "mpeg2video"],
             &["pcm_s16le", "pcm_s24le"],
             NONE,
             Some("dnxhd"),
@@ -447,7 +485,7 @@ impl Compat {
                 MediaKind::Subtitle => r.subtitle,
                 _ => NONE,
             };
-            return list.contains(&codec);
+            return list.contains(&codec) || copy_only(&format.id, kind).contains(&codec);
         }
         let key = format!("{}|{}", format.muxer, codec);
         if let Some(v) = self.cache.lock().ok().and_then(|m| m.get(&key).copied()) {
@@ -480,6 +518,7 @@ impl Compat {
         };
         candidates
             .into_iter()
+            .filter(|c| !is_bitmap_subtitle_codec(c))
             .filter(|c| self.caps.encoders_for(c).next().is_some())
             .filter(|c| self.can_hold(format, kind, c))
             .collect()
@@ -496,17 +535,49 @@ impl Compat {
         let out = dir.join(format!("t.{}", if ext.is_empty() { "bin" } else { ext }));
         let mut args: Vec<OsString> = vec!["-v".into(), "error".into(), "-nostdin".into()];
         match kind {
-            MediaKind::Video => args.extend(
-                [
-                    "-f",
-                    "lavfi",
-                    "-i",
-                    "testsrc2=s=128x72:r=10:d=0.3",
-                    "-c:v",
-                    &encoder,
-                ]
-                .map(OsString::from),
-            ),
+            MediaKind::Video => {
+                // 256x144 @ 25 fps satisfies DNxHR (multiples of 16) and MXF (broadcast rates).
+                args.extend(
+                    [
+                        "-f",
+                        "lavfi",
+                        "-i",
+                        "testsrc2=s=256x144:r=25:d=0.3",
+                        "-c:v",
+                        &encoder,
+                    ]
+                    .map(OsString::from),
+                );
+                args.extend(test_encoder_args(codec).iter().map(OsString::from));
+            }
+            MediaKind::Audio if muxer == "mxf" => {
+                // MXF needs a video track first; audio-only MXF is rejected.
+                args.extend(
+                    [
+                        "-f",
+                        "lavfi",
+                        "-i",
+                        "testsrc2=s=256x144:r=25:d=0.3",
+                        "-f",
+                        "lavfi",
+                        "-i",
+                        "sine=f=440:d=0.3:sample_rate=48000",
+                        "-map",
+                        "0:v",
+                        "-map",
+                        "1:a",
+                        "-c:v",
+                        "dnxhd",
+                        "-profile:v",
+                        "dnxhr_lb",
+                        "-pix_fmt",
+                        "yuv422p",
+                        "-c:a",
+                        &encoder,
+                    ]
+                    .map(OsString::from),
+                );
+            }
             MediaKind::Audio => args.extend(
                 [
                     "-f",
