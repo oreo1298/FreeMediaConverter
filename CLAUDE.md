@@ -1,0 +1,78 @@
+# CLAUDE.md — working on Retort
+
+Retort is a GTK 4 + libadwaita FFmpeg converter for Linux (x86-64 + arm64),
+GPL-3.0-or-later. Requirements: `docs/SPEC.md` (source of truth). Status,
+decisions and next steps: `docs/PROGRESS.md` (read it first, update it at the
+end of every milestone). Code map: `docs/ARCHITECTURE.md`.
+
+## Layout
+
+- `crates/core` (`retort-core`): engine, no GTK. Put logic and tests here.
+- `crates/cli` (`retort-cli`): headless CLI over the engine.
+- `crates/app` (`retort`): GTK UI.
+- `branding.env`: the only place the app name / ID / binary name are defined.
+  `scripts/rename.sh` propagates a rename to static packaging files.
+
+## Commands
+
+```bash
+# Build / test / lint (what CI runs)
+cargo build --workspace
+cargo test --workspace
+cargo fmt --all --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo deny check            # if cargo-deny is installed
+scripts/check-no-shell.sh   # forbids shell invocation in Rust code
+
+# Engine-only (fast loop, no GTK needed)
+cargo test -p retort-core
+cargo run -p retort-cli -- diagnose
+cargo run -p retort-cli -- convert in.mkv --preset mp4-compatible -o out.mp4 --dry-run
+
+# Snapshot tests (insta)
+cargo insta test -p retort-core       # or: INSTA_UPDATE=always cargo test -p retort-core
+cargo insta review
+
+# Integration tests that run the real ffmpeg (needs ffmpeg in PATH)
+cargo test -p retort-core --test integration -- --include-ignored
+
+# Full Meson build + install to a prefix
+meson setup _build --prefix=$PWD/_install && meson compile -C _build && meson install -C _build
+
+# Run the GUI from the build tree
+meson devenv -C _build retort       # or: cargo run -p retort (needs GSETTINGS_SCHEMA_DIR, see below)
+
+# Headless screenshots (Xvfb)
+scripts/screenshots.sh              # writes docs/screenshots/*.png
+```
+
+Running the GUI with plain `cargo run` needs the schema compiled:
+`glib-compile-schemas --targetdir=_schemas data/ && GSETTINGS_SCHEMA_DIR=_schemas cargo run -p retort`
+(`scripts/dev-run.sh` does this).
+
+## Conventions
+
+- Rust stable, edition 2021, MSRV 1.92 (gtk4-rs 0.11 requirement).
+- **Never invoke a shell.** argv arrays only; media paths go through
+  `retort_core::paths::ffmpeg_url()` (absolute + `file:` prefix).
+- Never modify inputs; never overwrite outputs silently (`-n` unless the user
+  chose "overwrite").
+- Hardware support is data-driven: candidates from ffmpeg, confirmed by a real
+  probe. Never assume support from the vendor.
+- New FFmpeg option usage must be verified against FFmpeg source for 6.1 →
+  latest and recorded in `docs/research/encoders.md`.
+- Errors: `thiserror` in core, `anyhow` in binaries. No `unwrap()` on
+  user-data paths.
+- User-facing strings in the app go through gettext (`gettext("…")`).
+- Commit messages: imperative, scoped (`core: …`, `app: …`, `cli: …`,
+  `packaging: …`, `docs: …`, `ci: …`). Small commits.
+- Keep `docs/PROGRESS.md` current: milestone checklist, decisions log
+  (decision / why / alternatives rejected), open questions, hardware test list.
+
+## Environment notes (cloud sandbox)
+
+- Ubuntu 24.04, no GPU, no display. Use Xvfb for GUI runs.
+- `dockerd` is not started automatically: `(nohup dockerd >/tmp/dockerd.log 2>&1 &)`.
+- `apt-get update` is needed before installing packages in a fresh session.
+- Required apt packages for building: `libgtk-4-dev libadwaita-1-dev meson
+  gettext appstream desktop-file-utils ffmpeg xvfb`.

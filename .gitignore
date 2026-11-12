@@ -1,0 +1,14 @@
+/target
+/_build*
+/_install
+/_schemas
+/.flatpak-builder
+/build-dir
+/repo
+*.flatpak
+*.AppImage
+*.zsync
+/dist
+/result
+*.snap.new
+*.pending-snap
