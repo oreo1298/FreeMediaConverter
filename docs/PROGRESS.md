@@ -11,7 +11,7 @@ Read this first in a new session. Requirements: `docs/SPEC.md`. Code map:
 | M1 Core engine + CLI + collect-hw-report.sh | done |
 | M2 GUI | done |
 | M3 Advanced mode, planner, HDR, preview, target size | done |
-| M4 Packaging + release CI | not started |
+| M4 Packaging + release CI | done (see checklist for what is verified locally vs. on CI only) |
 | M5 Docs + polish | not started |
 
 ## Milestone checklist
@@ -66,14 +66,15 @@ Read this first in a new session. Requirements: `docs/SPEC.md`. Code map:
 - [x] GUI e2e drives Advanced widgets (rotate, trim, mono) and verifies the output with ffprobe
 
 ### M4 — Packaging
-- [ ] Flatpak (GNOME 51, bundled FFmpeg 9.0.x) + lint
-- [ ] .deb (Debian 13, Ubuntu 24.04+) and .rpm (Fedora, openSUSE, EL) built in target containers
-- [ ] AUR -bin / -git / source PKGBUILDs (namcap)
-- [ ] AppImage (+zsync), tarball (+install/uninstall)
-- [ ] Nix flake, Gentoo ebuild, Void template
-- [ ] Signed apt/rpm repos on GitHub Pages
-- [ ] `scripts/install.sh`
-- [ ] CI: lint/test/build x86-64 + arm64, release pipeline on tags
+- [x] Flatpak (GNOME 51, bundled FFmpeg 9.0.2 with x264/x265/SVT-AV1/aom/vpx/libplacebo/NVENC/QSV/VA-API/Vulkan) — built, installed and converting in a container
+- [x] .deb (Ubuntu 24.04, Ubuntu 26.04, Debian 13; GUI + GTK-free `retort-cli`) and .rpm (Fedora 45, EL 10, openSUSE Tumbleweed, Leap 16) — each built in its distro's container, `meson test` passing, installed with the distro FFmpeg and run
+- [x] AUR source (split), -git and -bin PKGBUILDs — source package built, namcap-checked, installed and run in Arch
+- [x] Portable tarball (+ install.sh / uninstall.sh, relocatable) — built; AppImage (+ zsync) — see checklist note below
+- [x] Nix flake (evaluated for x86-64/arm64 locally; built by the Packaging workflow), Gentoo ebuild, Void template (not built here: no Gentoo/Void build hosts)
+- [x] Signed APT/RPM repositories (throwaway-key end-to-end tests: apt `signed-by` + InRelease, dnf/zypper `gpgcheck` + `repo_gpgcheck`)
+- [x] `scripts/install.sh` (tested on Ubuntu 24.04, Fedora 45, Tumbleweed against a local mirror)
+- [x] `scripts/rename.sh` (tested: rename → Cargo + Meson build → renamed binaries, desktop file, schema, metainfo)
+- [x] CI: lint/test x86-64 + arm64 (from M1), Packaging smoke workflow, Release workflow on tags (all formats × both arches, GitHub release, Pages repositories)
 
 ### M5 — Docs and polish
 - [ ] README, INSTALL.md (generated from one source), test-docs.sh
@@ -144,11 +145,21 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 | D22 | Simple sidebar pins Speed / Save To / plan below a scrolling preset list | With 19 presets these were below the fold | Single scroller (options invisible), collapsing preset categories |
 | D23 | Translations are merged into desktop/metainfo templates first, branding substituted afterwards (`build-aux/subst.py`) | Msgids keep `@APP_NAME@` placeholders, so a rename doesn't invalidate translations, and translated strings still match after substitution | configure_file before merge (substituted text never matches the catalogue) |
 | D24 | Core marks catalogue strings with a no-op `n_()`; the app translates at display time | Core stays free of gettext; xgettext (C parser, gettext < 0.24 has no Rust) extracts with `--keyword=n_` | gettext dependency in core |
+| D25 | The copyable command shows the final output name; the log shows the argv that ran (temp name) | Copy-pasting the command must produce the file the user expects; the log stays exact | Showing the temp-file command (confusing when copied) |
 | D26 | Advanced edits turn the scope's preset into `format:<container>` | Simple mode then shows "custom MP4" instead of pretending a preset is still selected | Keeping the preset id (misleading), a separate "modified" flag |
 | D27 | Codec lists for a container are computed on a worker and cached per (container, kind) | Uncurated containers need a test mux the first time (seconds) | Computing in `sync` (froze the UI) |
 | D28 | Preview samples run at the full job's planned bitrate (target size → VBR at the planned kb/s) and the size estimate is capped at the limit | A 10-s target-size sample would otherwise get the whole budget; short samples over-represent container overhead (2.10 MB estimate vs 1.97 MB real for a 2 MB limit) | Re-planning the sample as its own target-size job |
 | D29 | One shared sidebar footer (speed, plan + Preview, remux suggestion in Simple only); destination is a one-line strip under the scope | Advanced needs the vertical space; both modes show the same plan and preview | Separate footers per mode |
-| D25 | The copyable command shows the final output name; the log shows the argv that ran (temp name) | Copy-pasting the command must produce the file the user expects; the log stays exact | Showing the temp-file command (confusing when copied) |
+| D30 | Distro packages build with a rustup toolchain and vendored crates | MSRV 1.92 is newer than Debian 13/Ubuntu 24.04/EL 10's rustc; vendoring makes builds offline and reproducible | Distro rustc (too old), packaging every crate (not feasible outside the distros) |
+| D31 | Separate `retort-cli` package without GTK dependencies | Headless servers (Proxmox) should not pull GTK | One package with both binaries |
+| D32 | RPMs require `/usr/bin/ffmpeg` (and ffprobe), not a package name | Works with Fedora `ffmpeg-free`, RPM Fusion, EPEL, openSUSE OSS and Packman alike | Requiring `ffmpeg` (missing on Fedora by default) |
+| D33 | Flatpak builds x264, x265 (multilib 8/10/12-bit), zimg, libass, libvpl, libplacebo 7.360.1 and nv-codec-headers n12.2; no AMF | The GNOME 51 SDK lacks them (it has SVT-AV1, aom, vpx, dav1d, opus, lame, VA-API, Vulkan, shaderc); its ffnvcodec 13.1 needs newer drivers than D17 allows; AMD's AMF runtime is not available in the sandbox | org.freedesktop.Platform.codecs-extra (FFmpeg version not ours) |
+| D34 | Flatpak permissions: `--device=all`, home + removable media | NVENC/CUDA need `/dev/nvidia*`; outputs go next to the inputs, which the document portal cannot grant | `--device=dri` only (no NVENC), portal-only access (no "next to the original") |
+| D35 | AppImage built on Ubuntu 24.04 (glibc 2.39), bundling GTK/libadwaita/FFmpeg but not libva/libdrm/libvulkan/libvpl | Host GPU drivers must match the host's loader libraries; older systems use the Flatpak | Building on an old base (would require building GTK 4.14/libadwaita 1.5 from source) |
+| D36 | Update check only in AppImage/tarball builds (Cargo feature), off by default, daily, via the system `curl` | Spec: opt-in, those two formats only; no TLS stack in the binary | A Rust HTTP client in every build |
+| D37 | The app finds its schema, icons and translations next to the executable when the build-time paths don't exist | Portable tarball and AppImage are relocatable | Wrapper scripts setting environment variables |
+| D38 | `docs/INSTALL.md` is generated from `docs/install/install.toml`; `scripts/test-docs.sh` runs every documented command in containers against a local signed mirror | One source for docs and tests; GPU driver installs are resolved (`apt-get -s`, `dnf --assumeno`, …), not installed; untestable commands are listed with reasons | Hand-written INSTALL.md with a separate test list |
+| D39 | Stable repository names: APT suites by codename, RPM repos `fedora-45`, `el-10`, `opensuse-tumbleweed`, `opensuse-leap-16.0` | `install.sh` and docs can compute them; Tumbleweed's VERSION_ID is a date | `$ID-$VERSION_ID` everywhere |
 
 ## Findings worth knowing (from real FFmpeg / distro checks)
 
@@ -162,6 +173,9 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 - libadwaita: an `AdwStatusPage` inside a preferences group clips its icon and loses the title (it brings its own scroller); System Check uses a plain header instead.
 - xgettext's C fallback parser warns about Rust lifetimes (`'static`) but still extracts every marked string (checked by script against all `gettext/tr_fmt/ntr_fmt/n_` literals).
 - `GSETTINGS_BACKEND=memory` plus temporary XDG dirs fully isolate a GUI test run.
+
+- Packaging (M4): `dh_clean` deletes `*.orig` files — vendored crates contain `Cargo.toml.orig` covered by checksums (`dh_clean -Xvendor/`); debhelper 13 runs with its own `HOME`, hiding rustup (`RUSTUP_HOME`); `cargo vendor` prints an absolute path; openSUSE's rpmbuild uses `/usr/src/packages` (`--define _topdir`); `meson install` re-runs the always-stale Cargo target unless `--no-rebuild`; Ubuntu's rpmsign needs `--define "__gpg …"`.
+- Flatpak's `/tmp` is always private (even with `--filesystem=/tmp`); System Check reads granted devices from `/.flatpak-info` instead of inferring from `/dev/dri`.
 
 ## Open questions (for the maintainer)
 
