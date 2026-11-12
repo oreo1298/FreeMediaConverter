@@ -15,6 +15,16 @@ pub fn init() {
     let _ = gettextrs::textdomain(domain);
 }
 
+/// `gettext` for runtime strings (core catalog entries marked with `n_`).
+/// An empty msgid would return the catalog header, so it is passed through.
+pub fn tr(s: &str) -> String {
+    if s.is_empty() {
+        String::new()
+    } else {
+        gettext(s)
+    }
+}
+
 /// `gettext` with `{}` placeholders filled in order.
 pub fn tr_fmt(msgid: &str, args: &[&str]) -> String {
     let mut s = gettext(msgid);

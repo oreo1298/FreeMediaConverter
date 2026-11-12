@@ -16,6 +16,7 @@ pub mod engine;
 pub mod error;
 pub mod ffmpeg;
 pub mod hw;
+pub mod i18n;
 pub mod job;
 pub mod media;
 pub mod naming;

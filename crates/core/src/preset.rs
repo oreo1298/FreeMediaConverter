@@ -3,6 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::i18n::n_;
 use crate::quality::{RateControl, Speed};
 use crate::settings::*;
 
@@ -21,12 +22,12 @@ pub enum PresetCategory {
 impl PresetCategory {
     pub fn title(self) -> &'static str {
         match self {
-            PresetCategory::Video => "Video",
-            PresetCategory::Web => "Sharing & Web",
-            PresetCategory::Professional => "Editing",
-            PresetCategory::Animation => "Animated Images",
-            PresetCategory::Audio => "Audio",
-            PresetCategory::Tools => "Tools",
+            PresetCategory::Video => n_("Video"),
+            PresetCategory::Web => n_("Sharing & Web"),
+            PresetCategory::Professional => n_("Editing"),
+            PresetCategory::Animation => n_("Animated Images"),
+            PresetCategory::Audio => n_("Audio"),
+            PresetCategory::Tools => n_("Tools"),
         }
     }
 }
@@ -95,8 +96,8 @@ pub fn builtin() -> Vec<Preset> {
 
     add(
         "mp4-compatible",
-        "MP4 that plays everywhere",
-        "H.264 + AAC — phones, TVs, browsers, editors",
+        n_("MP4 that plays everywhere"),
+        n_("H.264 + AAC — phones, TVs, browsers, editors"),
         "phone-symbolic",
         Video,
         base(
@@ -111,8 +112,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "mp4-small",
-        "Smaller MP4",
-        "HEVC + AAC — about half the size of H.264",
+        n_("Smaller MP4"),
+        n_("HEVC + AAC — about half the size of H.264"),
         "zoom-out-symbolic",
         Video,
         base(
@@ -124,8 +125,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "mkv-archive",
-        "MKV at archive quality",
-        "HEVC 10-bit, all audio and subtitles kept",
+        n_("MKV at archive quality"),
+        n_("HEVC 10-bit, all audio and subtitles kept"),
         "drive-harddisk-symbolic",
         Video,
         {
@@ -144,8 +145,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "av1-smallest",
-        "AV1 for the smallest file",
-        "AV1 + Opus in MKV — best compression",
+        n_("AV1 for the smallest file"),
+        n_("AV1 + Opus in MKV — best compression"),
         "media-floppy-symbolic",
         Video,
         {
@@ -157,8 +158,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "apple",
-        "Apple-friendly",
-        "HEVC tagged hvc1 + AAC — iPhone, Mac, QuickTime",
+        n_("Apple-friendly"),
+        n_("HEVC tagged hvc1 + AAC — iPhone, Mac, QuickTime"),
         "phone-apple-iphone-symbolic",
         Video,
         base(
@@ -173,8 +174,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "webm",
-        "WebM for the web",
-        "VP9 + Opus — plays in every browser",
+        n_("WebM for the web"),
+        n_("VP9 + Opus — plays in every browser"),
         "web-browser-symbolic",
         Web,
         base("webm", venc("vp9", |_| {}), aenc("opus", Some(128), |_| {})),
@@ -182,8 +183,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "target-size",
-        "Fit under a size limit",
-        "For Discord or email — exact size, 2-pass",
+        n_("Fit under a size limit"),
+        n_("For Discord or email — exact size, 2-pass"),
         "mail-attachment-symbolic",
         Web,
         {
@@ -206,8 +207,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "prores",
-        "Editing intermediate (ProRes)",
-        "ProRes 422 HQ + PCM in MOV — smooth scrubbing in editors",
+        n_("Editing intermediate (ProRes)"),
+        n_("ProRes 422 HQ + PCM in MOV — smooth scrubbing in editors"),
         "camera-video-symbolic",
         Professional,
         base(
@@ -222,8 +223,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "dnxhr",
-        "Editing intermediate (DNxHR)",
-        "DNxHR HQ + PCM in MOV — DaVinci Resolve on Linux",
+        n_("Editing intermediate (DNxHR)"),
+        n_("DNxHR HQ + PCM in MOV — DaVinci Resolve on Linux"),
         "camera-video-symbolic",
         Professional,
         base(
@@ -238,8 +239,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "gif",
-        "GIF",
-        "Animated GIF with an optimised palette",
+        n_("GIF"),
+        n_("Animated GIF with an optimised palette"),
         "image-x-generic-symbolic",
         Animation,
         {
@@ -252,8 +253,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "webp-anim",
-        "Animated WebP",
-        "Smaller and full-colour alternative to GIF",
+        n_("Animated WebP"),
+        n_("Smaller and full-colour alternative to GIF"),
         "image-x-generic-symbolic",
         Animation,
         {
@@ -275,8 +276,8 @@ pub fn builtin() -> Vec<Preset> {
     };
     add(
         "mp3",
-        "MP3",
-        "VBR ~190 kb/s — plays on anything",
+        n_("MP3"),
+        n_("VBR ~190 kb/s — plays on anything"),
         "audio-x-generic-symbolic",
         Audio,
         audio_only("mp3", aenc("mp3", None, |a| a.vbr_quality = Some(2.0))),
@@ -284,8 +285,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "m4a",
-        "AAC (M4A)",
-        "256 kb/s — Apple Music, phones",
+        n_("AAC (M4A)"),
+        n_("256 kb/s — Apple Music, phones"),
         "audio-x-generic-symbolic",
         Audio,
         audio_only("m4a", aenc("aac", Some(256), |_| {})),
@@ -293,8 +294,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "opus",
-        "Opus",
-        "128 kb/s — best quality per byte",
+        n_("Opus"),
+        n_("128 kb/s — best quality per byte"),
         "audio-x-generic-symbolic",
         Audio,
         audio_only("opus", aenc("opus", Some(128), |_| {})),
@@ -302,8 +303,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "flac",
-        "FLAC",
-        "Lossless, compressed",
+        n_("FLAC"),
+        n_("Lossless, compressed"),
         "audio-x-generic-symbolic",
         Audio,
         audio_only("flac", aenc("flac", None, |_| {})),
@@ -311,8 +312,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "wav",
-        "WAV",
-        "Uncompressed 16-bit PCM",
+        n_("WAV"),
+        n_("Uncompressed 16-bit PCM"),
         "audio-x-generic-symbolic",
         Audio,
         audio_only("wav", aenc("pcm_s16le", None, |_| {})),
@@ -320,8 +321,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "alac",
-        "ALAC",
-        "Apple Lossless in M4A",
+        n_("ALAC"),
+        n_("Apple Lossless in M4A"),
         "audio-x-generic-symbolic",
         Audio,
         audio_only("m4a", aenc("alac", None, |_| {})),
@@ -329,8 +330,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "extract-audio",
-        "Extract audio",
-        "Save the soundtrack without re-encoding",
+        n_("Extract audio"),
+        n_("Save the soundtrack without re-encoding"),
         "audio-speakers-symbolic",
         Tools,
         {
@@ -342,8 +343,8 @@ pub fn builtin() -> Vec<Preset> {
     );
     add(
         "remux",
-        "Change container only",
-        "Instant and lossless — no re-encoding",
+        n_("Change container only"),
+        n_("Instant and lossless — no re-encoding"),
         "media-playlist-repeat-symbolic",
         Tools,
         {

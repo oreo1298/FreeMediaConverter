@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Files with translatable strings (see po/meson.build).
+data/app.desktop.in
+data/app.metainfo.xml.in
+data/app.gschema.xml.in
+crates/app/src/card.rs
+crates/app/src/details.rs
+crates/app/src/main.rs
+crates/app/src/picker.rs
+crates/app/src/prefs.rs
+crates/app/src/runner.rs
+crates/app/src/sidebar.rs
+crates/app/src/syscheck.rs
+crates/app/src/window.rs
+crates/core/src/catalog/formats.rs
+crates/core/src/preset.rs

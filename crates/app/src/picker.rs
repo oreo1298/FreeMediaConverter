@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use adw::prelude::*;
 
-use crate::i18n::gettext;
+use crate::i18n::{gettext, tr};
 use crate::util;
 use crate::window::Ui;
 use retort_core::catalog::{formats, FormatGroup, FormatInfo, FormatKind};
@@ -147,7 +147,7 @@ pub fn show(ui: &Ui, include_presets: bool, on_pick: impl Fn(Choice) + 'static) 
                     if !hit {
                         continue;
                     }
-                    let c = card(p.icon, &gettext(p.title), "", &gettext(p.subtitle));
+                    let c = card(p.icon, &tr(p.title), "", &tr(p.subtitle));
                     let id = p.id;
                     let d = dialog.clone();
                     let cb = on_pick.clone();
@@ -170,7 +170,12 @@ pub fn show(ui: &Ui, include_presets: bool, on_pick: impl Fn(Choice) + 'static) 
                 }
                 let fb = flow();
                 for f in items {
-                    let c = card(kind_icon(f.kind), &f.title, &f.extension, &f.description);
+                    let c = card(
+                        kind_icon(f.kind),
+                        &tr(&f.title),
+                        &f.extension,
+                        &tr(&f.description),
+                    );
                     let id = f.id.clone();
                     let d = dialog.clone();
                     let cb = on_pick.clone();
