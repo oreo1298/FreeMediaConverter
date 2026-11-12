@@ -20,7 +20,7 @@ for dir in "$src"/*/; do
   d=$(basename "$dir")
   mkdir -p "$out/rpm/$d"
   find "$dir" -name '*.rpm' ! -name '*.src.rpm' -exec cp {} "$out/rpm/$d/" \;
-  rpmsign --define "_gpg_name $key" --addsign "$out/rpm/$d"/*.rpm >/dev/null
+  rpmsign --define "_gpg_name $key" --define "__gpg $(command -v gpg)" --addsign "$out/rpm/$d"/*.rpm >/dev/null
   createrepo_c --quiet "$out/rpm/$d"
   gpg --batch --yes --local-user "$key" --detach-sign --armor "$out/rpm/$d/repodata/repomd.xml"
   cat > "$out/rpm/$bin-$d.repo" <<REPO

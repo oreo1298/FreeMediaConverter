@@ -8,7 +8,7 @@
 # Usage: curl -fsSL https://oreo1298.github.io/FreeMediaConverter/install.sh | sh
 #        sh install.sh [--flatpak | --tarball] [--cli-only] [--dry-run]
 set -eu
-NAME=Retort
+APP_NAME=Retort
 BIN=retort
 OWNER=oreo1298
 REPO=FreeMediaConverter
@@ -84,7 +84,7 @@ rpm_repo() {
 flatpak_install() {
   run flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
   tmp=$(mktemp -d)
-  run curl -fsSL -o "$tmp/$BIN.flatpak" "$RELEASES/$NAME-$(uname -m).flatpak"
+  run curl -fsSL -o "$tmp/$BIN.flatpak" "$RELEASES/$APP_NAME-$(uname -m).flatpak"
   run flatpak install --user -y "$tmp/$BIN.flatpak"
   rm -rf "$tmp"
 }
@@ -113,7 +113,7 @@ if [ -z "$mode" ]; then
   if command -v flatpak >/dev/null; then mode=flatpak; else mode=tarball; fi
 fi
 
-say "Installing $NAME ($mode)…"
+say "Installing $APP_NAME ($mode)…"
 case "$mode" in
   apt) apt_repo ;;
   fedora) rpm_repo "fedora-$ver" ;;
@@ -129,4 +129,4 @@ case "$mode" in
   flatpak) flatpak_install ;;
   tarball) tarball_install ;;
 esac
-say "Done. Start $NAME from your applications menu, or run '$BIN-cli diagnose' to check hardware support."
+say "Done. Start $APP_NAME from your applications menu, or run '$BIN-cli diagnose' to check hardware support."
