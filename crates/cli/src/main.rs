@@ -202,6 +202,10 @@ struct ConvertArgs {
     /// Print the plan and ffmpeg command(s) without running them.
     #[arg(long)]
     dry_run: bool,
+    /// Encode only a 10-second sample from the middle (written next to the
+    /// output as "<name> (preview).<ext>") and estimate the full size and time.
+    #[arg(long, conflicts_with = "dry_run")]
+    preview: bool,
     /// Machine-readable events on stdout (one JSON object per line).
     #[arg(long)]
     json: bool,
@@ -695,6 +699,94 @@ fn human_size(b: u64) -> String {
     }
 }
 
+/// `convert --preview`: encode the sample, print the estimate. True on success.
+fn run_preview(
+    engine: &Engine,
+    label: &str,
+    req: &job::JobRequest,
+    output: &std::path::Path,
+    json: bool,
+) -> bool {
+    use retort_core::preview;
+    let Some(sample) = preview::sample_settings(&req.settings, &req.media, &req.plan) else {
+        eprintln!("{label}: no preview for still images or files without a duration");
+        return false;
+    };
+    let (_, len) =
+        preview::sample_range(&req.settings, &req.media).unwrap_or((0.0, preview::SAMPLE_SECONDS));
+    let total = preview::output_duration(&req.settings, &req.media).unwrap_or(len);
+    let plan = match engine.plan(&req.media, &sample) {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("{label}: {e}");
+            return false;
+        }
+    };
+    let stem = output
+        .file_stem()
+        .map(|s| s.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let ext = output
+        .extension()
+        .map(|e| e.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let dir = output.parent().map(|p| p.to_path_buf()).unwrap_or_default();
+    let mut out = dir.join(format!("{stem} (preview).{ext}"));
+    let mut n = 1;
+    while out.exists() {
+        out = dir.join(format!("{stem} (preview {n}).{ext}"));
+        n += 1;
+    }
+    let preq = engine.request(req.media.clone(), sample, plan, out.clone(), false);
+    match job::start(preq, |_| {}).wait() {
+        JobOutcome::Completed {
+            size,
+            seconds,
+            summary,
+            ..
+        } => {
+            let est =
+                preview::estimate(size, len, seconds, total, preview::size_cap(&req.settings));
+            if json {
+                let v = serde_json::json!({
+                    "event": "preview",
+                    "input": req.media.path,
+                    "sample": out,
+                    "sample_seconds": len,
+                    "sample_bytes": size,
+                    "estimated_bytes": est.map(|e| e.bytes),
+                    "estimated_seconds": est.map(|e| e.seconds),
+                    "plan": summary,
+                });
+                println!("{v}");
+            } else {
+                println!(
+                    "{label}: sample {} ({:.0} s, {})",
+                    out.display(),
+                    len,
+                    human_size(size)
+                );
+                if let Some(e) = est {
+                    println!(
+                        "{label}: whole file ≈ {} in ≈ {} ({summary})",
+                        human_size(e.bytes),
+                        media::format_duration(e.seconds.max(1.0))
+                    );
+                }
+            }
+            true
+        }
+        JobOutcome::Failed { reason, .. } => {
+            eprintln!("{label}: preview failed: {reason}");
+            false
+        }
+        other => {
+            eprintln!("{label}: preview did not finish: {other:?}");
+            false
+        }
+    }
+}
+
 fn cmd_convert(cli: &Cli, a: &ConvertArgs) -> Result<i32> {
     if a.output.is_some() && a.inputs.len() > 1 {
         bail!("--output works with a single input; use --output-dir for several");
@@ -800,6 +892,12 @@ fn cmd_convert(cli: &Cli, a: &ConvertArgs) -> Result<i32> {
         req.keep_partial = a.keep_partial;
         req.log_path =
             Some(retort_core::paths::log_dir().join(format!("cli-{}-{i}.log", std::process::id())));
+        if a.preview {
+            if !run_preview(&engine, &label, &req, &output, a.json) {
+                failures += 1;
+            }
+            continue;
+        }
         if a.dry_run {
             println!("# {label}");
             for (k, plan) in req.plan.chain.iter().enumerate() {
