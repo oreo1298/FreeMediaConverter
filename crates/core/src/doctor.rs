@@ -247,11 +247,12 @@ pub fn fix_nvidia_libs(os: &OsRelease, f: Family, driver_major: Option<&str>) ->
             step("Enable RPM Fusion (free and nonfree)", &[RPMFUSION_FEDORA]),
             step("Install the CUDA/NVENC libraries for the RPM Fusion NVIDIA driver", &["sudo dnf install xorg-x11-drv-nvidia-cuda-libs"]),
         ],
-        // RPM Fusion has no NVIDIA driver for EL10 yet: NVIDIA's own repository ships it.
+        // RPM Fusion has no NVIDIA driver for EL10 yet: NVIDIA's own repository
+        // ships it. Its arm64 repository is named `sbsa`, not `aarch64`.
         Family::Rhel => vec![
             step(
                 "Add NVIDIA's repository (RPM Fusion has no NVIDIA driver for EL10)",
-                &["sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel$(rpm -E %rhel)/$(uname -m)/cuda-rhel$(rpm -E %rhel).repo"],
+                &["sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel$(rpm -E %rhel)/$(uname -m | sed s/aarch64/sbsa/)/cuda-rhel$(rpm -E %rhel).repo"],
             ),
             step("Install the driver's CUDA and NVENC libraries", &["sudo dnf install nvidia-driver-cuda-libs nvidia-driver-libs"]),
         ],
