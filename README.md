@@ -54,18 +54,39 @@ advanced mode that exposes almost everything.
 
 ## Install
 
-The short version: [**docs/INSTALL.md**](docs/INSTALL.md) has tested
-instructions for every distribution. In most cases:
+Retort builds a normal package on your machine from this repository and
+installs it with your package manager, which also pulls in FFmpeg. Run these
+as your normal user (not root).
 
-<!-- doc-test: context=install -->
+**Ubuntu 24.04 or newer:**
+
+<!-- doc-test: same-as=debian -->
 ```bash
-curl -fsSL https://oreo1298.github.io/FreeMediaConverter/install.sh | sh
+sudo apt install git build-essential debhelper meson ninja-build pkg-config gettext appstream desktop-file-utils libgtk-4-dev libadwaita-1-dev cargo-1.97
+git clone https://github.com/oreo1298/FreeMediaConverter.git
+cd FreeMediaConverter
+./build-package.sh
 ```
 
-That adds the signed APT or RPM repository on Debian 13, Ubuntu 24.04+,
-Fedora, RHEL/AlmaLinux 10 and openSUSE, uses the AUR on Arch, and falls back
-to the Flatpak or the portable tarball elsewhere. Also available: Flatpak,
-AppImage, Nix flake, Gentoo ebuild and Void template.
+**Arch Linux:**
+
+<!-- doc-test: same-as=arch -->
+```bash
+sudo pacman -S --needed base-devel git
+git clone https://github.com/oreo1298/FreeMediaConverter.git
+cd FreeMediaConverter
+makepkg -si
+```
+
+To update, run `git pull` in the `FreeMediaConverter` folder and build again
+(`./build-package.sh`, or `makepkg -sif` on Arch).
+
+[**docs/INSTALL.md**](docs/INSTALL.md) has the steps for Debian 13, Fedora,
+AlmaLinux/RHEL 10 and openSUSE, full FFmpeg builds and GPU drivers, and the
+ways that need no build: Flatpak, AppImage and a portable tarball from the
+[Releases page](https://github.com/oreo1298/FreeMediaConverter/releases), plus
+a Nix flake, a Gentoo ebuild and a Void template. Every command there is
+tested in a fresh container of each distribution.
 
 ## Command line
 

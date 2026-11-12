@@ -17,7 +17,7 @@ machines' recordings.
 | GUI end-to-end | the real app under Xvfb converts files (Simple), then drives Advanced widgets (rotate, trim, mono) and the outputs are checked with ffprobe | `scripts/e2e-gui.sh` | yes |
 | Screenshots | every major state in light and dark, plus phone width, rendered headlessly for review | `scripts/screenshots.sh` → `docs/screenshots/` | yes (artifact) |
 | Packages | each package is built in a container of its distribution, `meson test` validates the desktop file, AppStream metadata and schema, then the package is installed with the distro's FFmpeg and run | `packaging/*/build.sh`, Packaging and Release workflows | yes |
-| Documentation | every command in the docs runs in a fresh container against a local signed copy of the repositories | `scripts/test-docs.sh` | before releases |
+| Documentation | every command in the docs runs in a fresh container of each listed distribution, as a normal user, on a copy of the checkout (install, update, remove) | `scripts/test-docs.sh` | before releases; native sections also in the Packaging workflow |
 
 ## Running the tests
 
@@ -57,8 +57,12 @@ GUI end-to-end test and screenshots (Xvfb):
 scripts/e2e-gui.sh
 ```
 
-The documentation test needs Docker and the release artifacts in `dist/`
-(see [MAINTAINER.md](MAINTAINER.md)):
+The documentation test needs Docker. Install sections run as a normal user
+with sudo on a copy of this checkout (in place of `git clone`), so they test
+the code you have, including the second build of the update step. The
+AppImage, tarball and Flatpak sections also need those release files in
+`dist/` (see [MAINTAINER.md](MAINTAINER.md)). Arguments pick sections,
+images, `section@image` pairs, documents or contexts:
 
 <!-- doc-test: skip runs Docker itself; this is the documentation test -->
 ```bash

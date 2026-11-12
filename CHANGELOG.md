@@ -24,5 +24,8 @@ First release.
 - System Check with distro-specific, copyable fix commands.
 - `retort-cli`: diagnose, probe-hw, list-formats, analyze, presets, convert
   (with `--dry-run` and `--preview`).
-- Packages: Flatpak, .deb, .rpm, AUR, AppImage, portable tarball, Nix flake,
-  Gentoo ebuild, Void template; signed APT/RPM repositories.
+- Install by cloning the repository and running one command that builds a
+  native package and installs it with the package manager: `build-package.sh`
+  (.deb on Ubuntu/Debian, .rpm on Fedora/EL/openSUSE) or `makepkg -si` (Arch).
+  Release downloads: Flatpak, AppImage, portable tarball; also a Nix flake,
+  Gentoo ebuild and Void template.

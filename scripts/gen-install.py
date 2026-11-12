@@ -15,7 +15,7 @@ OUT = ROOT / "docs/INSTALL.md"
 
 
 def fill(cmd: str, data: dict) -> str:
-    return cmd.replace("{base}", data["base"]).replace("{releases}", data["releases"])
+    return cmd.replace("{releases}", data["releases"])
 
 
 def render(data: dict) -> str:

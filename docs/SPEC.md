@@ -244,6 +244,13 @@ Look at the screenshots and iterate until the result is genuinely polished: spac
   - Vendor Rust deps with flatpak-cargo-generator.
   - Must pass `flatpak-builder-lint` and `appstreamcli validate`.
   - Also publish a `.flatpak` bundle on GitHub Releases.
+> **Changed by the owner (2026-11-12, `docs/PROGRESS.md` D40):** native
+> packages are built by the user from a clone of the repository and installed
+> with the package manager, EZP2019Linux-style (`build-package.sh` for
+> .deb/.rpm, a repository-root `PKGBUILD` with `makepkg -si` on Arch). There
+> are no signed APT/RPM repositories, no AUR packages and no
+> `scripts/install.sh`; the items below that describe them are superseded.
+
 - **Native .deb and .rpm:**
   - Targets: .deb for Debian 13+ and Ubuntu 24.04+ (and their derivatives); .rpm for Fedora, openSUSE Tumbleweed/Leap 16, and RHEL-family releases whose GTK and libadwaita are new enough.
   - Build each package inside the target release's own container so library dependencies are correct.

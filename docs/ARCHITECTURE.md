@@ -12,6 +12,8 @@ status and decision log.
 branding.env              Single source of truth for name / app ID / binary name
 Cargo.toml                Cargo workspace (crates/*)
 meson.build               Top-level build (wraps cargo, installs data files)
+build-package.sh          Builds a .deb/.rpm from the checkout and installs it (user install path)
+PKGBUILD                  Arch: makepkg -si from the checkout (no AUR)
 crates/
   core/   retort-core     Engine. No GTK. ~all logic and most tests live here.
   cli/    retort-cli      Headless binary: diagnose, probe-hw, list-formats, convert, analyze
@@ -19,9 +21,9 @@ crates/
 data/                     .desktop, metainfo, gschema, icons, CSS (templated with @APP_ID@)
 po/                       gettext translations
 tests/fixtures/           Recorded ffmpeg outputs + simulated hardware profiles
-packaging/                flatpak, debian, rpm, arch, appimage, tarball, gentoo, void
+packaging/                flatpak, debian (debian/ dir), rpm (spec), appimage, tarball, gentoo, void, ffmpeg
 flake.nix / nix/          Nix package, overlay, NixOS / home-manager modules
-scripts/                  install.sh, collect-hw-report.sh, test-docs.sh, release helpers
+scripts/                  collect-hw-report.sh, test-docs.sh, gen-install.py, release helpers
 docs/                     SPEC, ARCHITECTURE, PROGRESS, INSTALL, TESTING, MAINTAINER, research/
 ```
 

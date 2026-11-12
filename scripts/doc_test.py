@@ -10,14 +10,16 @@ Sources of commands:
     `<!-- doc-test: context=NAME -->` or `<!-- doc-test: skip REASON -->`; a
     block without one is an error, so new commands cannot slip in untested.
 
-URLs of the real GitHub Pages site and release downloads are rewritten to a
-local mirror (signed with a throwaway key) built from dist/ (run the package
-builds first, see docs/MAINTAINER.md).
+Install sections run as a normal user with sudo, on a copy of the checkout
+under test instead of a `git clone` (`git pull` is left out). Release download
+URLs are rewritten to a local mirror of dist/ (run the release builds first,
+see docs/MAINTAINER.md).
 """
 import argparse
 import http.server
 import os
 import re
+import shlex
 import shutil
 import socketserver
 import subprocess
@@ -44,7 +46,7 @@ fi
 BASE_TOOLS = {
     "apt": "export DEBIAN_FRONTEND=noninteractive; apt-get update -qq && apt-get install -y -qq --no-install-recommends sudo curl ca-certificates xz-utils >/dev/null "
            "&& echo 'APT::Get::Assume-Yes \"true\";' > /etc/apt/apt.conf.d/90assumeyes",
-    "dnf": "dnf -y -q install sudo curl xz tar >/dev/null",
+    "dnf": "dnf -y -q install sudo curl xz tar >/dev/null && echo assumeyes=True >> /etc/dnf/dnf.conf",
     "zypper": "zypper -n -q install sudo curl xz tar gzip >/dev/null",
     "pacman": "pacman -Syu --noconfirm --needed sudo curl >/dev/null && "
               "printf '#!/bin/sh\\nexec /usr/bin/pacman --noconfirm \"$@\"\\n' > /usr/local/bin/pacman && chmod +x /usr/local/bin/pacman",
@@ -55,14 +57,38 @@ FAMILY = {
     "opensuse/tumbleweed": "zypper", "opensuse/leap": "zypper", "archlinux": "pacman",
 }
 
+# The docs clone the repository; the test copies the checkout under test instead
+# and leaves `git pull` out (the update path is still exercised: the build
+# command runs a second time).
+CLONE = "git clone https://github.com/oreo1298/FreeMediaConverter.git"
+COPY = ("mkdir FreeMediaConverter && sudo tar -C /src --exclude=./.git --exclude=./target --exclude=./_build "
+        "--exclude=./_install --exclude=./_package --exclude=./dist --exclude=./src --exclude=./pkg "
+        "--exclude='*.pkg.tar*' -cf - . | tar -C FreeMediaConverter -xf -")
+
+
+# (sudo: the checkout under test may hold files only its owner can read.)
+def checkout(cmd: str) -> str:
+    if cmd == CLONE:
+        return COPY
+    if cmd == "git pull":
+        return "true  # git pull"
+    if cmd == "cd FreeMediaConverter":
+        # The update steps start from wherever the previous step left off.
+        return "cd ~/FreeMediaConverter"
+    return cmd
+
+
 # Markdown contexts: image + extra setup run before the block.
 CONTEXTS = {
-    # Retort installed from the (local) APT repository, plus sample media.
+    # Retort built and installed from the checkout with build-package.sh, plus sample media.
     "cli": ("ubuntu:24.04", """
-install -d -m 0755 /etc/apt/keyrings
-curl -fsSL {base}/retort-archive-keyring.gpg > /etc/apt/keyrings/retort-archive-keyring.gpg
-echo "deb [signed-by=/etc/apt/keyrings/retort-archive-keyring.gpg] {base}/apt noble main" > /etc/apt/sources.list.d/retort.list
-apt-get update -qq && apt-get install -y -qq retort-cli >/dev/null
+apt-get install -y -qq --no-install-recommends git build-essential debhelper meson ninja-build pkg-config gettext \
+  appstream desktop-file-utils libgtk-4-dev libadwaita-1-dev cargo-1.97 >/dev/null
+useradd -m builder && echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+echo 'Defaults env_keep += "HTTPS_PROXY https_proxy HTTP_PROXY http_proxy NO_PROXY no_proxy"' >> /etc/sudoers.d/builder
+mkdir -p /home/builder/r && tar -C /src --exclude=./target --exclude=./_build --exclude=./dist --exclude=./_package -cf - . | tar -C /home/builder/r -xf -
+chown -R builder /home/builder/r
+su builder -c 'cd /home/builder/r && RETORT_BUILD_ASSUME_YES=1 ./build-package.sh' >/dev/null
 ffmpeg -v error -f lavfi -i testsrc2=s=640x360:d=3 -f lavfi -i sine=d=3 -c:v libx264 -c:a aac holiday.mkv
 ffmpeg -v error -f lavfi -i testsrc2=s=640x360:d=20 -f lavfi -i sine=d=20 -c:v libx264 -c:a aac lecture.mp4
 """),
@@ -89,18 +115,18 @@ def resolve_only(cmd: str) -> str:
     """Turn a package install into a resolution check (no download)."""
     m = re.match(r"sudo apt install (.*)", cmd)
     if m:
-        return f"apt-get install -s {m.group(1)} >/dev/null"
+        return f"sudo apt-get install -s {m.group(1)} >/dev/null"
     m = re.match(r"sudo dnf install -y (.*)", cmd)
     if m:
         # --assumeno exits 1 by design; success = resolution reached the prompt.
-        return (f"{{ dnf install --assumeno {m.group(1)} > /tmp/r.log 2>&1 || true; }}; "
+        return (f"{{ sudo dnf install --assumeno {m.group(1)} > /tmp/r.log 2>&1 || true; }}; "
                 f"grep -q 'Operation aborted' /tmp/r.log || {{ tail -20 /tmp/r.log; false; }}")
     m = re.match(r"sudo zypper install -y (.*)", cmd)
     if m:
-        return f"zypper -n install --dry-run {m.group(1)} >/dev/null"
+        return f"sudo zypper -n install --dry-run {m.group(1)} >/dev/null"
     m = re.match(r"sudo pacman -S --needed (.*)", cmd)
     if m:
-        return f"pacman -S --print {m.group(1)} >/dev/null"
+        return f"sudo pacman -S --print {m.group(1)} >/dev/null"
     return cmd
 
 
@@ -112,23 +138,9 @@ class Mirror:
         self.port = 0
 
     def build(self):
-        site = self.dir
-        rel = site / "releases"
+        """Release downloads (tarball, AppImage, Flatpak bundle) under stable names."""
+        rel = self.dir / "releases"
         rel.mkdir(parents=True, exist_ok=True)
-        # Throwaway signing key and repositories (inside a container: needs apt-utils/createrepo).
-        script = f"""
-set -e
-{CA_PRELUDE}
-export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq && apt-get install -y -qq --no-install-recommends apt-utils gnupg createrepo-c rpm >/dev/null
-gpg --batch --passphrase '' --quick-gen-key 'Retort doc test <test@invalid>' ed25519 sign never 2>/dev/null
-export SIGNING_KEY=$(gpg --list-secret-keys --with-colons | awk -F: '/^fpr/ {{print $10; exit}}')
-bash /src/packaging/repo/build-apt-repo.sh /dist/deb /site >/dev/null
-bash /src/packaging/repo/build-rpm-repo.sh /dist/rpm /site http://127.0.0.1:PORT >/dev/null
-chmod -R a+rX /site
-"""
-        run_container("ubuntu:24.04", script, mounts=[(ROOT, "/src", "ro"), (DIST, "/dist", "ro"), (site, "/site", "rw")])
-        shutil.copy(ROOT / "scripts/install.sh", site / "install.sh")
         for f in DIST.glob("*-linux.tar.xz"):
             arch = re.search(r"-(x86_64|aarch64)-linux", f.name).group(1)
             shutil.copy(f, rel / f"retort-linux-{arch}.tar.xz")
@@ -144,9 +156,6 @@ chmod -R a+rX /site
         httpd.RequestHandlerClass.log_message = lambda *a: None
         self.port = httpd.server_address[1]
         threading.Thread(target=httpd.serve_forever, daemon=True).start()
-        # The RPM .repo files were written with a placeholder port.
-        for repo in (self.dir / "rpm").glob("*.repo"):
-            repo.write_text(repo.read_text().replace("127.0.0.1:PORT", f"127.0.0.1:{self.port}"))
         return f"http://127.0.0.1:{self.port}"
 
 
@@ -187,15 +196,37 @@ def run_container(image, script, mounts=(), privileged=False, log=None):
     return res
 
 
-def script_for(commands, prelude, url, rel):
+def quote(c):
+    return c.replace("'", "'\\''")
+
+
+def script_for(commands, prelude, url, rel, as_user=False):
     # Contexts may `cd` (the dev context into its checkout): start in a scratch
     # home first so their working directory sticks.
-    lines = ["set -eo pipefail", "mkdir -p /tmp/home && cd /tmp/home", CA_PRELUDE, prelude,
-             f"export RETORT_INSTALL_BASE={url} RETORT_INSTALL_RELEASES={rel}"]
+    lines = ["set -eo pipefail", "mkdir -p /tmp/home && cd /tmp/home", CA_PRELUDE, prelude]
+    body = ["set -eo pipefail", "export RETORT_BUILD_ASSUME_YES=1"]
     for i, c in enumerate(commands):
-        lines.append(f"echo '>>> [{i + 1}] {c.replace(chr(39), chr(39) + chr(92) + chr(39) + chr(39))}'")
-        lines.append(c)
-    lines.append("echo '>>> all commands passed'")
+        body.append(f"echo '>>> [{i + 1}] {quote(c)}'")
+        body.append(c)
+    body.append("echo '>>> all commands passed'")
+    if not as_user:
+        return "\n".join(lines + body)
+    # Like a real user: a normal account with sudo, starting in its home.
+    keys = ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "NO_PROXY", "no_proxy")
+    env = " ".join(f"{k}={shlex.quote(os.environ[k])}" for k in keys if k in os.environ)
+    lines += [
+        "id tester >/dev/null 2>&1 || useradd -m tester",
+        "echo 'tester ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/tester",
+        # Only for the sandbox's network proxy; a real machine needs nothing here.
+        f"echo 'Defaults env_keep += \"{' '.join(keys)}\"' >> /etc/sudoers.d/tester",
+        "cat > /tmp/user-script.sh <<'USERSCRIPT'",
+        *([f"export {env}"] if env else []),
+        "cd ~",
+        *body,
+        "USERSCRIPT",
+        "chmod 755 /tmp/user-script.sh",
+        "su - tester -c 'bash /tmp/user-script.sh'",
+    ]
     return "\n".join(lines)
 
 
@@ -203,7 +234,7 @@ def install_jobs(data, only):
     jobs = []
     for s in data["section"]:
         for image in s.get("images", []):
-            if only and not any(o in (s["id"], image) for o in only):
+            if only and not any(o in (s["id"], image, f"{s['id']}@{image}") for o in only):
                 continue
             cmds, report = [], []
             for step in s.get("step", []):
@@ -215,15 +246,24 @@ def install_jobs(data, only):
                     report.append(f"skipped ({test[5:].strip()}): " + "; ".join(step.get("commands", [])))
                     continue
                 cmds += [resolve_only(c) if test == "resolve" else c for c in todo]
+                cmds += step.get("test_check", [])
             if cmds:
-                jobs.append((f"INSTALL.md#{s['id']} on {image}", image, cmds, report))
+                # Like a real user: a normal account with sudo (makepkg refuses root).
+                user = ["as-user"] if image != "flatpak" else []
+                jobs.append((f"INSTALL.md#{s['id']} on {image}", image, cmds, report + user))
             else:
                 for r in report:
                     jobs.append((f"INSTALL.md#{s['id']}", None, [], [r]))
     return jobs
 
 
-def markdown_jobs(only):
+def same_as(cmds, section):
+    """True if `cmds` appear, in order, among the section's documented commands."""
+    documented = iter(c for step in section.get("step", []) for c in step.get("commands", []))
+    return all(any(c == d for d in documented) for c in cmds)
+
+
+def markdown_jobs(data, only):
     jobs = []
     rx = re.compile(r"(<!--\s*doc-test:\s*(.*?)\s*-->\s*)?```bash\n(.*?)```", re.S)
     for doc in MD_DOCS:
@@ -238,8 +278,17 @@ def markdown_jobs(only):
             if directive.startswith("skip"):
                 jobs.append((where, None, [], [f"skipped ({directive[4:].strip()}): " + "; ".join(cmds)]))
                 continue
+            same = re.match(r"same-as=([\w-]+)$", directive)
+            if same:
+                # A copy of an INSTALL.md section (tested there): must not drift from it.
+                sec = next((s for s in data["section"] if s["id"] == same.group(1)), None)
+                if not sec or not same_as(cmds, sec):
+                    raise SystemExit(f"{where}: commands differ from INSTALL.md#{same.group(1)} "
+                                     "(docs/install/install.toml); keep them identical")
+                jobs.append((where, None, [], [f"same commands as INSTALL.md#{same.group(1)}, tested there"]))
+                continue
             ctx = re.match(r"context=(\w+)", directive)
-            if not ctx or ctx.group(1) not in CONTEXTS and ctx.group(1) != "install":
+            if not ctx or ctx.group(1) not in CONTEXTS:
                 raise SystemExit(f"{where}: unknown doc-test directive '{directive}'")
             if only and not any(o in (doc, ctx.group(1)) for o in only):
                 continue
@@ -259,7 +308,7 @@ def main():
     ap.add_argument("--list", action="store_true", help="list what would run")
     a = ap.parse_args()
     data = tomllib.loads((ROOT / "docs/install/install.toml").read_text(encoding="utf-8"))
-    jobs = install_jobs(data, a.only) + markdown_jobs(a.only)
+    jobs = install_jobs(data, a.only) + markdown_jobs(data, a.only)
     if a.list:
         for name, image, cmds, report in jobs:
             print(f"{name}: {image or '-'}: {len(cmds)} commands {' '.join(report)}")
@@ -274,17 +323,17 @@ def main():
     results = []
     for name, image, cmds, report in jobs:
         if not cmds:
-            results.append((name, "SKIP", report))
+            results.append((name, "SAME" if report and report[0].startswith("same commands") else "SKIP", report))
             continue
-        fill = lambda c: c.replace(data["base"], url).replace("{base}", url).replace(data["releases"], rel).replace("{releases}", rel)
+        fill = lambda c: checkout(c).replace(data["releases"], rel).replace("{releases}", rel)
         cmds = [fill(c) for c in cmds]
         privileged = False
         if image == "flatpak":
             # Start clean: no system-wide copy of the app, no earlier user install.
             prelude = ("flatpak uninstall -y --noninteractive io.github.oreo1298.Retort >/dev/null 2>&1 || true; "
                        "rm -rf /tmp/home")
-        elif image in CONTEXTS or image == "install":
-            ctx_image, ctx_setup = CONTEXTS.get(image, ("ubuntu:24.04", ""))
+        elif image in CONTEXTS:
+            ctx_image, ctx_setup = CONTEXTS[image]
             prelude = BASE_TOOLS["apt"] + "\n" + fill(ctx_setup)
             image = ctx_image
         else:
@@ -296,7 +345,9 @@ def main():
             # Development contexts share compiled crates between jobs.
             mounts += [("retort-doc-test-target", "/work/target", "rw"),
                        ("retort-doc-test-registry", "/root/.cargo/registry", "rw")]
-        res = run_container(image, script_for(cmds, prelude, url, rel), mounts=mounts,
+        as_user = "as-user" in report
+        report = [r for r in report if r != "as-user"]
+        res = run_container(image, script_for(cmds, prelude, url, rel, as_user), mounts=mounts,
                             privileged=privileged, log=log)
         ok = res.returncode == 0
         results.append((name, "PASS" if ok else "FAIL", report + ([] if ok else [f"see {log.relative_to(ROOT)}"])))

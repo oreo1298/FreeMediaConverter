@@ -2,16 +2,19 @@
 
 # Installing Retort
 
-Retort needs GTK 4.14+, libadwaita 1.5+ and FFmpeg 6.1 or newer. Pick your
-system below; every command on this page is run by `scripts/test-docs.sh` in
-a fresh container of that system before each release.
+Retort is installed the same way on every distribution: install the build
+tools once, clone this repository and run one command. It builds a normal
+`.deb`, `.rpm` or pacman package on your machine and installs it, so your
+package manager pulls in FFmpeg and the other dependencies and can remove
+Retort again. To update, pull the new code and run the same command again.
 
-**Quickest way** on any supported distribution — the script detects your
-system and uses the matching method from this page:
+Retort needs GTK 4.14+, libadwaita 1.5+ and FFmpeg 6.1 or newer. On older
+systems, or if you would rather not build anything, use the Flatpak, AppImage
+or portable tarball from the [Releases page](https://github.com/oreo1298/FreeMediaConverter/releases)
+([other ways to install](#flatpak)).
 
-```bash
-curl -fsSL https://oreo1298.github.io/FreeMediaConverter/install.sh | sh
-```
+Every command on this page is run by `scripts/test-docs.sh` in a fresh
+container of that system, as a normal user, before each release.
 
 After installing, open **System Check** from the main menu (or run
 `retort-cli diagnose`): it tells you exactly which hardware acceleration works
@@ -19,50 +22,58 @@ and which package to install for the rest.
 
 ## Contents
 
-- [Flatpak (any distribution)](#flatpak)
 - [Ubuntu 24.04 LTS and newer, Debian 13](#debian)
 - [Fedora 45](#fedora)
 - [AlmaLinux, Rocky Linux and RHEL 10](#el)
 - [openSUSE Tumbleweed and Leap 16](#opensuse)
 - [Arch Linux](#arch)
+- [Flatpak (any distribution, nothing to build)](#flatpak)
 - [AppImage (glibc 2.39 or newer)](#appimage)
 - [Portable tarball (any distribution with GTK 4.14+ and libadwaita 1.5+)](#tarball)
 - [Nix and NixOS](#nix)
 - [Gentoo and Void Linux](#gentoo-void)
-- [From source](#source)
+- [Without a package (Meson)](#source)
 - [After installing](#check)
-
-<a id="flatpak"></a>
-
-## Flatpak (any distribution)
-
-The Flatpak bundles a complete FFmpeg 9 (x264, x265, SVT-AV1, libvpx, libaom,
-Opus, LAME, libplacebo, NVENC/NVDEC, VA-API, Vulkan and Quick Sync support)
-on the GNOME 51 runtime. It works on every distribution with Flatpak,
-including Debian 12 and Ubuntu 22.04 whose GTK is too old for the native
-packages. Until Retort is on Flathub, install the bundle from the release:
-
-```bash
-flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-curl -fLO https://github.com/oreo1298/FreeMediaConverter/releases/latest/download/Retort-$(uname -m).flatpak
-flatpak install --user -y Retort-$(uname -m).flatpak
-flatpak run io.github.oreo1298.Retort
-```
 
 <a id="debian"></a>
 
 ## Ubuntu 24.04 LTS and newer, Debian 13
 
-Add Retort's signed APT repository and install. Updates then arrive with your
-normal system updates. `retort-cli` (no GTK) can be installed on its own on
-servers.
+Run these as your normal user (not root). First the build tools and Rust
+(1.92 or newer), once. On Ubuntu:
 
 ```bash
-sudo install -d -m 0755 /etc/apt/keyrings
-curl -fsSL https://oreo1298.github.io/FreeMediaConverter/retort-archive-keyring.gpg | sudo tee /etc/apt/keyrings/retort-archive-keyring.gpg > /dev/null
-echo "deb [signed-by=/etc/apt/keyrings/retort-archive-keyring.gpg] https://oreo1298.github.io/FreeMediaConverter/apt $(. /etc/os-release && echo $VERSION_CODENAME) main" | sudo tee /etc/apt/sources.list.d/retort.list
-sudo apt update
-sudo apt install retort
+sudo apt install git build-essential debhelper meson ninja-build pkg-config gettext appstream desktop-file-utils libgtk-4-dev libadwaita-1-dev cargo-1.97
+```
+
+On Debian 13 (its own Rust is too old; `rustup` installs the current one):
+
+```bash
+sudo apt install git build-essential debhelper meson ninja-build pkg-config gettext appstream desktop-file-utils libgtk-4-dev libadwaita-1-dev rustup
+rustup default stable
+```
+
+### Build and install
+
+`build-package.sh` builds the `retort` and `retort-cli` packages into
+`_package/` and installs them with apt, which also installs FFmpeg. It asks
+for your password when it installs. The first build downloads the Rust crates
+and takes several minutes.
+
+```bash
+git clone https://github.com/oreo1298/FreeMediaConverter.git
+cd FreeMediaConverter
+./build-package.sh
+```
+
+### Update
+
+Pull the new code and build again from the same folder:
+
+```bash
+cd FreeMediaConverter
+git pull
+./build-package.sh
 ```
 
 ### Hardware acceleration — Intel (Broadwell and newer)
@@ -100,17 +111,44 @@ On Debian 13 (with `non-free` enabled as above):
 sudo apt install nvidia-driver libnvidia-encode1 libcuda1
 ```
 
+### Remove
+
+```bash
+sudo apt remove retort retort-cli
+```
+
+### Servers: command line only
+
+`retort-cli` does not need GTK. To install only it, build without installing
+and install that one package (the build tools are only needed for building):
+
+```bash
+./build-package.sh --no-install
+sudo apt install ./_package/retort-cli_*.deb
+```
+
 <a id="fedora"></a>
 
 ## Fedora 45
 
-Add Retort's signed RPM repository and install. Fedora's own `ffmpeg-free`
-is installed with it; it lacks the H.264/HEVC encoders, so for those switch
-to RPM Fusion's full FFmpeg (second step).
+Run these as your normal user (not root). First the build tools, once:
 
 ```bash
-sudo curl -fsSL -o /etc/yum.repos.d/retort.repo https://oreo1298.github.io/FreeMediaConverter/rpm/retort-fedora-$(rpm -E %fedora).repo
-sudo dnf install -y retort
+sudo dnf install -y git rpm-build gcc meson ninja-build gettext desktop-file-utils appstream gtk4-devel libadwaita-devel cargo
+```
+
+### Build and install
+
+`build-package.sh` builds the `retort` and `retort-cli` RPMs into `_package/`
+and installs them with dnf. It asks for your password when it installs. The
+first build downloads the Rust crates and takes several minutes. Fedora's own
+`ffmpeg-free` is installed with it; it lacks the H.264/HEVC encoders, so
+switch to RPM Fusion's full FFmpeg afterwards (next step).
+
+```bash
+git clone https://github.com/oreo1298/FreeMediaConverter.git
+cd FreeMediaConverter
+./build-package.sh
 ```
 
 ### Full FFmpeg from RPM Fusion
@@ -118,6 +156,16 @@ sudo dnf install -y retort
 ```bash
 sudo dnf install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 sudo dnf swap -y ffmpeg-free ffmpeg --allowerasing
+```
+
+### Update
+
+Pull the new code and build again from the same folder:
+
+```bash
+cd FreeMediaConverter
+git pull
+./build-package.sh
 ```
 
 ### Hardware acceleration — Intel
@@ -138,17 +186,34 @@ sudo dnf install -y mesa-va-drivers-freeworld
 sudo dnf install -y akmod-nvidia xorg-x11-drv-nvidia-cuda
 ```
 
+### Remove
+
+```bash
+sudo dnf remove -y retort retort-cli
+```
+
 <a id="el"></a>
 
 ## AlmaLinux, Rocky Linux and RHEL 10
 
-FFmpeg comes from EPEL (`ffmpeg-free`); RPM Fusion has the full build.
+Run these as your normal user (not root). The build tools come from the CRB
+repository and FFmpeg from EPEL (`ffmpeg-free`); RPM Fusion has the full
+build. Once:
 
 ```bash
 sudo dnf install -y epel-release
 sudo dnf config-manager --set-enabled crb
-sudo curl -fsSL -o /etc/yum.repos.d/retort.repo https://oreo1298.github.io/FreeMediaConverter/rpm/retort-el-10.repo
-sudo dnf install -y retort
+sudo dnf install -y git rpm-build gcc meson ninja-build gettext desktop-file-utils appstream gtk4-devel libadwaita-devel cargo
+```
+
+### Build and install
+
+This builds the `retort` and `retort-cli` RPMs and installs them with dnf (it asks for your password):
+
+```bash
+git clone https://github.com/oreo1298/FreeMediaConverter.git
+cd FreeMediaConverter
+./build-package.sh
 ```
 
 ### Full FFmpeg from RPM Fusion
@@ -156,6 +221,16 @@ sudo dnf install -y retort
 ```bash
 sudo dnf install -y https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-10.noarch.rpm https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-10.noarch.rpm
 sudo dnf swap -y ffmpeg-free ffmpeg --allowerasing
+```
+
+### Update
+
+Pull the new code and build again from the same folder:
+
+```bash
+cd FreeMediaConverter
+git pull
+./build-package.sh
 ```
 
 ### Hardware acceleration — Intel
@@ -173,18 +248,33 @@ sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute
 sudo dnf install -y nvidia-driver-cuda-libs nvidia-driver-libs
 ```
 
+### Remove
+
+```bash
+sudo dnf remove -y retort retort-cli
+```
+
 <a id="opensuse"></a>
 
 ## openSUSE Tumbleweed and Leap 16
 
-openSUSE's own FFmpeg lacks the H.264/HEVC encoders; Packman has the full
-build. Add Retort's repository (use `opensuse-leap-16.0` instead of
-`opensuse-tumbleweed` on Leap):
+Run these as your normal user (not root). First the build tools, once:
 
 ```bash
-sudo zypper addrepo --refresh https://oreo1298.github.io/FreeMediaConverter/rpm/retort-opensuse-tumbleweed.repo
-sudo zypper --gpg-auto-import-keys refresh retort
-sudo zypper install -y retort
+sudo zypper install -y git rpm-build gcc meson ninja gettext-tools desktop-file-utils AppStream gtk4-devel libadwaita-devel cargo
+```
+
+### Build and install
+
+This builds the `retort` and `retort-cli` RPMs and installs them with zypper
+(it asks for your password; the packages are built locally, so zypper asks
+nothing about signatures). openSUSE's own FFmpeg lacks the H.264/HEVC
+encoders: switch to Packman's full build afterwards (next step).
+
+```bash
+git clone https://github.com/oreo1298/FreeMediaConverter.git
+cd FreeMediaConverter
+./build-package.sh
 ```
 
 ### Full FFmpeg from Packman (Tumbleweed)
@@ -203,30 +293,56 @@ sudo zypper --gpg-auto-import-keys refresh packman
 sudo zypper install -y --from packman --allow-vendor-change ffmpeg-8 -ffmpeg-7
 ```
 
+### Update
+
+Pull the new code and build again from the same folder:
+
+```bash
+cd FreeMediaConverter
+git pull
+./build-package.sh
+```
+
 ### Hardware acceleration — Intel
 
 ```bash
 sudo zypper install -y intel-media-driver libvpl2
 ```
 
+### Remove
+
+```bash
+sudo zypper remove -y retort retort-cli
+```
+
 <a id="arch"></a>
 
 ## Arch Linux
 
-Retort is in the AUR: `retort-bin` (prebuilt), `retort` (built from source)
-and `retort-git`. With an AUR helper such as `yay` or `paru`:
+Run these as your normal user (not root); `makepkg` asks for your password
+when it installs the dependencies and the package:
 
 ```bash
-yay -S retort-bin
-```
-
-Without a helper:
-
-```bash
-git clone https://aur.archlinux.org/retort-bin.git
-cd retort-bin
+sudo pacman -S --needed base-devel git
+git clone https://github.com/oreo1298/FreeMediaConverter.git
+cd FreeMediaConverter
 makepkg -si
 ```
+
+This builds and installs the `retort` and `retort-cli` packages. Dependencies
+(pulled in automatically): `gtk4`, `libadwaita` and `ffmpeg`; `cargo` and
+`meson` only for building.
+
+To update later, pull the new code and build again from the same folder
+(`-f` rebuilds even when the version number has not changed):
+
+```bash
+cd FreeMediaConverter
+git pull
+makepkg -sif
+```
+
+> If `makepkg` says `PKGBUILD does not exist`, you are not inside the `FreeMediaConverter` folder.
 
 ### Hardware acceleration — Intel
 
@@ -238,6 +354,30 @@ sudo pacman -S --needed intel-media-driver vpl-gpu-rt
 
 ```bash
 sudo pacman -S --needed nvidia-utils
+```
+
+### Remove
+
+```bash
+sudo pacman -R retort retort-cli
+```
+
+<a id="flatpak"></a>
+
+## Flatpak (any distribution, nothing to build)
+
+The Flatpak bundles a complete FFmpeg 9 (x264, x265, SVT-AV1, libvpx, libaom,
+Opus, LAME, libplacebo, NVENC/NVDEC, VA-API, Vulkan and Quick Sync support)
+on the GNOME 51 runtime. It works on every distribution with Flatpak,
+including Debian 12 and Ubuntu 22.04 whose GTK is too old for Retort, and
+needs no build. Until Retort is on Flathub, install the bundle from the
+release:
+
+```bash
+flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+curl -fLO https://github.com/oreo1298/FreeMediaConverter/releases/latest/download/Retort-$(uname -m).flatpak
+flatpak install --user -y Retort-$(uname -m).flatpak
+flatpak run io.github.oreo1298.Retort
 ```
 
 <a id="appimage"></a>
@@ -295,9 +435,11 @@ GURU and void-packages with each release.
 
 <a id="source"></a>
 
-## From source
+## Without a package (Meson)
 
-Needs Rust 1.92+, Meson 0.62+, GTK 4.14+, libadwaita 1.5+, gettext,
+For development, or a distribution without `.deb`, `.rpm` or pacman: build
+with Meson and install into `/usr/local` (no package manager involved). Needs
+Rust 1.92+, Meson 0.62+, GTK 4.14+, libadwaita 1.5+, gettext,
 desktop-file-utils, AppStream and FFmpeg. On Ubuntu 24.04:
 
 ```bash

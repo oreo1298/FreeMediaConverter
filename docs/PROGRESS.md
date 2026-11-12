@@ -67,19 +67,17 @@ Read this first in a new session. Requirements: `docs/SPEC.md`. Code map:
 
 ### M4 — Packaging
 - [x] Flatpak (GNOME 51, bundled FFmpeg 9.0.2 with x264/x265/SVT-AV1/aom/vpx/libplacebo/NVENC/QSV/VA-API/Vulkan) — built, installed and converting in a container
-- [x] .deb (Ubuntu 24.04, Ubuntu 26.04, Debian 13; GUI + GTK-free `retort-cli`) and .rpm (Fedora 45, EL 10, openSUSE Tumbleweed, Leap 16) — each built in its distro's container, `meson test` passing, installed with the distro FFmpeg and run
-- [x] AUR source (split), -git and -bin PKGBUILDs — source package built, namcap-checked, installed and run in Arch
+- [x] Native packages built by the user from a clone (D40): `build-package.sh` → .deb (Ubuntu 24.04, Ubuntu 26.04, Debian 13; GUI + GTK-free `retort-cli`) or .rpm (Fedora 45, EL 10, openSUSE Tumbleweed, Leap 16), installed with apt/dnf/zypper; repo-root `PKGBUILD` + `makepkg -si` on Arch (split `retort` + `retort-cli`, no AUR) — install, update and remove tested per distro as a normal user (results below)
 - [x] Portable tarball (+ install.sh / uninstall.sh, relocatable) — built; AppImage (+ zsync) — see checklist note below
 - [x] Nix flake (evaluated for x86-64/arm64 locally; built by the Packaging workflow), Gentoo ebuild, Void template (not built here: no Gentoo/Void build hosts)
-- [x] Signed APT/RPM repositories (throwaway-key end-to-end tests: apt `signed-by` + InRelease, dnf/zypper `gpgcheck` + `repo_gpgcheck`)
-- [x] `scripts/install.sh` (tested on Ubuntu 24.04, Fedora 45, Tumbleweed against a local mirror)
+- [—] Signed APT/RPM repositories, `scripts/install.sh` (curl | sh) and AUR packages: built and tested, then removed at the owner's request (D40)
 - [x] `scripts/rename.sh` (tested: rename → Cargo + Meson build → renamed binaries, desktop file, schema, metainfo)
-- [x] CI: lint/test x86-64 + arm64 (from M1), Packaging smoke workflow, Release workflow on tags (all formats × both arches, GitHub release, Pages repositories)
+- [x] CI: lint/test x86-64 + arm64 (from M1), Packaging smoke workflow, Release workflow on tags (clone-and-build install of every distro × both arches, Flatpak/AppImage/tarball × both arches, GitHub release)
 
 ### M5 — Docs and polish
 - [x] README, INSTALL.md (generated from `docs/install/install.toml`), `scripts/test-docs.sh`
 - [x] TESTING.md, MAINTAINER.md, CONTRIBUTING, Code of Conduct, SECURITY, issue forms
-- [x] Documentation test run locally against a signed local mirror: every INSTALL section on every listed distribution, README/CONTRIBUTING/TESTING/MAINTAINER blocks (results below); the Release workflow runs it before publishing
+- [x] Documentation test: every INSTALL section on every listed distribution (as a normal user, on a copy of the checkout), README/CONTRIBUTING/TESTING/MAINTAINER blocks (results below); the Release workflow runs it before publishing
 - [x] Final screenshots + polish pass
 
 ## Environment (sandbox, checked 2026-11-12)
@@ -151,7 +149,7 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 | D27 | Codec lists for a container are computed on a worker and cached per (container, kind) | Uncurated containers need a test mux the first time (seconds) | Computing in `sync` (froze the UI) |
 | D28 | Preview samples run at the full job's planned bitrate (target size → VBR at the planned kb/s) and the size estimate is capped at the limit | A 10-s target-size sample would otherwise get the whole budget; short samples over-represent container overhead (2.10 MB estimate vs 1.97 MB real for a 2 MB limit) | Re-planning the sample as its own target-size job |
 | D29 | One shared sidebar footer (speed, plan + Preview, remux suggestion in Simple only); destination is a one-line strip under the scope | Advanced needs the vertical space; both modes show the same plan and preview | Separate footers per mode |
-| D30 | Distro packages build with a rustup toolchain and vendored crates | MSRV 1.92 is newer than Debian 13/Ubuntu 24.04/EL 10's rustc; vendoring makes builds offline and reproducible | Distro rustc (too old), packaging every crate (not feasible outside the distros) |
+| D30 | Distro packages build with vendored crates and a Rust ≥ 1.92 on PATH (revised by D40: the user's distro Rust — Ubuntu `cargo-1.97`, Debian 13 `rustup`, Fedora/EL 10/openSUSE/Arch `cargo`) | MSRV 1.92 is newer than Debian 13's and Ubuntu 24.04's default rustc; vendoring makes the package build itself offline | Packaging every crate (not feasible outside the distros) |
 | D31 | Separate `retort-cli` package without GTK dependencies | Headless servers (Proxmox) should not pull GTK | One package with both binaries |
 | D32 | RPMs require `/usr/bin/ffmpeg` (and ffprobe), not a package name | Works with Fedora `ffmpeg-free`, RPM Fusion, EPEL, openSUSE OSS and Packman alike | Requiring `ffmpeg` (missing on Fedora by default) |
 | D33 | Flatpak builds x264, x265 (multilib 8/10/12-bit), zimg, libass, libvpl, libplacebo 7.360.1 and nv-codec-headers n12.2; no AMF | The GNOME 51 SDK lacks them (it has SVT-AV1, aom, vpx, dav1d, opus, lame, VA-API, Vulkan, shaderc); its ffnvcodec 13.1 needs newer drivers than D17 allows; AMD's AMF runtime is not available in the sandbox | org.freedesktop.Platform.codecs-extra (FFmpeg version not ours) |
@@ -160,7 +158,9 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 | D36 | Update check only in AppImage/tarball builds (Cargo feature), off by default, daily, via the system `curl` | Spec: opt-in, those two formats only; no TLS stack in the binary | A Rust HTTP client in every build |
 | D37 | The app finds its schema, icons and translations next to the executable when the build-time paths don't exist | Portable tarball and AppImage are relocatable | Wrapper scripts setting environment variables |
 | D38 | `docs/INSTALL.md` is generated from `docs/install/install.toml`; `scripts/test-docs.sh` runs every documented command in containers against a local signed mirror | One source for docs and tests; GPU driver installs are resolved (`apt-get -s`, `dnf --assumeno`, …), not installed; untestable commands are listed with reasons | Hand-written INSTALL.md with a separate test list |
-| D39 | Stable repository names: APT suites by codename, RPM repos `fedora-45`, `el-10`, `opensuse-tumbleweed`, `opensuse-leap-16.0` | `install.sh` and docs can compute them; Tumbleweed's VERSION_ID is a date | `$ID-$VERSION_ID` everywhere |
+| D39 | ~~Stable repository names for the APT/RPM repositories~~ — superseded by D40 (no repositories) | | |
+| D40 | Install = clone + build a native package locally + install it with the package manager (`build-package.sh` for .deb/.rpm, repo-root `PKGBUILD` with `makepkg -si`); update = `git pull` + the same command. No APT/RPM repositories, no `curl \| sh` installer, no AUR. Flatpak, AppImage and tarball stay as release downloads | Owner's decision (2026-11-12), modelled on their EZP2019Linux project: one transparent method everywhere, nothing to host or sign, the package manager still tracks and removes the files. Supersedes SPEC §Packaging's repository/AUR/`install.sh` items | Signed APT/RPM repositories on Pages + `install.sh` + AUR (built and tested, removed); prebuilt .deb/.rpm on the release page (would need the repositories' per-distro build matrix again for little gain) |
+| D41 | Each local build gets a newer package version: `<version>-0local<UTC timestamp>` (deb), release `0.local<timestamp>` (rpm); Arch updates use `makepkg -sif` | apt/dnf/zypper skip a local package whose version is already installed, and `makepkg -si` reinstalls the previously built package when `pkgver` is unchanged — so an update between releases would silently keep the old build | A `pkgver()` from git (makepkg rewrites `pkgver=` in the tracked PKGBUILD, which then blocks `git pull`); `--reinstall`/`--force` flags (break real upgrades and differ per tool) |
 
 ## Findings worth knowing (from real FFmpeg / distro checks)
 
@@ -189,8 +189,7 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 
 ## Open questions (for the maintainer)
 
-- One-time setup before the first tag (details in MAINTAINER.md): enable GitHub Pages (source: GitHub Actions) and add the `REPO_SIGNING_KEY` secret; without it the Pages job of the Release workflow fails on purpose.
-- Publishing to the AUR, Flathub, GURU and void-packages needs your accounts; the files are ready (`packaging/`), steps in MAINTAINER.md.
+- Publishing to Flathub, GURU and void-packages needs your accounts; the files are ready (`packaging/`), steps in MAINTAINER.md.
 - Real hardware reports (below) will replace the synthetic profiles.
 
 ## Hardware test list
@@ -202,8 +201,8 @@ Install Retort the way your users will, then repeat the GUI checks from M2/M3:
 | Machine | Install with | Check |
 |---|---|---|
 | Desktop (RTX 4090) | Flatpak bundle from a release (`Retort-x86_64.flatpak`) | Flatpak pulls `org.freedesktop.Platform.GL.nvidia-<driver>` automatically; System Check shows NVENC verified; AV1 NVENC encode works inside the sandbox. Then the .deb/.rpm for your distro and compare. |
-| Dell 5570 (Iris Xe + NVIDIA) | `install.sh` (APT or RPM repository) | Intel VA-API/QSV need the driver packages INSTALL.md lists; check that `org.freedesktop.Platform.VAAPI.Intel` is installed with the Flatpak. |
-| Proxmox (Intel iGPU + GTX 1660 Ti) | `retort-cli` package only (no GTK pulled in) | `apt install retort-cli` / `dnf install retort-cli`; `retort-cli diagnose`, `probe-hw`, a batch `convert`. |
+| Dell 5570 (Iris Xe + NVIDIA) | clone + `./build-package.sh` (or `makepkg -si` on Arch) | Intel VA-API/QSV need the driver packages INSTALL.md lists; check that `org.freedesktop.Platform.VAAPI.Intel` is installed with the Flatpak. |
+| Proxmox (Intel iGPU + GTX 1660 Ti) | `retort-cli` package only (no GTK pulled in) | INSTALL.md "Servers: command line only" (`./build-package.sh --no-install`, then `apt install ./_package/retort-cli_*.deb`); `retort-cli diagnose`, `probe-hw`, a batch `convert`. |
 | M1 MacBook Air (Asahi, arm64) | AppImage `Retort-aarch64.AppImage` and the Fedora arm64 RPM | Both start; everything on CPU; arm64 Flatpak bundle too. |
 
 ### After M3 (Advanced mode, preview)

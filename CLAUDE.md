@@ -49,16 +49,19 @@ scripts/e2e-gui.sh                  # real conversion through the GUI, isolated 
 # Translations template
 meson compile -C _build retort-pot  # writes po/retort.pot (not committed)
 
-# Packages (Docker; each builds in its distro's container, installs, smoke-tests)
+# Native packages: users build them from a clone (see docs/INSTALL.md)
+./build-package.sh [--no-install]    # .deb (Debian/Ubuntu) or .rpm (Fedora/EL/openSUSE) -> _package/
+makepkg -si                          # Arch, repo-root PKGBUILD (no AUR)
+scripts/test-docs.sh debian@ubuntu:24.04   # Docker: INSTALL.md section as a normal user, on a copy of this checkout
+                                     # also debian@debian:trixie, fedora, el, opensuse@opensuse/leap:16.0, arch, ...
+# Release downloads (Docker; each builds in a container, installs, smoke-tests)
 scripts/make-dist.sh                 # dist/retort-<v>.tar.xz + -vendor.tar.xz (--dirty: working tree)
-packaging/debian/build.sh ubuntu:24.04   # also ubuntu:26.04, debian:trixie
-packaging/rpm/build.sh fedora:45         # also almalinux:10, opensuse/tumbleweed, opensuse/leap:16.0
-packaging/arch/build.sh | packaging/tarball/build.sh | packaging/appimage/build.sh
+packaging/tarball/build.sh | packaging/appimage/build.sh
 scripts/check-versions.sh            # every stated version agrees with Cargo.toml
 
 # Docs: INSTALL.md is generated; every documented command is tested
 scripts/gen-install.py               # docs/install/install.toml -> docs/INSTALL.md
-scripts/test-docs.sh [section|image|doc|context]   # needs dist/ packages; logs in dist/doc-test/
+scripts/test-docs.sh [section|image|section@image|doc|context]   # logs in dist/doc-test/
 ```
 
 New ```bash blocks in README/CONTRIBUTING/TESTING/MAINTAINER need a

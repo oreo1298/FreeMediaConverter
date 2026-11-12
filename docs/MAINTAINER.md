@@ -1,42 +1,26 @@
 # Maintaining Retort
 
 Everything a maintainer needs that is not day-to-day coding: releases,
-package repositories, store submissions, dependency updates and renames.
-Conventions for code are in `CLAUDE.md`; status and decisions in
-`docs/PROGRESS.md`.
+store submissions, dependency updates and renames. Conventions for code are
+in `CLAUDE.md`; status and decisions in `docs/PROGRESS.md`.
+
+Users install Retort by cloning this repository and building a native package
+on their own machine (`build-package.sh` for .deb/.rpm, `PKGBUILD` with
+`makepkg -si` on Arch; see `docs/INSTALL.md`). There is no package
+repository, signing key or AUR package to maintain: what is on the default
+branch is what users build. Keep it releasable.
 
 ## One-time setup
 
-1. **GitHub Pages** — Settings → Pages → Source: *GitHub Actions*. The
-   release workflow publishes the APT/RPM repositories, `install.sh` and a
-   small index page there (`https://oreo1298.github.io/FreeMediaConverter/`).
-2. **Repository signing key** — create a dedicated key (not your personal one)
-   and store the *armored secret key* as the repository secret
-   `REPO_SIGNING_KEY` (Settings → Secrets and variables → Actions):
-
-   <!-- doc-test: context=dev -->
-   ```bash
-   gpg --batch --passphrase '' --quick-gen-key "Retort Packages <noreply@users.noreply.github.com>" ed25519 sign 3y
-   ```
-
-   <!-- doc-test: context=dev -->
-   ```bash
-   gpg --armor --export-secret-keys "Retort Packages" > retort-signing-key.asc
-   ```
-
-   Paste the file's content into the secret, then delete the file. Publish
-   the fingerprint (`gpg --fingerprint "Retort Packages"`) in
-   `docs/INSTALL.md`. The key expires after 3 years: extend it with
-   `gpg --quick-set-expire <fingerprint> 3y`, update the secret and re-release.
-3. **arm64 runners** — the workflows use GitHub's `ubuntu-24.04-arm` runners
-   (free for public repositories). Nothing to configure.
+**arm64 runners** — the workflows use GitHub's `ubuntu-24.04-arm` runners
+(free for public repositories). Nothing to configure.
 
 ## Releasing
 
 1. Update the version everywhere it is written down, then check:
    - `Cargo.toml` (`[workspace.package] version`), `meson.build` (`version:`)
    - `packaging/rpm/retort.spec` (`Version`, `%changelog`)
-   - `packaging/arch/retort/PKGBUILD`, `packaging/arch/retort-bin/PKGBUILD` (`pkgver`, reset `pkgrel=1`)
+   - `PKGBUILD` (`pkgver`, reset `pkgrel=1`)
    - `packaging/void/srcpkgs/retort/template` (`version`)
    - rename `packaging/gentoo/media-video/retort/retort-<version>.ebuild`
    - `data/app.metainfo.xml.in` (new `<release>` with date and notes)
@@ -75,35 +59,29 @@ Conventions for code are in `CLAUDE.md`; status and decisions in
    git push origin v0.2.0
    ```
 
-5. The **Release** workflow builds everything for x86-64 and arm64 —
-   source + vendor tarballs, .deb (Ubuntu 24.04/26.04, Debian 13), .rpm
-   (Fedora 45, EL 10, openSUSE Tumbleweed/Leap 16), Arch package (namcap),
-   portable tarballs, AppImages (+ zsync) and Flatpak bundles — attaches them
-   to a GitHub release with `SHA256SUMS`, and refreshes the signed
-   repositories on Pages. Run it by hand (*Actions → Release → Run workflow*)
-   for a dry run without publishing.
-6. After the release: update the AUR, Flathub, GURU and Void as below.
+5. The **Release** workflow follows `docs/INSTALL.md` on every supported
+   distribution (Ubuntu 24.04/26.04, Debian 13, Fedora 45, EL 10, openSUSE
+   Tumbleweed/Leap 16 on x86-64 and arm64, Arch on x86-64): build the package
+   from the checkout, install, update, remove. It also builds the source +
+   vendor tarballs, portable tarballs, AppImages (+ zsync) and Flatpak bundles,
+   runs the remaining documented commands, and attaches the downloads to a
+   GitHub release with `SHA256SUMS`. Run it by hand (*Actions → Release → Run
+   workflow*) for a dry run without publishing.
+6. After the release: update Flathub, GURU and Void as below.
 
-Each package build is also runnable locally (Docker needed):
+The native install of one distribution is testable locally (Docker needed);
+it runs the INSTALL.md section as a normal user on a copy of this checkout:
+
+<!-- doc-test: skip runs Docker; the Packaging and Release workflows run it -->
+```bash
+scripts/test-docs.sh debian@ubuntu:24.04
+```
+
+The release downloads build locally too:
 
 <!-- doc-test: context=dev -->
 ```bash
 scripts/make-dist.sh
-```
-
-<!-- doc-test: skip runs Docker; the Packaging and Release workflows run this script -->
-```bash
-packaging/debian/build.sh ubuntu:24.04
-```
-
-<!-- doc-test: skip runs Docker; the Packaging and Release workflows run this script -->
-```bash
-packaging/rpm/build.sh fedora:45
-```
-
-<!-- doc-test: skip runs Docker; the Packaging and Release workflows run this script -->
-```bash
-packaging/arch/build.sh
 ```
 
 <!-- doc-test: skip runs Docker; the Packaging and Release workflows run this script -->
@@ -117,16 +95,6 @@ packaging/appimage/build.sh
 ```
 
 Behind a TLS-intercepting proxy, pass `DOCKER_ARGS="--network host -v /path/ca.crt:/ca.crt:ro -e HTTPS_PROXY"`.
-
-## AUR
-
-Three packages: `retort` (source, split into `retort` + `retort-cli`),
-`retort-git` and `retort-bin` (from the portable tarball). For each:
-
-1. Copy `packaging/arch/<pkg>/PKGBUILD` into the AUR git clone.
-2. Fill `sha256sums` from the release's `SHA256SUMS` (`updpkgsums` does it).
-3. `makepkg --printsrcinfo > .SRCINFO`, `namcap PKGBUILD`, build once with
-   `makepkg -si`, commit and push.
 
 ## Flathub
 
