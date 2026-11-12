@@ -1,0 +1,226 @@
+{
+  "id": "io.github.oreo1298.Retort",
+  "runtime": "org.gnome.Platform",
+  "runtime-version": "51",
+  "sdk": "org.gnome.Sdk",
+  "sdk-extensions": [
+    "org.freedesktop.Sdk.Extension.rust-stable",
+    "org.freedesktop.Sdk.Extension.llvm22"
+  ],
+  "command": "retort",
+  "finish-args": [
+    "--share=ipc",
+    "--socket=wayland",
+    "--socket=fallback-x11",
+    "--device=all",
+    "--filesystem=home",
+    "--filesystem=/media",
+    "--filesystem=/run/media",
+    "--filesystem=/mnt"
+  ],
+  "cleanup": [
+    "/include",
+    "/lib/pkgconfig",
+    "/share/pkgconfig",
+    "/lib/cmake",
+    "/share/man",
+    "/share/doc",
+    "/share/ffmpeg/examples",
+    "*.a",
+    "*.la"
+  ],
+  "modules": [
+    {
+      "name": "nv-codec-headers",
+      "comment": "NVENC/NVDEC/CUDA loader headers (MIT). n12.2 works with drivers >= 550 (decision D17); the SDK's 13.x would need newer drivers.",
+      "buildsystem": "simple",
+      "build-commands": ["make PREFIX=/app install"],
+      "cleanup": ["*"],
+      "sources": [
+        {
+          "type": "git",
+          "url": "https://github.com/FFmpeg/nv-codec-headers.git",
+          "tag": "n12.2.72.0",
+          "commit": "c69278340ab1d5559c7d7bf0edf615dc33ddbba7"
+        }
+      ]
+    },
+    {
+      "name": "x264",
+      "config-opts": ["--enable-shared", "--enable-pic", "--disable-cli"],
+      "sources": [
+        {
+          "type": "git",
+          "url": "https://code.videolan.org/videolan/x264.git",
+          "branch": "stable",
+          "commit": "b35605ace3ddf7c1a5d67a2eb553f034aef41d55"
+        }
+      ]
+    },
+    {
+      "name": "x265",
+      "comment": "Multilib build: 8-bit library with 10- and 12-bit linked in (x265's multilib.sh).",
+      "buildsystem": "simple",
+      "build-commands": [
+        "cmake -S source -B b12 -G Ninja -DCMAKE_BUILD_TYPE=Release -DHIGH_BIT_DEPTH=ON -DMAIN12=ON -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF",
+        "ninja -C b12",
+        "cmake -S source -B b10 -G Ninja -DCMAKE_BUILD_TYPE=Release -DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF",
+        "ninja -C b10",
+        "mkdir -p b8 && cp b12/libx265.a b8/libx265_main12.a && cp b10/libx265.a b8/libx265_main10.a",
+        "cmake -S source -B b8 -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_INSTALL_LIBDIR=lib -DEXTRA_LIB='x265_main10.a;x265_main12.a' -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON -DENABLE_SHARED=ON -DENABLE_CLI=OFF",
+        "ninja -C b8 install",
+        "rm -f /app/lib/libx265.a"
+      ],
+      "sources": [
+        {
+          "type": "archive",
+          "url": "https://download.videolan.org/pub/videolan/x265/x265_4.2.tar.gz",
+          "sha256": "40b1ea0453e0309f0eba934e0ddf533f8f6295966679e8894e8f1c1c8d5e1210",
+          "dest": "."
+        }
+      ]
+    },
+    {
+      "name": "zimg",
+      "config-opts": ["--disable-static"],
+      "sources": [
+        {
+          "type": "git",
+          "url": "https://github.com/sekrit-twc/zimg.git",
+          "tag": "release-3.0.6",
+          "commit": "f819b14e8f39d1282400b0d9543e8ef73c1b2bbd"
+        }
+      ]
+    },
+    {
+      "name": "libass",
+      "config-opts": ["--disable-static"],
+      "sources": [
+        {
+          "type": "archive",
+          "url": "https://github.com/libass/libass/releases/download/0.17.5/libass-0.17.5.tar.xz",
+          "sha256": "2dca25c0e0c837ddf00b52011b3f82cac1e4ddd3ad018227806b0c2288864acc"
+        }
+      ]
+    },
+    {
+      "name": "libvpl",
+      "comment": "oneVPL dispatcher for Quick Sync (MIT). The GPU runtime must come from the host/VA-API extension; the hardware probe decides.",
+      "buildsystem": "cmake-ninja",
+      "config-opts": [
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DBUILD_TOOLS=OFF",
+        "-DBUILD_EXAMPLES=OFF",
+        "-DBUILD_TESTS=OFF",
+        "-DINSTALL_EXAMPLES=OFF"
+      ],
+      "sources": [
+        {
+          "type": "git",
+          "url": "https://github.com/intel/libvpl.git",
+          "tag": "v2.17.0",
+          "commit": "d77f9195cf495b937631607333288fd917ae8939"
+        }
+      ]
+    },
+    {
+      "name": "libplacebo",
+      "comment": "FFmpeg 9.0 needs >= 7.351; GPU tone mapping through Vulkan.",
+      "buildsystem": "meson",
+      "config-opts": [
+        "--buildtype=release",
+        "-Dvulkan=enabled",
+        "-Dshaderc=enabled",
+        "-Dglslang=disabled",
+        "-Dopengl=disabled",
+        "-Dd3d11=disabled",
+        "-Ddemos=false",
+        "-Dtests=false",
+        "-Dbench=false",
+        "-Dfuzz=false"
+      ],
+      "sources": [
+        {
+          "type": "git",
+          "url": "https://code.videolan.org/videolan/libplacebo.git",
+          "tag": "v7.360.1",
+          "commit": "cee9b076f2c63104ccfd497fa79c39a867293ec4"
+        }
+      ]
+    },
+    {
+      "name": "ffmpeg",
+      "comment": "Redistributable build: GPL, no --enable-nonfree. NVENC/NVDEC/CUDA via nv-codec-headers; CUDA filters via clang (llvm22 extension).",
+      "build-options": {
+        "append-path": "/usr/lib/sdk/llvm22/bin",
+        "prepend-ld-library-path": "/usr/lib/sdk/llvm22/lib"
+      },
+      "config-opts": [
+        "--enable-gpl",
+        "--enable-version3",
+        "--disable-nonfree",
+        "--disable-static",
+        "--enable-shared",
+        "--disable-doc",
+        "--disable-debug",
+        "--disable-ffplay",
+        "--enable-libx264",
+        "--enable-libx265",
+        "--enable-libsvtav1",
+        "--enable-libdav1d",
+        "--enable-libaom",
+        "--enable-libvpx",
+        "--enable-libopus",
+        "--enable-libvorbis",
+        "--enable-libmp3lame",
+        "--enable-libwebp",
+        "--enable-libzimg",
+        "--enable-libass",
+        "--enable-libfreetype",
+        "--enable-libfontconfig",
+        "--enable-libharfbuzz",
+        "--enable-libfribidi",
+        "--enable-gnutls",
+        "--enable-vaapi",
+        "--enable-libdrm",
+        "--enable-vulkan",
+        "--enable-libplacebo",
+        "--enable-libvpl",
+        "--enable-ffnvcodec",
+        "--enable-nvenc",
+        "--enable-nvdec",
+        "--enable-cuvid",
+        "--enable-cuda-llvm",
+        "--enable-v4l2-m2m"
+      ],
+      "sources": [
+        {
+          "type": "archive",
+          "url": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz",
+          "sha256": "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e"
+        }
+      ]
+    },
+    {
+      "name": "retort",
+      "buildsystem": "meson",
+      "builddir": true,
+      "config-opts": ["--buildtype=release", "-Doffline=true"],
+      "build-options": {
+        "append-path": "/usr/lib/sdk/rust-stable/bin",
+        "env": {
+          "CARGO_HOME": "/run/build/retort/cargo"
+        }
+      },
+      "sources": [
+        {
+          "type": "dir",
+          "path": "../..",
+          "skip": ["target", "_build", "_install", "dist", ".flatpak-builder", "build-dir", "repo", ".git"]
+        },
+        "cargo-sources.json"
+      ]
+    }
+  ]
+}
