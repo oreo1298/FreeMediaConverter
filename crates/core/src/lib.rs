@@ -28,5 +28,6 @@ pub mod process;
 pub mod progress;
 pub mod quality;
 pub mod settings;
+pub mod update;
 
 pub use error::{Error, Result};
