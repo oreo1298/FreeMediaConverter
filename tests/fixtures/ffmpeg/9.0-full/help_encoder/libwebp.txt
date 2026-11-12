@@ -1,0 +1,20 @@
+Encoder libwebp [libwebp WebP image]:
+    General capabilities: dr1 reorderedopaque 
+    Threading capabilities: none
+    Supported pixel formats: bgra yuv420p yuva420p
+libwebp encoder AVOptions:
+  -lossless          <int>        E..V....... Use lossless mode (from 0 to 1) (default 0)
+  -preset            <int>        E..V....... Configuration preset (from -1 to 5) (default none)
+     none            -1           E..V....... do not use a preset
+     default         0            E..V....... default preset
+     picture         1            E..V....... digital picture, like portrait, inner shot
+     photo           2            E..V....... outdoor photograph, with natural lighting
+     drawing         3            E..V....... hand or line drawing, with high-contrast details
+     icon            4            E..V....... small-sized colorful images
+     text            5            E..V....... text-like
+  -cr_threshold      <int>        E..V....... Conditional replenishment threshold (from 0 to INT_MAX) (default 0)
+  -cr_size           <int>        E..V....... Conditional replenishment block size (from 0 to 256) (default 16)
+  -quality           <float>      E..V....... Quality (from 0 to 100) (default 75)
+
+
+Exiting with exit code 0

@@ -1,0 +1,6 @@
+Muxer tta [TTA (True Audio)]:
+    Common extensions: tta.
+    Mime type: audio/x-tta.
+    Default audio codec: tta.
+
+Exiting with exit code 0

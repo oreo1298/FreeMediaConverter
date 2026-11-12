@@ -1,0 +1,9 @@
+Muxer ast [AST (Audio Stream)]:
+    Common extensions: ast.
+    Default audio codec: pcm_s16be_planar.
+AST muxer AVOptions:
+  -loopstart         <int64>      E.......... Loopstart position in milliseconds. (from -1 to INT_MAX) (default -1)
+  -loopend           <int64>      E.......... Loopend position in milliseconds. (from 0 to INT_MAX) (default 0)
+
+
+Exiting with exit code 0

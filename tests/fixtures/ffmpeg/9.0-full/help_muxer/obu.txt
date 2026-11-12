@@ -1,0 +1,5 @@
+Muxer obu [AV1 low overhead OBU]:
+    Common extensions: obu.
+    Default video codec: av1.
+
+Exiting with exit code 0

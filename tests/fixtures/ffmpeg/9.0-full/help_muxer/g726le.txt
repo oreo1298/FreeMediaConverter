@@ -1,0 +1,4 @@
+Muxer g726le [raw little-endian G.726 ("right-justified")]:
+    Default audio codec: adpcm_g726le.
+
+Exiting with exit code 0

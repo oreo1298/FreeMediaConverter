@@ -1,0 +1,13 @@
+Encoder gif [GIF (Graphics Interchange Format)]:
+    General capabilities: dr1 reorderedopaque 
+    Threading capabilities: none
+    Supported pixel formats: rgb8 bgr8 rgb4_byte bgr4_byte gray pal8
+GIF encoder AVOptions:
+  -gifflags          <flags>      E..V....... set GIF flags (default offsetting+transdiff)
+     offsetting                   E..V....... enable picture offsetting
+     transdiff                    E..V....... enable transparency detection between frames
+  -gifimage          <boolean>    E..V....... enable encoding only images per frame (default false)
+  -global_palette    <boolean>    E..V....... write a palette to the global gif header where feasible (default true)
+
+
+Exiting with exit code 0

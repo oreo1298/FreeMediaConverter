@@ -1,0 +1,5 @@
+Muxer aptx_hd [raw aptX HD (Audio Processing Technology for Bluetooth)]:
+    Common extensions: aptxhd.
+    Default audio codec: aptx_hd.
+
+Exiting with exit code 0

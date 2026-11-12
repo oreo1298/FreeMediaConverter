@@ -1,0 +1,17 @@
+Muxer whip [WHIP(WebRTC-HTTP ingestion protocol) muxer]:
+    Default video codec: h264.
+    Default audio codec: opus.
+WHIP muxer AVOptions:
+  -handshake_timeout <int>        E.......... Timeout in milliseconds for ICE and DTLS handshake. (from -1 to INT_MAX) (default 5000)
+  -timeout           <duration>   E.......... Set timeout for socket I/O operations (default -0.000001)
+  -pkt_size          <int>        E.......... The maximum size, in bytes, of RTP packets that send out (from -1 to INT_MAX) (default 1200)
+  -ts_buffer_size    <int>        E.......... The buffer size, in bytes, of underlying protocol (from -1 to INT_MAX) (default -1)
+  -whip_flags        <flags>      E.......... Set flags affecting WHIP connection behavior (default 0)
+     dtls_active                  E.......... Set dtls role as active
+  -rtp_history       <int>        E.......... The number of RTP history items to store (from 64 to 2048) (default 512)
+  -authorization     <string>     E.......... The optional Bearer token for WHIP Authorization
+  -cert_file         <string>     E.......... The optional certificate file path for DTLS
+  -key_file          <string>     E.......... The optional private key file path for DTLS
+
+
+Exiting with exit code 0

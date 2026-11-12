@@ -1,0 +1,6 @@
+Muxer mp2 [MP2 (MPEG audio layer 2)]:
+    Common extensions: mp2,m2a,mpa.
+    Mime type: audio/mpeg.
+    Default audio codec: mp2.
+
+Exiting with exit code 0

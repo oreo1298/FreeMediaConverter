@@ -1,0 +1,4 @@
+Muxer f64be [PCM 64-bit floating-point big-endian]:
+    Default audio codec: pcm_f64be.
+
+Exiting with exit code 0

@@ -1,0 +1,5 @@
+Muxer u8 [PCM unsigned 8-bit]:
+    Common extensions: ub.
+    Default audio codec: pcm_u8.
+
+Exiting with exit code 0

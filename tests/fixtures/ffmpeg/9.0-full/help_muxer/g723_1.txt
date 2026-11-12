@@ -1,0 +1,6 @@
+Muxer g723_1 [raw G.723.1]:
+    Common extensions: tco,rco.
+    Mime type: audio/g723.
+    Default audio codec: g723_1.
+
+Exiting with exit code 0

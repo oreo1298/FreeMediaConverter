@@ -1,0 +1,6 @@
+Muxer caf [Apple CAF (Core Audio Format)]:
+    Common extensions: caf.
+    Mime type: audio/x-caf.
+    Default audio codec: pcm_s16be.
+
+Exiting with exit code 0

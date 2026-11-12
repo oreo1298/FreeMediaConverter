@@ -1,0 +1,5 @@
+Muxer fits [Flexible Image Transport System]:
+    Common extensions: fits.
+    Default video codec: fits.
+
+Exiting with exit code 0

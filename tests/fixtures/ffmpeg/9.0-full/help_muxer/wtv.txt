@@ -1,0 +1,6 @@
+Muxer wtv [Windows Television (WTV)]:
+    Common extensions: wtv.
+    Default video codec: mpeg2video.
+    Default audio codec: ac3.
+
+Exiting with exit code 0

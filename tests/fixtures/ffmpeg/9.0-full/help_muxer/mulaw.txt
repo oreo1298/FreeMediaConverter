@@ -1,0 +1,5 @@
+Muxer mulaw [PCM mu-law]:
+    Common extensions: ul.
+    Default audio codec: pcm_mulaw.
+
+Exiting with exit code 0

@@ -1,0 +1,5 @@
+Muxer cavsvideo [raw Chinese AVS (Audio Video Standard) video]:
+    Common extensions: cavs.
+    Default video codec: cavs.
+
+Exiting with exit code 0

@@ -1,0 +1,11 @@
+Encoder alac [ALAC (Apple Lossless Audio Codec)]:
+    General capabilities: dr1 small reorderedopaque 
+    Threading capabilities: none
+    Supported sample formats: s32p s16p
+    Supported channel layouts: mono stereo 3.0 4.0 5.0 5.1 6.1(back) 7.1(wide)
+alacenc AVOptions:
+  -min_prediction_order <int>        E...A...... (from 1 to 30) (default 4)
+  -max_prediction_order <int>        E...A...... (from 1 to 30) (default 6)
+
+
+Exiting with exit code 0

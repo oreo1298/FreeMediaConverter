@@ -1,0 +1,11 @@
+Muxer alp [LEGO Racers ALP]:
+    Common extensions: tun,pcm.
+    Default audio codec: adpcm_ima_alp.
+alp AVOptions:
+  -type              <int>        E...A...... set file type (from 0 to 2) (default auto)
+     auto            0            E...A...... autodetect based on file extension
+     tun             1            E...A...... force .tun, used for music
+     pcm             2            E...A...... force .pcm, used for sfx
+
+
+Exiting with exit code 0

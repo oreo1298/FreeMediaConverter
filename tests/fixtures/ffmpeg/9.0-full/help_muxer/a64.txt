@@ -1,0 +1,5 @@
+Muxer a64 [a64 - video for Commodore 64]:
+    Common extensions: a64, A64.
+    Default video codec: a64_multi.
+
+Exiting with exit code 0

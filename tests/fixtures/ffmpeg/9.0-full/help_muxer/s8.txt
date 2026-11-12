@@ -1,0 +1,5 @@
+Muxer s8 [PCM signed 8-bit]:
+    Common extensions: sb.
+    Default audio codec: pcm_s8.
+
+Exiting with exit code 0

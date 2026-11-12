@@ -1,0 +1,6 @@
+Muxer gxf [GXF (General eXchange Format)]:
+    Common extensions: gxf.
+    Default video codec: mpeg2video.
+    Default audio codec: pcm_s16le.
+
+Exiting with exit code 0

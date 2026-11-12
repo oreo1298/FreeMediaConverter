@@ -1,0 +1,4 @@
+Encoder webvtt [WebVTT subtitle]:
+    General capabilities: none
+
+Exiting with exit code 0

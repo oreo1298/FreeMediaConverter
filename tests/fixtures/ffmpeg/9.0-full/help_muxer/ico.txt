@@ -1,0 +1,6 @@
+Muxer ico [Microsoft Windows ICO]:
+    Common extensions: ico.
+    Mime type: image/vnd.microsoft.icon.
+    Default video codec: bmp.
+
+Exiting with exit code 0

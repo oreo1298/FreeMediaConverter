@@ -1,0 +1,9 @@
+Encoder vp8_v4l2m2m [V4L2 mem2mem VP8 encoder wrapper]:
+    General capabilities: delay hardware 
+    Threading capabilities: none
+vp8_v4l2m2m_encoder AVOptions:
+  -num_output_buffers <int>        E..V....... Number of buffers in the output context (from 2 to INT_MAX) (default 16)
+  -num_capture_buffers <int>        E..V....... Number of buffers in the capture context (from 4 to INT_MAX) (default 4)
+
+
+Exiting with exit code 0

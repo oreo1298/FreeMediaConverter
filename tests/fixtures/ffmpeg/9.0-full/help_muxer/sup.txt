@@ -1,0 +1,6 @@
+Muxer sup [raw HDMV Presentation Graphic Stream subtitles]:
+    Common extensions: sup.
+    Mime type: application/x-pgs.
+    Default subtitle codec: hdmv_pgs_subtitle.
+
+Exiting with exit code 0

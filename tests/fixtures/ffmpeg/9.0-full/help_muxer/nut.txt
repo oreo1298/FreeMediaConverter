@@ -1,0 +1,14 @@
+Muxer nut [NUT]:
+    Common extensions: nut.
+    Mime type: video/x-nut.
+    Default video codec: mpeg4.
+    Default audio codec: vorbis.
+nutenc AVOptions:
+  -syncpoints        <flags>      E.......... NUT syncpoint behaviour (default 0)
+     default                      E.......... 
+     none                         E.......... Disable syncpoints, low overhead and unseekable
+     timestamped                  E.......... Extend syncpoints with a wallclock timestamp
+  -write_index       <boolean>    E.......... Write index (default true)
+
+
+Exiting with exit code 0

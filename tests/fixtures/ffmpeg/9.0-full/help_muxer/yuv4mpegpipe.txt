@@ -1,0 +1,5 @@
+Muxer yuv4mpegpipe [YUV4MPEG pipe]:
+    Common extensions: y4m.
+    Default video codec: wrapped_avframe.
+
+Exiting with exit code 0

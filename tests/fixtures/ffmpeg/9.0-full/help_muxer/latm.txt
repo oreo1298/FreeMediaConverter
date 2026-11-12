@@ -1,0 +1,9 @@
+Muxer latm [LOAS/LATM]:
+    Common extensions: latm,loas.
+    Mime type: audio/MP4A-LATM.
+    Default audio codec: aac.
+LATM/LOAS muxer AVOptions:
+  -smc-interval      <int>        E.......... StreamMuxConfig interval. (from 1 to 65535) (default 20)
+
+
+Exiting with exit code 0

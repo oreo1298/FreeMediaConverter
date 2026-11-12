@@ -1,0 +1,5 @@
+Muxer ircam [Berkeley/IRCAM/CARL Sound Format]:
+    Common extensions: sf,ircam.
+    Default audio codec: pcm_s16le.
+
+Exiting with exit code 0

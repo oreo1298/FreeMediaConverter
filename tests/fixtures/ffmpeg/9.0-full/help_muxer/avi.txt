@@ -1,0 +1,12 @@
+Muxer avi [AVI (Audio Video Interleaved)]:
+    Common extensions: avi.
+    Mime type: video/x-msvideo.
+    Default video codec: mpeg4.
+    Default audio codec: mp3.
+AVI muxer AVOptions:
+  -reserve_index_space <int>        E.......... reserve space (in bytes) at the beginning of the file for each stream index (from 0 to INT_MAX) (default 0)
+  -write_channel_mask <boolean>    E.......... write channel mask into wave format header (default true)
+  -flipped_raw_rgb   <boolean>    E.......... Raw RGB bitmaps are stored bottom-up (default false)
+
+
+Exiting with exit code 0

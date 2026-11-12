@@ -1,0 +1,17 @@
+Muxer rtp [RTP output]:
+    Default video codec: mpeg4.
+    Default audio codec: pcm_mulaw.
+RTP muxer AVOptions:
+  -rtpflags          <flags>      E.......... RTP muxer flags (default 0)
+     latm                         E.......... Use MP4A-LATM packetization instead of MPEG4-GENERIC for AAC
+     rfc2190                      E.......... Use RFC 2190 packetization instead of RFC 4629 for H.263
+     skip_rtcp                    E.......... Don't send RTCP sender reports
+     h264_mode0                   E.......... Use mode 0 for H.264 in RTP
+     send_bye                     E.......... Send RTCP BYE packets when finishing
+  -payload_type      <int>        E.......... Specify RTP payload type (from -1 to 127) (default -1)
+  -ssrc              <unsigned>   E.......... Stream identifier (from 0 to UINT32_MAX) (default 0)
+  -cname             <string>     E.......... CNAME to include in RTCP SR packets
+  -seq               <int>        E.......... Starting sequence number (from -1 to 65535) (default -1)
+
+
+Exiting with exit code 0

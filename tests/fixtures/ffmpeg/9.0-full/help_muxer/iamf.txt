@@ -1,0 +1,5 @@
+Muxer iamf [Raw Immersive Audio Model and Formats]:
+    Common extensions: iamf.
+    Default audio codec: opus.
+
+Exiting with exit code 0

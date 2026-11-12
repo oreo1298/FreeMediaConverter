@@ -1,0 +1,5 @@
+Muxer apm [Ubisoft Rayman 2 APM]:
+    Common extensions: apm.
+    Default audio codec: adpcm_ima_apm.
+
+Exiting with exit code 0

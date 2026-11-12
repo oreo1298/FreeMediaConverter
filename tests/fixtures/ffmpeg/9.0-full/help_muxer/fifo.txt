@@ -1,0 +1,16 @@
+Muxer fifo [FIFO queue pseudo-muxer]:
+Fifo muxer AVOptions:
+  -attempt_recovery  <boolean>    E.......... Attempt recovery in case of failure (default false)
+  -drop_pkts_on_overflow <boolean>    E.......... Drop packets on fifo queue overflow not to block encoder (default false)
+  -fifo_format       <string>     E.......... Target muxer
+  -format_opts       <dictionary> E.......... Options to be passed to underlying muxer
+  -max_recovery_attempts <int>        E.......... Maximal number of recovery attempts (from 0 to INT_MAX) (default 0)
+  -queue_size        <int>        E.......... Size of fifo queue (from 1 to INT_MAX) (default 60)
+  -recovery_wait_streamtime <boolean>    E.......... Use stream time instead of real time while waiting for recovery (default false)
+  -recovery_wait_time <duration>   E.......... Waiting time between recovery attempts (default 5)
+  -recover_any_error <boolean>    E.......... Attempt recovery regardless of type of the error (default false)
+  -restart_with_keyframe <boolean>    E.......... Wait for keyframe when restarting output (default false)
+  -timeshift         <duration>   E.......... Delay fifo output (default 0)
+
+
+Exiting with exit code 0

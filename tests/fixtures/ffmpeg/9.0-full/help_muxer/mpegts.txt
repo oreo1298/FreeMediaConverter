@@ -1,0 +1,41 @@
+Muxer mpegts [MPEG-TS (MPEG-2 Transport Stream)]:
+    Common extensions: ts,m2t,m2ts,mts.
+    Mime type: video/MP2T.
+    Default video codec: mpeg2video.
+    Default audio codec: mp2.
+MPEGTS muxer AVOptions:
+  -mpegts_transport_stream_id <int>        E.......... Set transport_stream_id field. (from 1 to 65535) (default 1)
+  -mpegts_original_network_id <int>        E.......... Set original_network_id field. (from 1 to 65535) (default 65281)
+  -mpegts_service_id <int>        E.......... Set service_id field. (from 1 to 65535) (default 1)
+  -mpegts_service_type <int>        E.......... Set service_type field. (from 1 to 255) (default digital_tv)
+     digital_tv      1            E.......... Digital Television.
+     digital_radio   2            E.......... Digital Radio.
+     teletext        3            E.......... Teletext.
+     advanced_codec_digital_radio 10           E.......... Advanced Codec Digital Radio.
+     mpeg2_digital_hdtv 17           E.......... MPEG2 Digital HDTV.
+     advanced_codec_digital_sdtv 22           E.......... Advanced Codec Digital SDTV.
+     advanced_codec_digital_hdtv 25           E.......... Advanced Codec Digital HDTV.
+     hevc_digital_hdtv 31           E.......... HEVC Digital Television Service.
+  -mpegts_pmt_start_pid <int>        E.......... Set the first pid of the PMT. (from 32 to 8186) (default 4096)
+  -mpegts_start_pid  <int>        E.......... Set the first pid. (from 32 to 8186) (default 256)
+  -mpegts_m2ts_mode  <boolean>    E.......... Enable m2ts mode. (default auto)
+  -muxrate           <int>        E.......... (from 0 to INT_MAX) (default 1)
+  -pes_payload_size  <int>        E.......... Minimum PES packet payload in bytes (from 0 to INT_MAX) (default 2930)
+  -mpegts_flags      <flags>      E.......... MPEG-TS muxing flags (default 0)
+     resend_headers               E.......... Reemit PAT/PMT before writing the next packet
+     latm                         E.......... Use LATM packetization for AAC
+     pat_pmt_at_frames              E.......... Reemit PAT and PMT at each video frame
+     system_b                     E.......... Conform to System B (DVB) instead of System A (ATSC)
+     initial_discontinuity              E.......... Mark initial packets as discontinuous
+     nit                          E.......... Enable NIT transmission
+     omit_rai                     E.......... Disable writing of random access indicator
+  -mpegts_copyts     <boolean>    E.......... don't offset dts/pts (default auto)
+  -tables_version    <int>        E.......... set PAT, PMT, SDT and NIT version (from 0 to 31) (default 0)
+  -omit_video_pes_length <boolean>    E.......... Omit the PES packet length for video packets (default true)
+  -pcr_period        <int>        E.......... PCR retransmission time in milliseconds (from -1 to INT_MAX) (default -1)
+  -pat_period        <duration>   E.......... PAT/PMT retransmission time limit in seconds (default 0.1)
+  -sdt_period        <duration>   E.......... SDT retransmission time limit in seconds (default 0.5)
+  -nit_period        <duration>   E.......... NIT retransmission time limit in seconds (default 0.5)
+
+
+Exiting with exit code 0

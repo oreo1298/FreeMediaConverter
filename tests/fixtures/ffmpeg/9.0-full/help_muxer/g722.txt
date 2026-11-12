@@ -1,0 +1,6 @@
+Muxer g722 [raw G.722]:
+    Common extensions: g722.
+    Mime type: audio/G722.
+    Default audio codec: adpcm_g722.
+
+Exiting with exit code 0

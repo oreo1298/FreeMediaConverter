@@ -162,7 +162,8 @@ pub struct FilterEntry {
 
 fn filter_line_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"^ ([T.])([S.])([C.]) (\S+)\s+(\S*->\S*)\s+(.*)$").unwrap())
+    // 6.1 prints three flag columns (T, S, C); 9.0 dropped the command column.
+    RE.get_or_init(|| Regex::new(r"^ [T.][S.][C.]? (\S+)\s+(\S*->\S*)\s+(.*)$").unwrap())
 }
 
 /// Parse `ffmpeg -filters`.
@@ -171,9 +172,9 @@ pub fn parse_filters(text: &str) -> Vec<FilterEntry> {
         .filter_map(|line| {
             let c = filter_line_re().captures(line)?;
             Some(FilterEntry {
-                name: c[4].to_string(),
-                io: c[5].to_string(),
-                description: c[6].trim().to_string(),
+                name: c[1].to_string(),
+                io: c[2].to_string(),
+                description: c[3].trim().to_string(),
             })
         })
         .collect()
@@ -466,6 +467,60 @@ mod tests {
             .join(F61)
             .join(name);
         std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()))
+    }
+
+    fn fixture90(name: &str) -> String {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/fixtures/ffmpeg/9.0-full")
+            .join(name);
+        std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()))
+    }
+
+    #[test]
+    fn lists_90() {
+        let enc = parse_codec_list(&fixture90("encoders.txt"));
+        for name in ["h264_nvenc", "hevc_vaapi", "av1_qsv", "h264_vulkan", "hevc_amf", "libsvtav1"] {
+            assert!(enc.iter().any(|e| e.name == name), "missing {name}");
+        }
+        let mux = parse_formats(&fixture90("muxers.txt"));
+        let alsa = mux.iter().find(|m| m.name == "alsa");
+        assert!(alsa.map(|a| a.device).unwrap_or(true), "alsa should be a device if present");
+        assert!(mux.iter().any(|m| m.name == "matroska" && m.mux && !m.device));
+        assert_eq!(
+            parse_hwaccels(&fixture90("hwaccels.txt")),
+            ["cuda", "vaapi", "qsv", "drm", "vulkan", "amf"]
+        );
+        let filters = parse_filters(&fixture90("filters.txt"));
+        for f in ["scale_vaapi", "vpp_qsv", "scale_vulkan", "libplacebo", "tonemap_vaapi", "zscale"] {
+            assert!(filters.iter().any(|x| x.name == f), "missing filter {f}");
+        }
+    }
+
+    #[test]
+    fn nvenc_90_dropped_legacy_options() {
+        let h = parse_encoder_help(&fixture90("help_encoder/hevc_nvenc.txt")).unwrap();
+        let presets = h.option_values("preset");
+        assert!(presets.contains(&"p1".to_string()) && presets.contains(&"p7".to_string()));
+        for legacy in ["llhq", "hp", "bd", "losslesshp", "default"] {
+            assert!(!presets.contains(&legacy.to_string()), "{legacy} still present");
+        }
+        let rc = h.option_values("rc");
+        assert!(rc.contains(&"vbr".to_string()) && !rc.contains(&"vbr_hq".to_string()));
+        assert!(!h.has_option("2pass"));
+        assert!(h.has_option("multipass") && h.has_option("spatial-aq"));
+        let av1 = parse_encoder_help(&fixture90("help_encoder/av1_nvenc.txt")).unwrap();
+        assert_eq!(av1.options["cq"].max, Some(63.0));
+    }
+
+    #[test]
+    fn vulkan_and_qsv_90() {
+        let h = parse_encoder_help(&fixture90("help_encoder/h264_vulkan.txt")).unwrap();
+        assert_eq!(h.hw_devices, ["vulkan"]);
+        assert!(h.option_values("rc_mode").contains(&"cqp".to_string()));
+        assert!(h.has_option("qp"));
+        let q = parse_encoder_help(&fixture90("help_encoder/hevc_qsv.txt")).unwrap();
+        assert!(q.hw_devices.contains(&"qsv".to_string()));
+        assert!(q.pix_fmts.contains(&"p010le".to_string()));
     }
 
     #[test]

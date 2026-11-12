@@ -1,0 +1,10 @@
+Muxer avif [AVIF]:
+    Common extensions: avif.
+    Mime type: image/avif.
+    Default video codec: av1.
+avif muxer AVOptions:
+  -movie_timescale   <int>        E.......... set movie timescale (from 1 to INT_MAX) (default 1000)
+  -loop              <int>        E.......... Number of times to loop animated AVIF: 0 - infinite loop (from 0 to INT_MAX) (default 0)
+
+
+Exiting with exit code 0

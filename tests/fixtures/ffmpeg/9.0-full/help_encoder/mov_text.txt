@@ -1,0 +1,7 @@
+Encoder mov_text [3GPP Timed Text subtitle]:
+    General capabilities: none
+MOV text enoder AVOptions:
+  -height            <int>        E....S..... Frame height, usually video height (from 0 to INT_MAX) (default 0)
+
+
+Exiting with exit code 0

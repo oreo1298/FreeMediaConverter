@@ -1,0 +1,10 @@
+Muxer argo_cvg [Argonaut Games CVG]:
+    Common extensions: cvg.
+    Default audio codec: adpcm_psx.
+argo_cvg_muxer AVOptions:
+  -skip_rate_check   <boolean>    E.......... skip sample rate check (default false)
+  -loop              <boolean>    E.......... set loop flag (default false)
+  -reverb            <boolean>    E.......... set reverb flag (default true)
+
+
+Exiting with exit code 0

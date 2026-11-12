@@ -1,0 +1,5 @@
+Muxer kvag [Simon & Schuster Interactive VAG]:
+    Common extensions: vag.
+    Default audio codec: adpcm_ima_ssi.
+
+Exiting with exit code 0

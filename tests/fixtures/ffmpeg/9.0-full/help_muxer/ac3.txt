@@ -1,0 +1,6 @@
+Muxer ac3 [raw AC-3]:
+    Common extensions: ac3.
+    Mime type: audio/x-ac3.
+    Default audio codec: ac3.
+
+Exiting with exit code 0

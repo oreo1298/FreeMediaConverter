@@ -1,0 +1,5 @@
+Muxer aea [MD STUDIO audio]:
+    Common extensions: aea.
+    Default audio codec: atrac1.
+
+Exiting with exit code 0

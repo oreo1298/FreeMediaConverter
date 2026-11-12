@@ -1,0 +1,5 @@
+Muxer sap [SAP output]:
+    Default video codec: mpeg4.
+    Default audio codec: aac.
+
+Exiting with exit code 0

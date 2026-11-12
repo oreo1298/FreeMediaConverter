@@ -1,0 +1,9 @@
+Muxer mpjpeg [MIME multipart JPEG]:
+    Common extensions: mjpg.
+    Mime type: multipart/x-mixed-replace;boundary=ffmpeg.
+    Default video codec: mjpeg.
+mpjpeg_muxer AVOptions:
+  -boundary_tag      <string>     E.......... Boundary tag (default "ffmpeg")
+
+
+Exiting with exit code 0

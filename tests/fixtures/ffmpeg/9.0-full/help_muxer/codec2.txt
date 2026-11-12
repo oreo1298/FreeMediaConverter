@@ -1,0 +1,5 @@
+Muxer codec2 [codec2 .c2 muxer]:
+    Common extensions: c2.
+    Default audio codec: codec2.
+
+Exiting with exit code 0

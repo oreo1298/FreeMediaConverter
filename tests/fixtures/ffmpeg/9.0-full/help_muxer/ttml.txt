@@ -1,0 +1,6 @@
+Muxer ttml [TTML subtitle]:
+    Common extensions: ttml.
+    Mime type: text/ttml.
+    Default subtitle codec: ttml.
+
+Exiting with exit code 0

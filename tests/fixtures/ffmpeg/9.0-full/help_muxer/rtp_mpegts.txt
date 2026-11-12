@@ -1,0 +1,9 @@
+Muxer rtp_mpegts [RTP/mpegts output format]:
+    Default video codec: mpeg4.
+    Default audio codec: aac.
+rtp_mpegts muxer AVOptions:
+  -mpegts_muxer_options <dictionary> E.......... set list of options for the MPEG-TS muxer
+  -rtp_muxer_options <dictionary> E.......... set list of options for the RTP muxer
+
+
+Exiting with exit code 0

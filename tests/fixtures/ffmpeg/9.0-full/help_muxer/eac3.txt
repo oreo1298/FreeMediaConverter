@@ -1,0 +1,6 @@
+Muxer eac3 [raw E-AC-3]:
+    Common extensions: eac3,ec3.
+    Mime type: audio/x-eac3.
+    Default audio codec: eac3.
+
+Exiting with exit code 0

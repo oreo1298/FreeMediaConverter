@@ -1,0 +1,6 @@
+Encoder pcm_s24le [PCM signed 24-bit little-endian]:
+    General capabilities: dr1 variable reorderedopaque 
+    Threading capabilities: none
+    Supported sample formats: s32
+
+Exiting with exit code 0

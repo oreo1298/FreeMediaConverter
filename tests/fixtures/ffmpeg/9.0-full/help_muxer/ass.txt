@@ -1,0 +1,9 @@
+Muxer ass [SSA (SubStation Alpha) subtitle]:
+    Common extensions: ass,ssa.
+    Mime type: text/x-ass.
+    Default subtitle codec: ass.
+ass muxer AVOptions:
+  -ignore_readorder  <boolean>    E.......... write events immediately, even if they're out-of-order (default false)
+
+
+Exiting with exit code 0

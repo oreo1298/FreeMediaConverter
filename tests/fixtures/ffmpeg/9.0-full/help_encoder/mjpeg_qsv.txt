@@ -1,0 +1,10 @@
+Encoder mjpeg_qsv [MJPEG (Intel Quick Sync Video acceleration)]:
+    General capabilities: delay hybrid 
+    Threading capabilities: none
+    Supported hardware devices: qsv qsv qsv 
+    Supported pixel formats: nv12 yuyv422 bgra qsv
+mjpeg_qsv encoder AVOptions:
+  -async_depth       <int>        E..V....... Maximum processing parallelism (from 1 to INT_MAX) (default 4)
+
+
+Exiting with exit code 0

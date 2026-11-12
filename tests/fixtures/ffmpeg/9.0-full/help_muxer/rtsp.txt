@@ -1,0 +1,29 @@
+Muxer rtsp [RTSP output]:
+    Default video codec: mpeg4.
+    Default audio codec: aac.
+RTSP muxer AVOptions:
+  -rtpflags          <flags>      E.......... RTP muxer flags (default 0)
+     latm                         E.......... Use MP4A-LATM packetization instead of MPEG4-GENERIC for AAC
+     rfc2190                      E.......... Use RFC 2190 packetization instead of RFC 4629 for H.263
+     skip_rtcp                    E.......... Don't send RTCP sender reports
+     h264_mode0                   E.......... Use mode 0 for H.264 in RTP
+     send_bye                     E.......... Send RTCP BYE packets when finishing
+  -rtsp_transport    <flags>      ED......... set RTSP transport protocols (default 0)
+     udp                          ED......... UDP
+     tcp                          ED......... TCP
+  -min_port          <int>        ED......... set minimum local UDP port (from 0 to 65535) (default 5000)
+  -max_port          <int>        ED......... set maximum local UDP port (from 0 to 65535) (default 65000)
+  -buffer_size       <int>        ED......... Underlying protocol send/receive buffer size (from -1 to INT_MAX) (default -1)
+  -pkt_size          <int>        E.......... Underlying protocol send packet size (from -1 to INT_MAX) (default 1472)
+  -ca_file           <string>     ED......... Certificate Authority database file
+  -cafile            <string>     ED......... Certificate Authority database file
+  -tls_verify        <boolean>    ED......... Verify the peer certificate (default true)
+  -verify            <boolean>    ED......... Verify the peer certificate (default true)
+  -cert_file         <string>     ED......... Certificate file
+  -cert              <string>     ED......... Certificate file
+  -key_file          <string>     ED......... Private key file
+  -key               <string>     ED......... Private key file
+  -verifyhost        <string>     ED......... Verify against a specific hostname
+
+
+Exiting with exit code 0

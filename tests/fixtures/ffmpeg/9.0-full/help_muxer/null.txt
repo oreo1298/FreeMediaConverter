@@ -1,0 +1,5 @@
+Muxer null [raw null video]:
+    Default video codec: wrapped_avframe.
+    Default audio codec: pcm_s16le.
+
+Exiting with exit code 0

@@ -1,0 +1,6 @@
+Muxer dv [DV (Digital Video)]:
+    Common extensions: dv.
+    Default video codec: dvvideo.
+    Default audio codec: pcm_s16le.
+
+Exiting with exit code 0

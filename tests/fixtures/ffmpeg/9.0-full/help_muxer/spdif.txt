@@ -1,0 +1,11 @@
+Muxer spdif [IEC 61937 (used on S/PDIF - IEC958)]:
+    Common extensions: spdif.
+    Default audio codec: ac3.
+spdif AVOptions:
+  -spdif_flags       <flags>      E.......... IEC 61937 encapsulation flags (default 0)
+     be                           E.......... output in big-endian format (for use as s16be)
+  -dtshd_rate        <int>        E.......... mux complete DTS frames in HD mode at the specified IEC958 rate (in Hz, default 0=disabled) (from 0 to 768000) (default 0)
+  -dtshd_fallback_time <int>        E.......... min secs to strip HD for after an overflow (-1: till the end, default 60) (from -1 to INT_MAX) (default 60)
+
+
+Exiting with exit code 0

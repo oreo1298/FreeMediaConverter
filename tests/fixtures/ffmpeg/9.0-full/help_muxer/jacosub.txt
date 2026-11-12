@@ -1,0 +1,6 @@
+Muxer jacosub [JACOsub subtitle format]:
+    Common extensions: jss,js.
+    Mime type: text/x-jacosub.
+    Default subtitle codec: jacosub.
+
+Exiting with exit code 0

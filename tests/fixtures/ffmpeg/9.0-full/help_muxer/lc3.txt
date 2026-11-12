@@ -1,0 +1,5 @@
+Muxer lc3 [LC3 (Low Complexity Communication Codec)]:
+    Common extensions: lc3.
+    Default audio codec: lc3.
+
+Exiting with exit code 0

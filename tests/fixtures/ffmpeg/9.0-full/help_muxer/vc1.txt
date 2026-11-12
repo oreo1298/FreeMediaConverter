@@ -1,0 +1,5 @@
+Muxer vc1 [raw VC-1 video]:
+    Common extensions: vc1.
+    Default video codec: vc1.
+
+Exiting with exit code 0

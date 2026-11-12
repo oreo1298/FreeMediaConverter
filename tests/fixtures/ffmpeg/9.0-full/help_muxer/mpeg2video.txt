@@ -1,0 +1,5 @@
+Muxer mpeg2video [raw MPEG-2 video]:
+    Common extensions: m2v.
+    Default video codec: mpeg2video.
+
+Exiting with exit code 0

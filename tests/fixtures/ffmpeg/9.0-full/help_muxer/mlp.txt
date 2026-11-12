@@ -1,0 +1,5 @@
+Muxer mlp [raw MLP]:
+    Common extensions: mlp.
+    Default audio codec: mlp.
+
+Exiting with exit code 0

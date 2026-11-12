@@ -1,0 +1,5 @@
+Muxer avs2 [raw AVS2-P2/IEEE1857.4 video]:
+    Common extensions: avs,avs2.
+    Default video codec: avs2.
+
+Exiting with exit code 0

@@ -1,0 +1,4 @@
+Muxer image2pipe [piped image2 sequence]:
+    Default video codec: mjpeg.
+
+Exiting with exit code 0

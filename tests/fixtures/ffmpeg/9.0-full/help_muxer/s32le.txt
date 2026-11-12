@@ -1,0 +1,4 @@
+Muxer s32le [PCM signed 32-bit little-endian]:
+    Default audio codec: pcm_s32le.
+
+Exiting with exit code 0

@@ -1,0 +1,5 @@
+Muxer dnxhd [raw DNxHD (SMPTE VC-3)]:
+    Common extensions: dnxhd,dnxhr.
+    Default video codec: dnxhd.
+
+Exiting with exit code 0

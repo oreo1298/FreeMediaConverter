@@ -1,0 +1,5 @@
+Muxer evc [raw EVC video]:
+    Common extensions: evc.
+    Default video codec: evc.
+
+Exiting with exit code 0

@@ -1,0 +1,4 @@
+Muxer s24be [PCM signed 24-bit big-endian]:
+    Default audio codec: pcm_s24be.
+
+Exiting with exit code 0

@@ -1,0 +1,18 @@
+Muxer mxf_d10 [MXF (Material eXchange Format) D-10 Mapping]:
+    Mime type: application/mxf.
+    Default video codec: mpeg2video.
+    Default audio codec: pcm_s16le.
+MXF-D10 muxer AVOptions:
+  -d10_channelcount  <int>        E.......... Force/set channelcount in generic sound essence descriptor (from -1 to 8) (default -1)
+  -signal_standard   <int>        E.......... Force/set Signal Standard (from -1 to 7) (default -1)
+     bt601           1            E.......... ITU-R BT.601 and BT.656, also SMPTE 125M (525 and 625 line interlaced)
+     bt1358          2            E.......... ITU-R BT.1358 and ITU-R BT.799-3, also SMPTE 293M (525 and 625 line progressive)
+     smpte347m       3            E.......... SMPTE 347M (540 Mbps mappings)
+     smpte274m       4            E.......... SMPTE 274M (1125 line)
+     smpte296m       5            E.......... SMPTE 296M (750 line progressive)
+     smpte349m       6            E.......... SMPTE 349M (1485 Mbps mappings)
+     smpte428        7            E.......... SMPTE 428-1 DCDM
+  -store_user_comments <boolean>    E..........  (default false)
+
+
+Exiting with exit code 0

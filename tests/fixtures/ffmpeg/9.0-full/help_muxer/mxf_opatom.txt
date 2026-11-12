@@ -1,0 +1,20 @@
+Muxer mxf_opatom [MXF (Material eXchange Format) Operational Pattern Atom]:
+    Common extensions: mxf.
+    Mime type: application/mxf.
+    Default video codec: dnxhd.
+    Default audio codec: pcm_s16le.
+    Default subtitle codec: eia_608.
+MXF-OPAtom muxer AVOptions:
+  -mxf_audio_edit_rate <rational>   E.......... Audio edit rate for timecode (from 0 to INT_MAX) (default 25/1)
+  -signal_standard   <int>        E.......... Force/set Signal Standard (from -1 to 7) (default -1)
+     bt601           1            E.......... ITU-R BT.601 and BT.656, also SMPTE 125M (525 and 625 line interlaced)
+     bt1358          2            E.......... ITU-R BT.1358 and ITU-R BT.799-3, also SMPTE 293M (525 and 625 line progressive)
+     smpte347m       3            E.......... SMPTE 347M (540 Mbps mappings)
+     smpte274m       4            E.......... SMPTE 274M (1125 line)
+     smpte296m       5            E.......... SMPTE 296M (750 line progressive)
+     smpte349m       6            E.......... SMPTE 349M (1485 Mbps mappings)
+     smpte428        7            E.......... SMPTE 428-1 DCDM
+  -store_user_comments <boolean>    E..........  (default true)
+
+
+Exiting with exit code 0

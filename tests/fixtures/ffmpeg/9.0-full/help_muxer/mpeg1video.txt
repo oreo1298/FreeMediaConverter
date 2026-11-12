@@ -1,0 +1,6 @@
+Muxer mpeg1video [raw MPEG-1 video]:
+    Common extensions: mpg,mpeg,m1v.
+    Mime type: video/mpeg.
+    Default video codec: mpeg1video.
+
+Exiting with exit code 0

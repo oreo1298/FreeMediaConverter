@@ -1,0 +1,5 @@
+Muxer wsaud [Westwood Studios audio]:
+    Common extensions: aud.
+    Default audio codec: adpcm_ima_ws.
+
+Exiting with exit code 0

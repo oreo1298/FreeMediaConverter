@@ -1,0 +1,9 @@
+Muxer ac4 [raw AC-4]:
+    Common extensions: ac4.
+    Mime type: audio/ac4.
+    Default audio codec: ac4.
+AC4 muxer AVOptions:
+  -write_crc         <boolean>    E.......... enable checksum (default false)
+
+
+Exiting with exit code 0

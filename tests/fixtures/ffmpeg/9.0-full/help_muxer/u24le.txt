@@ -1,0 +1,4 @@
+Muxer u24le [PCM unsigned 24-bit little-endian]:
+    Default audio codec: pcm_u24le.
+
+Exiting with exit code 0

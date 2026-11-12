@@ -1,0 +1,41 @@
+Muxer stream_segment,ssegment [streaming segment muxer]:
+(stream) segment muxer AVOptions:
+  -reference_stream  <string>     E.......... set reference stream (default "auto")
+  -segment_format    <string>     E.......... set container format used for the segments
+  -segment_format_options <dictionary> E.......... set list of options for the container format used for the segments
+  -segment_list      <string>     E.......... set the segment list filename
+  -segment_header_filename <string>     E.......... write a single file containing the header
+  -segment_list_flags <flags>      E.......... set flags affecting segment list generation (default cache)
+     cache                        E.......... allow list caching
+     live                         E.......... enable live-friendly list generation (useful for HLS)
+  -segment_list_size <int>        E.......... set the maximum number of playlist entries (from 0 to INT_MAX) (default 0)
+  -segment_list_type <int>        E.......... set the segment list type (from -1 to 4) (default -1)
+     flat            0            E.......... flat format
+     csv             1            E.......... csv format
+     ext             3            E.......... extended format
+     ffconcat        4            E.......... ffconcat format
+     m3u8            2            E.......... M3U8 format
+     hls             2            E.......... Apple HTTP Live Streaming compatible
+  -segment_atclocktime <boolean>    E.......... set segment to be cut at clocktime (default false)
+  -segment_clocktime_offset <duration>   E.......... set segment clocktime offset (default 0)
+  -segment_clocktime_wrap_duration <duration>   E.......... set segment clocktime wrapping duration (default INT64_MAX)
+  -segment_time      <duration>   E.......... set segment duration (default 2)
+  -segment_time_delta <duration>   E.......... set approximation value used for the segment times (default 0)
+  -min_seg_duration  <duration>   E.......... set minimum segment duration (default 0)
+  -segment_times     <string>     E.......... set segment split time points
+  -segment_frames    <string>     E.......... set segment split frame numbers
+  -segment_wrap      <int>        E.......... set number after which the index wraps (from 0 to INT_MAX) (default 0)
+  -segment_list_entry_prefix <string>     E.......... set base url prefix for segments
+  -segment_start_number <int>        E.......... set the sequence number of the first segment (from 0 to INT_MAX) (default 0)
+  -segment_wrap_number <int>        E.......... set the number of wrap before the first segment (from 0 to INT_MAX) (default 0)
+  -strftime          <boolean>    E.......... set filename expansion with strftime at segment creation (default false)
+  -increment_tc      <boolean>    E.......... increment timecode between each segment (default false)
+  -break_non_keyframes <boolean>    E.......... allow breaking segments on non-keyframes (default false)
+  -individual_header_trailer <boolean>    E.......... write header/trailer to each segment (default true)
+  -write_header_trailer <boolean>    E.......... write a header to the first segment and a trailer to the last one (default true)
+  -reset_timestamps  <boolean>    E.......... reset timestamps at the beginning of each segment (default false)
+  -initial_offset    <duration>   E.......... set initial timestamp offset (default 0)
+  -write_empty_segments <boolean>    E.......... allow writing empty 'filler' segments (default false)
+
+
+Exiting with exit code 0

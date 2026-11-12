@@ -1,0 +1,29 @@
+Encoder ffv1_vulkan [FFmpeg video codec #1 (Vulkan)]:
+    General capabilities: dr1 delay hardware reorderedopaque flush 
+    Threading capabilities: none
+    Supported hardware devices: vulkan 
+    Supported pixel formats: vulkan
+ffv1_vulkan AVOptions:
+  -slicecrc          <int>        E..V....... Protect slices with CRCs (from -1 to 2) (default -1)
+  -context           <int>        E..V....... Context model (from 0 to 1) (default 0)
+  -coder             <int>        E..V....... Coder type (from -2 to 2) (default range_tab)
+     rice            0            E..V....... Golomb rice
+     range_def       -2           E..V....... Range with default table
+     range_tab       2            E..V....... Range with custom table
+  -qtable            <int>        E..V....... Quantization table (from -1 to 2) (default default)
+     default         -1           E..V.......
+     8bit            0            E..V.......
+     greater8bit     1            E..V.......
+  -slices_h          <int>        E..V....... Number of horizontal slices (from -1 to 1024) (default -1)
+  -slices_v          <int>        E..V....... Number of vertical slices (from -1 to 1024) (default -1)
+  -force_pcm         <boolean>    E..V....... Code all slices with no prediction (default false)
+  -rct_search        <boolean>    E..V....... Run a search for RCT parameters (level 4 only) (default true)
+  -async_depth       <int>        E..V....... Internal parallelization depth (from 1 to INT_MAX) (default 1)
+  -remap_mode        <int>        E..V....... Remap Mode (from -1 to 2) (default auto)
+     auto            -1           E..V....... Automatic
+     off             0            E..V....... Disabled
+     dualrle         1            E..V....... Dual RLE
+     flipdualrle     2            E..V....... Dual RLE
+
+
+Exiting with exit code 0

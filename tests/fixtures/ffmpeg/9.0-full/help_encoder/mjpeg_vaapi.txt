@@ -1,0 +1,16 @@
+Encoder mjpeg_vaapi [MJPEG (VAAPI)]:
+    General capabilities: dr1 hardware reorderedopaque 
+    Threading capabilities: none
+    Supported hardware devices: vaapi 
+    Supported pixel formats: vaapi
+mjpeg_vaapi AVOptions:
+  -idr_interval      <int>        E..V....... Distance (in I-frames) between key frames (from 0 to INT_MAX) (default 0)
+  -b_depth           <int>        E..V....... Maximum B-frame reference depth (from 1 to INT_MAX) (default 1)
+  -async_depth       <int>        E..V....... Maximum processing parallelism. Increase this to improve single channel performance. (from 1 to 64) (default 2)
+  -low_power         <boolean>    E..V....... Use low-power encoding mode (only available on some platforms; may not support all encoding features) (default false)
+  -max_frame_size    <int>        E..V....... Maximum frame size (in bytes) (from 0 to 2.68435e+08) (default 0)
+  -jfif              <boolean>    E..V....... Include JFIF header (default false)
+  -huffman           <boolean>    E..V....... Include huffman tables (default true)
+
+
+Exiting with exit code 0

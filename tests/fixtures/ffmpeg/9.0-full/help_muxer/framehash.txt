@@ -1,0 +1,9 @@
+Muxer framehash [Per-frame hash testing]:
+    Default video codec: rawvideo.
+    Default audio codec: pcm_s16le.
+frame hash muxer AVOptions:
+  -hash              <string>     E.......... set hash to use (default "sha256")
+  -format_version    <int>        E.......... file format version (from 1 to 2) (default 2)
+
+
+Exiting with exit code 0

@@ -1,0 +1,6 @@
+Muxer srt [SubRip subtitle]:
+    Common extensions: srt.
+    Mime type: application/x-subrip.
+    Default subtitle codec: subrip.
+
+Exiting with exit code 0

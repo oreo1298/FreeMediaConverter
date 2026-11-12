@@ -1,0 +1,5 @@
+Muxer dirac [raw Dirac]:
+    Common extensions: drc,vc2.
+    Default video codec: dirac.
+
+Exiting with exit code 0

@@ -1,0 +1,4 @@
+Muxer u16be [PCM unsigned 16-bit big-endian]:
+    Default audio codec: pcm_u16be.
+
+Exiting with exit code 0

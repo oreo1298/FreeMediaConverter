@@ -1,0 +1,8 @@
+Muxer lrc [LRC lyrics]:
+    Common extensions: lrc.
+    Default subtitle codec: subrip.
+lrc AVOptions:
+  -precision         <int>        E....S..... precision of the fractional part of the timestamp, 2 for centiseconds (from 1 to 6) (default 2)
+
+
+Exiting with exit code 0

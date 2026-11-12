@@ -1,0 +1,11 @@
+Muxer hds [HDS Muxer]:
+    Default video codec: h264.
+    Default audio codec: aac.
+HDS muxer AVOptions:
+  -window_size       <int>        E.......... number of fragments kept in the manifest (from 0 to INT_MAX) (default 0)
+  -extra_window_size <int>        E.......... number of fragments kept outside of the manifest before removing from disk (from 0 to INT_MAX) (default 5)
+  -min_frag_duration <int64>      E.......... minimum fragment duration (in microseconds) (from 0 to INT_MAX) (default 10000000)
+  -remove_at_exit    <boolean>    E.......... remove all fragments when finished (default false)
+
+
+Exiting with exit code 0

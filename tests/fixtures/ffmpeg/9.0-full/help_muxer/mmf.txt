@@ -1,0 +1,6 @@
+Muxer mmf [Yamaha SMAF]:
+    Common extensions: mmf.
+    Mime type: application/vnd.smaf.
+    Default audio codec: adpcm_yamaha.
+
+Exiting with exit code 0

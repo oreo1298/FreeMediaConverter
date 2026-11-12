@@ -1,0 +1,12 @@
+Muxer mcc [MacCaption]:
+    Common extensions: mcc.
+    Default subtitle codec: eia_608.
+mcc muxer AVOptions:
+  -override_time_code_rate <string>     E.......... override the `Time Code Rate` value in the output
+  -use_u_alias       <boolean>    E.......... use the U alias for E1h 00h 00h 00h, disabled by default because some .mcc files disagree on whether it has 2 or 3 zero bytes (default false)
+  -mcc_version       <unsigned>   E.......... the mcc file format version (from 1 to 2) (default 2)
+  -creation_program  <string>     E.......... the creation program
+  -creation_time     <string>     E.......... the creation time (default "now")
+
+
+Exiting with exit code 0

@@ -1,0 +1,6 @@
+Muxer amr [3GPP AMR]:
+    Common extensions: amr.
+    Mime type: audio/amr.
+    Default audio codec: amr_nb.
+
+Exiting with exit code 0

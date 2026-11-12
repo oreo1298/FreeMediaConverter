@@ -1,0 +1,11 @@
+Muxer aiff [Audio IFF]:
+    Common extensions: aif,aiff,afc,aifc.
+    Mime type: audio/aiff.
+    Default video codec: png.
+    Default audio codec: pcm_s16be.
+AIFF muxer AVOptions:
+  -write_id3v2       <boolean>    E.......... Enable ID3 tags writing. (default false)
+  -id3v2_version     <int>        E.......... Select ID3v2 version to write. Currently 3 and 4 are supported. (from 3 to 4) (default 4)
+
+
+Exiting with exit code 0

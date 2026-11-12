@@ -1,0 +1,11 @@
+Muxer adts [ADTS AAC (Advanced Audio Coding)]:
+    Common extensions: aac,adts.
+    Mime type: audio/aac.
+    Default audio codec: aac.
+ADTS muxer AVOptions:
+  -write_id3v2       <boolean>    E.......... Enable ID3v2 tag writing (default false)
+  -write_apetag      <boolean>    E.......... Enable APE tag writing (default false)
+  -write_mpeg2       <boolean>    E.......... Set MPEG version to MPEG-2 (default false)
+
+
+Exiting with exit code 0

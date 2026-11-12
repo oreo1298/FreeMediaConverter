@@ -1,0 +1,6 @@
+Muxer webvtt [WebVTT subtitle]:
+    Common extensions: vtt.
+    Mime type: text/vtt.
+    Default subtitle codec: webvtt.
+
+Exiting with exit code 0

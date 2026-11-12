@@ -1,0 +1,5 @@
+Muxer s16le [PCM signed 16-bit little-endian]:
+    Common extensions: sw.
+    Default audio codec: pcm_s16le.
+
+Exiting with exit code 0

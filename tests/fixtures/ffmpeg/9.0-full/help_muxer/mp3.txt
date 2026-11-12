@@ -1,0 +1,12 @@
+Muxer mp3 [MP3 (MPEG audio layer 3)]:
+    Common extensions: mp3.
+    Mime type: audio/mpeg.
+    Default video codec: png.
+    Default audio codec: mp3.
+MP3 muxer AVOptions:
+  -id3v2_version     <int>        E.......... Select ID3v2 version to write. Currently 3 and 4 are supported. (from 0 to 4) (default 4)
+  -write_id3v1       <boolean>    E.......... Enable ID3v1 writing. ID3v1 tags are written in UTF-8 which may not be supported by most software. (default false)
+  -write_xing        <boolean>    E.......... Write the Xing header containing file duration. (default true)
+
+
+Exiting with exit code 0

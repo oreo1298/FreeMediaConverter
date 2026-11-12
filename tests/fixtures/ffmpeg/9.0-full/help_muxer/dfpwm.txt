@@ -1,0 +1,5 @@
+Muxer dfpwm [raw DFPWM1a]:
+    Common extensions: dfpwm.
+    Default audio codec: dfpwm.
+
+Exiting with exit code 0

@@ -1,0 +1,5 @@
+Muxer avs3 [AVS3-P2/IEEE1857.10]:
+    Common extensions: avs3.
+    Default video codec: avs3.
+
+Exiting with exit code 0

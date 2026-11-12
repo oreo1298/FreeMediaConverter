@@ -10,6 +10,7 @@
 pub mod branding;
 pub mod error;
 pub mod ffmpeg;
+pub mod media;
 pub mod paths;
 pub mod process;
 

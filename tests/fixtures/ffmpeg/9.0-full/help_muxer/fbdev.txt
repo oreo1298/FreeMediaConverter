@@ -1,0 +1,8 @@
+Muxer fbdev [Linux framebuffer]:
+    Default video codec: rawvideo.
+fbdev outdev AVOptions:
+  -xoffset           <int>        E.......... set x coordinate of top left corner (from INT_MIN to INT_MAX) (default 0)
+  -yoffset           <int>        E.......... set y coordinate of top left corner (from INT_MIN to INT_MAX) (default 0)
+
+
+Exiting with exit code 0

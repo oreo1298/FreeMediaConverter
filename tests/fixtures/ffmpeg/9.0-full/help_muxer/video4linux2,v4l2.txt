@@ -1,0 +1,4 @@
+Muxer video4linux2,v4l2 [Video4Linux2 output device]:
+    Default video codec: rawvideo.
+
+Exiting with exit code 0

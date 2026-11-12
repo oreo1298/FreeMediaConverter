@@ -1,0 +1,5 @@
+Muxer vc1test [VC-1 test bitstream]:
+    Common extensions: rcv.
+    Default video codec: wmv3.
+
+Exiting with exit code 0

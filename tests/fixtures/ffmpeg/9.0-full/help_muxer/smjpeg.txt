@@ -1,0 +1,5 @@
+Muxer smjpeg [Loki SDL MJPEG]:
+    Default video codec: mjpeg.
+    Default audio codec: pcm_s16le.
+
+Exiting with exit code 0

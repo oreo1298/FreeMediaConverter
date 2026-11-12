@@ -1,0 +1,8 @@
+Muxer webp [WebP]:
+    Common extensions: webp.
+    Default video codec: webp.
+WebP muxer AVOptions:
+  -loop              <int>        E.......... Number of times to loop the output: 0 - infinite loop (from 0 to 65535) (default 1)
+
+
+Exiting with exit code 0

@@ -1,0 +1,5 @@
+Muxer u16le [PCM unsigned 16-bit little-endian]:
+    Common extensions: uw.
+    Default audio codec: pcm_u16le.
+
+Exiting with exit code 0

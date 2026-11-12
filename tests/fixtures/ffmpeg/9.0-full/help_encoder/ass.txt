@@ -1,0 +1,4 @@
+Encoder ass [ASS (Advanced SubStation Alpha) subtitle]:
+    General capabilities: none
+
+Exiting with exit code 0

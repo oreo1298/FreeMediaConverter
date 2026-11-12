@@ -1,0 +1,7 @@
+Muxer amv [AMV]:
+    Common extensions: amv.
+    Mime type: video/amv.
+    Default video codec: amv.
+    Default audio codec: adpcm_ima_amv.
+
+Exiting with exit code 0

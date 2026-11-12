@@ -1,0 +1,6 @@
+Muxer gsm [raw GSM]:
+    Common extensions: gsm.
+    Mime type: audio/x-gsm.
+    Default audio codec: gsm.
+
+Exiting with exit code 0

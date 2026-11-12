@@ -1,0 +1,10 @@
+Muxer apng [Animated Portable Network Graphics]:
+    Common extensions: apng.
+    Mime type: image/png.
+    Default video codec: apng.
+APNG muxer AVOptions:
+  -plays             <int>        E.......... Number of times to play the output: 0 - infinite loop, 1 - no loop (from 0 to 65535) (default 1)
+  -final_delay       <rational>   E.......... Force delay after the last frame (from 0 to 65535) (default 0/1)
+
+
+Exiting with exit code 0

@@ -1,0 +1,6 @@
+Muxer avm2 [SWF (ShockWave Flash) (AVM2)]:
+    Mime type: application/x-shockwave-flash.
+    Default video codec: flv1.
+    Default audio codec: mp3.
+
+Exiting with exit code 0

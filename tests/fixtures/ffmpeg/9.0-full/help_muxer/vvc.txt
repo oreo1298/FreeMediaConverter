@@ -1,0 +1,5 @@
+Muxer vvc [raw H.266/VVC video]:
+    Common extensions: vvc,h266,266.
+    Default video codec: vvc.
+
+Exiting with exit code 0

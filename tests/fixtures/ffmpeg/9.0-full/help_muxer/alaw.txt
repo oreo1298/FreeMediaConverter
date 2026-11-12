@@ -1,0 +1,5 @@
+Muxer alaw [PCM A-law]:
+    Common extensions: al.
+    Default audio codec: pcm_alaw.
+
+Exiting with exit code 0

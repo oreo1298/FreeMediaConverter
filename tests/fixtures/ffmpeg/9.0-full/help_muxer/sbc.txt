@@ -1,0 +1,6 @@
+Muxer sbc [raw SBC]:
+    Common extensions: sbc,msbc.
+    Mime type: audio/x-sbc.
+    Default audio codec: sbc.
+
+Exiting with exit code 0

@@ -1,0 +1,5 @@
+Muxer w64 [Sony Wave64]:
+    Common extensions: w64.
+    Default audio codec: pcm_s16le.
+
+Exiting with exit code 0

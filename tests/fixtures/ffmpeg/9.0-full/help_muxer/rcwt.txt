@@ -1,0 +1,4 @@
+Muxer rcwt [RCWT (Raw Captions With Time)]:
+    Default subtitle codec: eia_608.
+
+Exiting with exit code 0

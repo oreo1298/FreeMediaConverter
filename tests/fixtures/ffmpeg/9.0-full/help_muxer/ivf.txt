@@ -1,0 +1,5 @@
+Muxer ivf [On2 IVF]:
+    Common extensions: ivf.
+    Default video codec: vp8.
+
+Exiting with exit code 0

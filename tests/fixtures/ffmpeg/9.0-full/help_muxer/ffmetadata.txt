@@ -1,0 +1,4 @@
+Muxer ffmetadata [FFmpeg metadata in text]:
+    Common extensions: ffmeta.
+
+Exiting with exit code 0

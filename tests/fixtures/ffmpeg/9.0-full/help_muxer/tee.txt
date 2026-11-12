@@ -1,0 +1,7 @@
+Muxer tee [Multiple muxer tee]:
+Tee muxer AVOptions:
+  -use_fifo          <boolean>    E.......... Use fifo pseudo-muxer to separate actual muxers from encoder (default false)
+  -fifo_options      <dictionary> E.......... fifo pseudo-muxer options
+
+
+Exiting with exit code 0

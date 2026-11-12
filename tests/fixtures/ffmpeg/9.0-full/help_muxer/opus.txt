@@ -1,0 +1,10 @@
+Muxer opus [Ogg Opus]:
+    Common extensions: opus.
+    Mime type: audio/ogg.
+    Default audio codec: opus.
+Ogg (audio/video/Speex/Opus) muxer AVOptions:
+  -serial_offset     <int>        E.......... serial number offset (from 0 to INT_MAX) (default 0)
+  -page_duration     <int64>      E.......... preferred page duration, in microseconds (from 0 to I64_MAX) (default 1000000)
+
+
+Exiting with exit code 0

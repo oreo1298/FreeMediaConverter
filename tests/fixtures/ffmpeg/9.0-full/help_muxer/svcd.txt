@@ -1,0 +1,11 @@
+Muxer svcd [MPEG-2 PS (SVCD)]:
+    Common extensions: vob.
+    Mime type: video/mpeg.
+    Default video codec: mpeg2video.
+    Default audio codec: mp2.
+mpeg/(s)vcd/vob/dvd muxer AVOptions:
+  -muxrate           <int>        E.......... mux rate as bits/s (from 0 to 1.67772e+09) (default 0)
+  -preload           <int>        E.......... initial demux-decode delay in microseconds (from 0 to INT_MAX) (default 500000)
+
+
+Exiting with exit code 0

@@ -1,0 +1,6 @@
+Muxer ilbc [iLBC storage]:
+    Common extensions: lbc.
+    Mime type: audio/iLBC.
+    Default audio codec: ilbc.
+
+Exiting with exit code 0

@@ -1,0 +1,6 @@
+Muxer h261 [raw H.261]:
+    Common extensions: h261.
+    Mime type: video/x-h261.
+    Default video codec: h261.
+
+Exiting with exit code 0

@@ -1,0 +1,4 @@
+Muxer vidc [PCM Archimedes VIDC]:
+    Default audio codec: pcm_vidc.
+
+Exiting with exit code 0

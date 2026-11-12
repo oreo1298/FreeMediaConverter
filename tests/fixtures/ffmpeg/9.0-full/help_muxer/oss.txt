@@ -1,0 +1,4 @@
+Muxer oss [OSS (Open Sound System) playback]:
+    Default audio codec: pcm_s16le.
+
+Exiting with exit code 0

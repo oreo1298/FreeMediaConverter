@@ -1,0 +1,3 @@
+Unknown format '='.
+
+Exiting with exit code 0

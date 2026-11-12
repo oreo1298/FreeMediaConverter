@@ -1,0 +1,10 @@
+Muxer gif [CompuServe Graphics Interchange Format (GIF)]:
+    Common extensions: gif.
+    Mime type: image/gif.
+    Default video codec: gif.
+GIF muxer AVOptions:
+  -loop              <int>        E.......... Number of times to loop the output: -1 - no loop, 0 - infinite loop (from -1 to 65535) (default 0)
+  -final_delay       <int>        E.......... Force delay (in centiseconds) after the last frame (from -1 to 65535) (default -1)
+
+
+Exiting with exit code 0

@@ -1,0 +1,6 @@
+Muxer bit [G.729 BIT file format]:
+    Common extensions: bit.
+    Mime type: audio/bit.
+    Default audio codec: g729.
+
+Exiting with exit code 0

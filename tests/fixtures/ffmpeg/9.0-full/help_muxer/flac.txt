@@ -1,0 +1,10 @@
+Muxer flac [raw FLAC]:
+    Common extensions: flac.
+    Mime type: audio/x-flac.
+    Default video codec: png.
+    Default audio codec: flac.
+flac muxer AVOptions:
+  -write_header      <boolean>    E.......... Write the file header (default true)
+
+
+Exiting with exit code 0
