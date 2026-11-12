@@ -535,10 +535,10 @@ fn parse_side_data(list: &Value, vi: &mut VideoInfo) {
                     compatible,
                 };
             }
-            k if k.contains("HDR10+") || k.contains("SMPTE2094-40") => {
-                if vi.hdr == Hdr::Hdr10 || vi.hdr == Hdr::Sdr {
-                    vi.hdr = Hdr::Hdr10Plus;
-                }
+            k if (k.contains("HDR10+") || k.contains("SMPTE2094-40"))
+                && (vi.hdr == Hdr::Hdr10 || vi.hdr == Hdr::Sdr) =>
+            {
+                vi.hdr = Hdr::Hdr10Plus;
             }
             _ => {}
         }

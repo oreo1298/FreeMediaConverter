@@ -244,6 +244,7 @@ struct StepResult {
 
 type Sink = Arc<dyn Fn(JobEvent) + Send + Sync>;
 
+#[allow(clippy::too_many_arguments)]
 fn run_step(
     ff: &Ffmpeg,
     args: &[OsString],

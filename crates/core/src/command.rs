@@ -124,10 +124,12 @@ pub fn fit_size(w: u32, h: u32, scale: &Scale) -> (u32, u32) {
     }
     if scale.only_shrink {
         f = f.min(1.0);
-    } else if scale.width.is_some() && scale.height.is_none() {
-        f = scale.width.unwrap() as f64 / w;
-    } else if scale.height.is_some() && scale.width.is_none() {
-        f = scale.height.unwrap() as f64 / h;
+    } else {
+        match (scale.width, scale.height) {
+            (Some(mw), None) => f = mw as f64 / w,
+            (None, Some(mh)) => f = mh as f64 / h,
+            _ => {}
+        }
     }
     let even = |x: f64| ((x / 2.0).round() as u32 * 2).max(2);
     (even(w * f), even(h * f))

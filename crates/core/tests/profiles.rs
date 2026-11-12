@@ -178,3 +178,21 @@ fn inventory_roundtrips_through_json() {
     let back: Inventory = serde_json::from_str(&json).unwrap();
     assert_eq!(inv, back);
 }
+
+#[test]
+fn inventory_to_profile_spec_roundtrips() {
+    use retort_core::hw::simulate::ProfileSpec;
+    for name in ["hybrid-laptop", "broken-drivers", "raspberry-pi-4"] {
+        let dir = profiles_dir().join(name);
+        let p = Profile::load(&dir).unwrap();
+        let inv = p.inventory().unwrap();
+        let spec = ProfileSpec::from_inventory(&inv, "roundtrip", &p.spec.ffmpeg);
+        let p2 = Profile {
+            name: "rt".into(),
+            dir: dir.clone(),
+            spec,
+        };
+        let inv2 = p2.inventory().unwrap();
+        assert_eq!(summary(&inv), summary(&inv2), "{name}");
+    }
+}

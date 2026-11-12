@@ -181,7 +181,7 @@ pub fn best_software_encoder(caps: &Caps, codec: &str) -> Option<String> {
     caps.encoders_for(codec)
         .filter(sw)
         .find(|e| !e.experimental)
-        .or_else(|| caps.encoders_for(codec).filter(sw).next())
+        .or_else(|| caps.encoders_for(codec).find(sw))
         .map(|e| e.name.clone())
 }
 

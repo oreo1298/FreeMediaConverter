@@ -63,9 +63,74 @@ pub struct Profile {
     pub spec: ProfileSpec,
 }
 
-/// Directory with recorded ffmpeg outputs for a profile.
+/// Directory with recorded ffmpeg outputs for a profile: `<profile>/ffmpeg/`
+/// if present (real hardware reports), else `tests/fixtures/ffmpeg/<name>`.
 pub fn ffmpeg_fixture_dir(profile_dir: &Path, name: &str) -> PathBuf {
+    let own = profile_dir.join("ffmpeg");
+    if own.join("encoders.txt").exists() {
+        return own;
+    }
     profile_dir.join("../../ffmpeg").join(name)
+}
+
+fn outcome_spec(o: &super::Outcome) -> Option<String> {
+    match o {
+        super::Outcome::Pass => Some("pass".into()),
+        super::Outcome::Fail { reason, detail } => Some(format!(
+            "fail: {}",
+            if detail.trim().is_empty() {
+                reason
+            } else {
+                detail
+            }
+        )),
+        super::Outcome::Skipped { .. } => None,
+    }
+}
+
+impl ProfileSpec {
+    /// Turn a real machine's verified inventory into a profile spec, so a
+    /// hardware report becomes a regression fixture.
+    pub fn from_inventory(inv: &super::Inventory, description: &str, ffmpeg: &str) -> ProfileSpec {
+        let mut spec = ProfileSpec {
+            description: description.to_string(),
+            ffmpeg: ffmpeg.to_string(),
+            ..Default::default()
+        };
+        for e in &inv.probes.encoders {
+            spec.encode.insert(
+                format!("{}@{}", e.encoder, e.device.key()),
+                EncodeSpec {
+                    eight: outcome_spec(&e.eight_bit),
+                    ten: outcome_spec(&e.ten_bit),
+                    bf: e.bframes,
+                    rc: e.eight_bit.passed().then(|| e.rc_modes.clone()),
+                },
+            );
+        }
+        for d in inv.probes.decoders.iter().filter(|d| d.outcome.passed()) {
+            let Some(hw) = d.backend.hwaccel() else {
+                continue;
+            };
+            let base = if d.codec == "mpeg2video" {
+                "mpeg2"
+            } else {
+                d.codec.as_str()
+            };
+            spec.decode
+                .entry(format!("{hw}@{}", d.device.key()))
+                .or_default()
+                .push(format!("{base}_{}", d.bit_depth));
+        }
+        for f in &inv.probes.filters {
+            if let Some(o) = outcome_spec(&f.outcome) {
+                spec.filters
+                    .insert(format!("{}@{}", f.filter, f.device.key()), o);
+            }
+        }
+        spec.default_fail = Some("Device creation failed: -1.".into());
+        spec
+    }
 }
 
 /// Rules answering the standard ffmpeg queries from a recorded directory.
@@ -163,7 +228,12 @@ impl Profile {
             .clone()
             .unwrap_or_else(|| "Device creation failed: -1.".into());
         let mut r = FixtureRunner::new();
-        if let Some(smi) = spec.nvidia_smi.clone() {
+        // Real reports record nvidia-smi output next to profile.json.
+        let smi = spec
+            .nvidia_smi
+            .clone()
+            .or_else(|| std::fs::read_to_string(self.dir.join("nvidia-smi.csv")).ok());
+        if let Some(smi) = smi {
             r = r.exact(
                 "nvidia-smi",
                 &[
@@ -247,7 +317,7 @@ impl Profile {
                 let ok = s
                     .decode
                     .get(&format!("{hw}@{dev}"))
-                    .map(|l| l.iter().any(|c| *c == clip))
+                    .map(|l| l.contains(&clip))
                     .unwrap_or(false);
                 return Some(if ok {
                     CmdOutput::ok("")

@@ -1066,8 +1066,8 @@ fn hardware_plans(
         && !v.filters.needs_cpu()
         && !deinterlace
         && vi.rotation == 0
-        && vi.width % 2 == 0
-        && vi.height % 2 == 0
+        && vi.width.is_multiple_of(2)
+        && vi.height.is_multiple_of(2)
         && gpu_tonemap
         && (!(scaling || depth_change) || scale_ok)
         && !matches!(settings.subtitles, SubtitleSettings::BurnIn { .. })

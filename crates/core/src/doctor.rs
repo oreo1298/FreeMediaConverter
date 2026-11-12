@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use crate::branding;
 use crate::distro::{self, Family, OsRelease};
 use crate::ffmpeg::Ffmpeg;
-use crate::hw::{Access, Backend, Inventory, Outcome, Vendor};
+use crate::hw::{Access, Backend, Inventory, Vendor};
 
 /// How bad a finding is.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -588,8 +588,7 @@ pub fn check(
             x.fixes.push(verify_steps());
         }
     }
-    f.sort_by(|a, b| b.severity.cmp(&a.severity));
-    let _ = Outcome::Pass;
+    f.sort_by_key(|x| std::cmp::Reverse(x.severity));
     Report {
         app_version: branding::VERSION.into(),
         os,

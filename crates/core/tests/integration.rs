@@ -362,11 +362,7 @@ fn every_simple_preset_on_sdr_input() {
                 let st = m
                     .primary_audio()
                     .unwrap_or_else(|| panic!("{}: no audio", p.id));
-                let expect = if a.codec.starts_with("pcm_") {
-                    a.codec.as_str()
-                } else {
-                    a.codec.as_str()
-                };
+                let expect = a.codec.as_str();
                 assert_eq!(st.codec, expect, "{}", p.id);
             }
             AudioSettings::Copy => assert!(m.primary_audio().is_some(), "{}", p.id),
@@ -428,7 +424,7 @@ fn awkward_inputs() {
         let (p, _) = convert(&c.dir.join(name), &mp4, out.path());
         let v = probe(&p).primary_video().unwrap().video.clone().unwrap();
         assert!(
-            v.width % 2 == 0 && v.height % 2 == 0,
+            v.width.is_multiple_of(2) && v.height.is_multiple_of(2),
             "{name}: {}x{}",
             v.width,
             v.height

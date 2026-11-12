@@ -167,7 +167,10 @@ NVENC AV1 on RTX 4090").
 
 ### 2.9 Command builder (`command`)
 
-Pure function `Plan + OutputSettings + MediaInfo + paths → Vec<OsString>`.
+Pure function `Plan + OutputSettings + MediaInfo + paths → CommandSet`
+(one or more argv vectors: loudnorm measurement, pass 1, final encode).
+Colour properties are tagged with `setparams` in the filter chain because
+FFmpeg 8/9 take them from frames (D13).
 Snapshot-tested with `insta` across inputs × presets × simulated hardware
 profiles. Always emits `-hide_banner`, `-n` (never overwrite; conflicts are
 resolved by Retort before the job starts, and an explicit "overwrite" policy
@@ -177,7 +180,9 @@ send `q`.
 
 ### 2.10 Jobs (`job`, `progress`, `queue`)
 
-* `job::Job` spawns ffmpeg with stdin/stdout/stderr piped; a reader thread
+* Outputs go to a hidden temp file (`.<name>.retort-<pid>-<n>.part.<ext>`) in
+  the destination folder and are renamed into place on success (decision D12).
+* `job::start` spawns ffmpeg with stdin/stdout/stderr piped; a reader thread
   parses `-progress` key/value blocks (`progress::Parser`) into
   `Progress{percent, fps, speed, eta, size}`; stderr is captured to a per-job
   log file. Pause/resume = `SIGSTOP`/`SIGCONT`. Cancel = write `q` to stdin →
@@ -192,7 +197,13 @@ send `q`.
   errors re-queue instead of failing.
 * The queue persists to `$XDG_STATE_HOME/retort/queue.json`.
 
-### 2.11 Doctor (`doctor`, `distro`)
+### 2.11 Engine facade (`engine`)
+
+`Engine` bundles `Ffmpeg`, `Caps`, the format catalog, `Compat` and the
+`Inventory` (all cheap to clone) and offers `analyze`, `plan`, `output_path`,
+`request` and `probe_hardware`. The CLI and the GUI only talk to this.
+
+### 2.12 Doctor (`doctor`, `distro`)
 
 Checks produce `Finding{severity, title, explanation, fix_commands}`; fix
 commands are chosen from a table keyed by distro family (`ID`/`ID_LIKE`) and
