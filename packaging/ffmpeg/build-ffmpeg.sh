@@ -66,6 +66,10 @@ cd "ffmpeg-$FFMPEG_VERSION"
 shader_flag=""
 if ./configure --help | grep -q -- "--enable-libshaderc"; then shader_flag="--enable-libshaderc"; fi
 
+# Intel oneVPL (Quick Sync) and AMD AMF exist only on x86-64.
+x86_flags=""
+if [ "$(uname -m)" = x86_64 ]; then x86_flags="--enable-libvpl --enable-amf"; fi
+
 export PKG_CONFIG_PATH="$prefix/lib/pkgconfig:$prefix/share/pkgconfig:${PKG_CONFIG_PATH:-}"
 ./configure \
   --prefix="$prefix" \
@@ -77,9 +81,9 @@ export PKG_CONFIG_PATH="$prefix/lib/pkgconfig:$prefix/share/pkgconfig:${PKG_CONF
   --enable-libmp3lame --enable-libwebp --enable-libzimg --enable-libass \
   --enable-libsoxr --enable-libfreetype --enable-libfontconfig --enable-libharfbuzz \
   --enable-libplacebo --enable-vulkan $shader_flag \
-  --enable-vaapi --enable-libdrm --enable-libvpl \
+  --enable-vaapi --enable-libdrm $x86_flags \
   --enable-ffnvcodec --enable-nvenc --enable-nvdec --enable-cuvid --enable-cuda-llvm \
-  --enable-amf --enable-v4l2-m2m \
+  --enable-v4l2-m2m \
   --enable-gnutls
 make -j"$jobs" >/dev/null
 make install >/dev/null

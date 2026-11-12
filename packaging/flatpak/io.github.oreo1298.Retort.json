@@ -34,8 +34,12 @@
       "name": "nv-codec-headers",
       "comment": "NVENC/NVDEC/CUDA loader headers (MIT). n12.2 works with drivers >= 550 (decision D17); the SDK's 13.x would need newer drivers.",
       "buildsystem": "simple",
-      "build-commands": ["make PREFIX=/app install"],
-      "cleanup": ["*"],
+      "build-commands": [
+        "make PREFIX=/app install"
+      ],
+      "cleanup": [
+        "*"
+      ],
       "sources": [
         {
           "type": "git",
@@ -47,7 +51,11 @@
     },
     {
       "name": "x264",
-      "config-opts": ["--enable-shared", "--enable-pic", "--disable-cli"],
+      "config-opts": [
+        "--enable-shared",
+        "--enable-pic",
+        "--disable-cli"
+      ],
       "sources": [
         {
           "type": "git",
@@ -82,7 +90,9 @@
     },
     {
       "name": "zimg",
-      "config-opts": ["--disable-static"],
+      "config-opts": [
+        "--disable-static"
+      ],
       "sources": [
         {
           "type": "git",
@@ -94,7 +104,9 @@
     },
     {
       "name": "libass",
-      "config-opts": ["--disable-static"],
+      "config-opts": [
+        "--disable-static"
+      ],
       "sources": [
         {
           "type": "archive",
@@ -122,6 +134,9 @@
           "tag": "v2.17.0",
           "commit": "d77f9195cf495b937631607333288fd917ae8939"
         }
+      ],
+      "only-arches": [
+        "x86_64"
       ]
     },
     {
@@ -154,7 +169,14 @@
       "comment": "Redistributable build: GPL, no --enable-nonfree. NVENC/NVDEC/CUDA via nv-codec-headers; CUDA filters via clang (llvm22 extension).",
       "build-options": {
         "append-path": "/usr/lib/sdk/llvm22/bin",
-        "prepend-ld-library-path": "/usr/lib/sdk/llvm22/lib"
+        "prepend-ld-library-path": "/usr/lib/sdk/llvm22/lib",
+        "arch": {
+          "x86_64": {
+            "config-opts": [
+              "--enable-libvpl"
+            ]
+          }
+        }
       },
       "config-opts": [
         "--enable-gpl",
@@ -186,7 +208,6 @@
         "--enable-libdrm",
         "--enable-vulkan",
         "--enable-libplacebo",
-        "--enable-libvpl",
         "--enable-ffnvcodec",
         "--enable-nvenc",
         "--enable-nvdec",
@@ -206,7 +227,10 @@
       "name": "retort",
       "buildsystem": "meson",
       "builddir": true,
-      "config-opts": ["--buildtype=release", "-Doffline=true"],
+      "config-opts": [
+        "--buildtype=release",
+        "-Doffline=true"
+      ],
       "build-options": {
         "append-path": "/usr/lib/sdk/rust-stable/bin",
         "env": {
@@ -217,7 +241,16 @@
         {
           "type": "dir",
           "path": "../..",
-          "skip": ["target", "_build", "_install", "dist", ".flatpak-builder", "build-dir", "repo", ".git"]
+          "skip": [
+            "target",
+            "_build",
+            "_install",
+            "dist",
+            ".flatpak-builder",
+            "build-dir",
+            "repo",
+            ".git"
+          ]
         },
         "cargo-sources.json"
       ]

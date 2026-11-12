@@ -27,8 +27,10 @@ apt-get install -y -qq --no-install-recommends build-essential meson ninja-build
   file git cmake nasm clang llvm python3-jinja2 liblcms2-dev libunwind-dev libx264-dev libx265-dev \
   libsvtav1enc-dev libdav1d-dev libaom-dev libvpx-dev libopus-dev libvorbis-dev libmp3lame-dev libwebp-dev \
   libzimg-dev libass-dev libsoxr-dev libfreetype-dev libfontconfig-dev libharfbuzz-dev libvulkan-dev \
-  glslang-dev glslang-tools spirv-headers libva-dev libdrm-dev libvpl-dev libgnutls28-dev zsync \
+  glslang-dev glslang-tools spirv-headers libva-dev libdrm-dev libgnutls28-dev zsync \
   librsvg2-common gstreamer1.0-tools >/dev/null
+# oneVPL (Quick Sync) is x86-64 only.
+if [ "$(uname -m)" = x86_64 ]; then apt-get install -y -qq --no-install-recommends libvpl-dev >/dev/null; fi
 arch=$(uname -m)
 # FFmpeg (latest stable) built for this base.
 WORK=/tmp/ffbuild bash /ffbuild/build-ffmpeg.sh /opt/ffmpeg
