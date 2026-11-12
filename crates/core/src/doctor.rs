@@ -106,7 +106,7 @@ pub fn fix_install_ffmpeg(os: &OsRelease, f: Family) -> Vec<FixStep> {
         )],
         Family::Suse => vec![
             step("Add the Packman repository", &[&packman_add(os)]),
-            step("Install FFmpeg from Packman", &[&format!("sudo zypper install --from packman {}", suse_ffmpeg(os))]),
+            step("Install FFmpeg from Packman", &[suse_ffmpeg_install(os)]),
         ],
         Family::SuseAtomic => vec![step("Use the Flatpak (it bundles a full FFmpeg)", &[&format!("flatpak install flathub {}", branding::APP_ID)])],
         Family::Arch => vec![step("Install FFmpeg", &["sudo pacman -S ffmpeg"])],
@@ -136,12 +136,15 @@ fn packman_add(os: &OsRelease) -> String {
     )
 }
 
-/// Packman's FFmpeg package: Tumbleweed has `ffmpeg` (9.x), Leap 16 has `ffmpeg-8`.
-fn suse_ffmpeg(os: &OsRelease) -> &'static str {
+/// Install Packman's full FFmpeg over openSUSE's codec-restricted one.
+/// Tumbleweed: `ffmpeg` (same name, vendor change). Leap 16: Packman's
+/// `ffmpeg-8` conflicts with OSS `ffmpeg-7`, so the swap removes it in the same
+/// transaction (verified in a Leap 16.0 container).
+fn suse_ffmpeg_install(os: &OsRelease) -> &'static str {
     if os.id == "opensuse-leap" {
-        "ffmpeg-8"
+        "sudo zypper install --from packman --allow-vendor-change ffmpeg-8 -ffmpeg-7"
     } else {
-        "ffmpeg"
+        "sudo zypper install --from packman --allow-vendor-change ffmpeg"
     }
 }
 
@@ -697,7 +700,10 @@ mod tests {
             nv[1].commands[0],
             "sudo zypper install nvidia-compute-G07 nvidia-video-G07"
         );
-        assert!(fix_install_ffmpeg(&leap, Family::Suse)[1].commands[0].ends_with("ffmpeg-8"));
+        assert_eq!(
+            fix_install_ffmpeg(&leap, Family::Suse)[1].commands[0],
+            "sudo zypper install --from packman --allow-vendor-change ffmpeg-8 -ffmpeg-7"
+        );
         assert!(packman_url(&leap).ends_with("openSUSE_Leap_16.0/"));
     }
 }
