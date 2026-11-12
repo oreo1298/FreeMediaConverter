@@ -1,0 +1,10 @@
+---
+source: crates/core/tests/doctor.rs
+expression: "doctor::render_text(&r).replace(env!(\"CARGO_PKG_VERSION\"), \"X.Y.Z\")"
+---
+Retort X.Y.Z system check
+OS: CachyOS (kernel 6.17.7-2-cachyos)
+FFmpeg: 9.0.2 (/usr/bin/ffmpeg)
+
+[  OK ] NVIDIA GeForce RTX 4090 — hardware acceleration works
+        Encode: NVENC, Vulkan. Decode: NVDEC, VAAPI, Vulkan.

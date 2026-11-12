@@ -1,0 +1,18 @@
+---
+source: crates/core/tests/doctor.rs
+expression: "doctor::render_text(&r).replace(env!(\"CARGO_PKG_VERSION\"), \"X.Y.Z\")"
+---
+Retort X.Y.Z system check
+OS: Fedora Linux Asahi Remix 43 (kernel 6.17.7-2-cachyos)
+FFmpeg: 9.0.2 (/usr/bin/ffmpeg)
+
+[INFO ] Vulkan Video encoding is not available
+        Your Vulkan driver doesn't expose the video encode extensions (needs a recent Mesa — 24.1+ for Intel/AMD — or NVIDIA 550+). Other backends are used instead.
+        → Check what your Vulkan driver supports
+            vulkaninfo --summary
+
+[INFO ] No hardware video encoder on Apple Silicon (yet)
+        The Asahi Linux drivers don't support the Apple video engine, so everything is encoded on the CPU. That works fine, just slower.
+
+[INFO ] Using software encoding
+        No working hardware encoder was found. Conversions run on the CPU — all features work, they're just slower.

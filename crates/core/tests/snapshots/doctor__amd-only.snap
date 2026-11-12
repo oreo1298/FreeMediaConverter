@@ -1,0 +1,10 @@
+---
+source: crates/core/tests/doctor.rs
+expression: "doctor::render_text(&r).replace(env!(\"CARGO_PKG_VERSION\"), \"X.Y.Z\")"
+---
+Retort X.Y.Z system check
+OS: Fedora Linux 45 (Workstation Edition) (kernel 6.17.7-2-cachyos)
+FFmpeg: 9.0.2 (/usr/bin/ffmpeg)
+
+[  OK ] AMD Radeon RX 7900 XT/7900 XTX/7900 GRE/7900M — hardware acceleration works
+        Encode: VAAPI, Vulkan. Decode: VAAPI, Vulkan.

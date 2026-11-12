@@ -10,6 +10,8 @@
 pub mod branding;
 pub mod catalog;
 pub mod command;
+pub mod distro;
+pub mod doctor;
 pub mod engine;
 pub mod error;
 pub mod ffmpeg;

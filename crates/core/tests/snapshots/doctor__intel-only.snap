@@ -1,0 +1,10 @@
+---
+source: crates/core/tests/doctor.rs
+expression: "doctor::render_text(&r).replace(env!(\"CARGO_PKG_VERSION\"), \"X.Y.Z\")"
+---
+Retort X.Y.Z system check
+OS: Ubuntu 24.04.5 LTS (kernel 6.17.7-2-cachyos)
+FFmpeg: 9.0.2 (/usr/bin/ffmpeg)
+
+[  OK ] Intel UHD Graphics 770 — hardware acceleration works
+        Encode: VAAPI, QSV, Vulkan. Decode: VAAPI, QSV, Vulkan.

@@ -1,0 +1,26 @@
+---
+source: crates/core/tests/doctor.rs
+expression: "doctor::render_text(&r).replace(env!(\"CARGO_PKG_VERSION\"), \"X.Y.Z\")"
+---
+Retort X.Y.Z system check
+OS: Ubuntu 24.04.5 LTS (kernel 6.17.7-2-cachyos)
+FFmpeg: 9.0.2 (/usr/bin/ffmpeg)
+
+[ ERR ] No permission to use Intel UHD Graphics 770
+        /dev/dri/renderD128 is not readable/writable by your user, so hardware encoding on this GPU is impossible.
+        → Add yourself to the render and video groups, then log out and back in
+            sudo usermod -aG render,video "$USER"
+        → Then check again
+            retort-cli diagnose
+
+[ ERR ] NVIDIA driver is installed but its NVENC/CUDA libraries are missing
+        FFmpeg could not load libcuda.so.1 or libnvidia-encode.so.1.
+        → Install the NVENC/CUDA libraries matching your driver
+            sudo apt install libnvidia-encode-580 libnvidia-compute-580 libnvidia-decode-580
+        → Then check again
+            retort-cli diagnose
+
+[INFO ] Vulkan Video encoding is not available
+        Your Vulkan driver doesn't expose the video encode extensions (needs a recent Mesa — 24.1+ for Intel/AMD — or NVIDIA 550+). Other backends are used instead.
+        → Check what your Vulkan driver supports
+            vulkaninfo --summary

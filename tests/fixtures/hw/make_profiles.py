@@ -63,7 +63,16 @@ def nvidia_proc(root, version, gpus):
         write(f"{root}/dev/nvidia{i}", "")
 
 
-def profile(name, description, ffmpeg, setup, encode, decode, filters, nvidia_smi=None, default_fail=None):
+OS_RELEASE = {
+    "cachyos": 'NAME="CachyOS Linux"\nPRETTY_NAME="CachyOS"\nID=cachyos\nID_LIKE=arch\n',
+    "ubuntu2404": 'PRETTY_NAME="Ubuntu 24.04.5 LTS"\nNAME="Ubuntu"\nVERSION_ID="24.04"\nID=ubuntu\nID_LIKE=debian\n',
+    "fedora45": 'NAME="Fedora Linux"\nVERSION_ID=45\nID=fedora\nPRETTY_NAME="Fedora Linux 45 (Workstation Edition)"\nVARIANT_ID=workstation\n',
+    "asahi": 'NAME="Fedora Linux Asahi Remix"\nVERSION_ID=43\nID=fedora-asahi-remix\nID_LIKE=fedora\nPRETTY_NAME="Fedora Linux Asahi Remix 43"\n',
+    "rpios": 'PRETTY_NAME="Debian GNU/Linux 13 (trixie)"\nNAME="Debian GNU/Linux"\nVERSION_ID="13"\nID=debian\n',
+}
+
+
+def profile(name, description, ffmpeg, setup, encode, decode, filters, nvidia_smi=None, default_fail=None, os_release="cachyos"):
     base = os.path.join(HERE, name)
     if os.path.isdir(base):
         shutil.rmtree(base)
@@ -71,6 +80,7 @@ def profile(name, description, ffmpeg, setup, encode, decode, filters, nvidia_sm
     os.makedirs(root)
     write(f"{root}/proc/sys/kernel/osrelease", "6.17.7-2-cachyos\n")
     write(f"{root}/usr/share/hwdata/pci.ids", PCI_IDS)
+    write(f"{root}/etc/os-release", OS_RELEASE[os_release])
     setup(root)
     spec = {
         "description": description,
@@ -178,7 +188,7 @@ def main():
     profile("intel-only", "Desktop, Intel UHD Graphics 770 (Alder Lake), intel-media-driver, Mesa ANV",
             "9.0-full",
             lambda r: pci_gpu(r, "renderD128", "8086", "4680", "i915", "0000:00:02.0", boot_vga=True),
-            e, d, f)
+            e, d, f, os_release="ubuntu2404")
 
     # 3. AMD-only (RX 7900 XTX, Mesa radeonsi/RADV, no AMF runtime).
     dev = "renderD128"
@@ -204,7 +214,7 @@ def main():
     profile("amd-only", "Desktop, Radeon RX 7900 XTX (RDNA3), Mesa radeonsi + RADV, no AMF runtime",
             "9.0-full",
             lambda r: pci_gpu(r, "renderD128", "1002", "744c", "amdgpu", "0000:03:00.0", boot_vga=True),
-            e, d, f)
+            e, d, f, os_release="fedora45")
 
     # 4. Hybrid laptop (Dell Precision 5570: Iris Xe + RTX A1000 Laptop, Ampere: no AV1 encode).
     profile("hybrid-laptop", "Dell Precision 5570: Intel Iris Xe (ADL-P) + NVIDIA RTX A1000 Laptop (Ampere)",
@@ -229,13 +239,13 @@ def main():
              "mpeg4_v4l2m2m": {"8": fail("Could not find a valid device")},
              "vp8_v4l2m2m": {"8": fail("Could not find a valid device")},
              "h263_v4l2m2m": {"8": fail("Could not find a valid device")}},
-            {}, {}, default_fail=VA_INIT_FAIL)
+            {}, {}, default_fail=VA_INIT_FAIL, os_release="rpios")
 
     # 6. Asahi Linux (M1): no usable video hardware.
     profile("asahi", "MacBook Air M1, Asahi Linux (Fedora Asahi Remix): no hardware video encode",
             "9.0-full",
             lambda r: platform_gpu(r, "renderD128", "asahi", "/soc/gpu@206400000"),
-            {}, {}, {}, default_fail=VA_INIT_FAIL)
+            {}, {}, {}, default_fail=VA_INIT_FAIL, os_release="asahi")
 
     # 7. Drivers installed but broken: render node not accessible, libcuda missing, no nvidia-smi.
     def broken(r):
@@ -250,7 +260,7 @@ def main():
     for c in ["h264", "hevc", "av1", "vp9", "mjpeg", "mpeg2"]:
         e[f"{c}_qsv@renderD128"] = {"8": fail("Error creating a MFX session: -9.")}
     profile("broken-drivers", "Intel + NVIDIA desktop: no access to renderD128 (not in render group), libcuda missing, nvidia-smi missing",
-            "9.0-full", broken, e, {}, {}, default_fail=NO_VK_VIDEO)
+            "9.0-full", broken, e, {}, {}, default_fail=NO_VK_VIDEO, os_release="ubuntu2404")
 
 
 if __name__ == "__main__":

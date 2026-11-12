@@ -1,0 +1,10 @@
+---
+source: crates/core/tests/doctor.rs
+expression: "doctor::render_text(&r).replace(env!(\"CARGO_PKG_VERSION\"), \"X.Y.Z\")"
+---
+Retort X.Y.Z system check
+OS: Debian GNU/Linux 13 (trixie) (kernel 6.17.7-2-cachyos)
+FFmpeg: 6.1.1-3ubuntu5 (/usr/bin/ffmpeg)
+
+[  OK ] bcm2835-codec-encode — hardware acceleration works
+        Encode: V4L2. Decode: none.

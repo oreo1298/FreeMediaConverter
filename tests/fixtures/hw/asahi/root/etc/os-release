@@ -1,0 +1,5 @@
+NAME="Fedora Linux Asahi Remix"
+VERSION_ID=43
+ID=fedora-asahi-remix
+ID_LIKE=fedora
+PRETTY_NAME="Fedora Linux Asahi Remix 43"

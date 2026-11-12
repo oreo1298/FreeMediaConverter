@@ -1,0 +1,13 @@
+---
+source: crates/core/tests/doctor.rs
+expression: "doctor::render_text(&r).replace(env!(\"CARGO_PKG_VERSION\"), \"X.Y.Z\")"
+---
+Retort X.Y.Z system check
+OS: CachyOS (kernel 6.17.7-2-cachyos)
+FFmpeg: 9.0.2 (/usr/bin/ffmpeg)
+
+[  OK ] NVIDIA RTX A1000 Laptop GPU — hardware acceleration works
+        Encode: NVENC, Vulkan. Decode: NVDEC, Vulkan.
+
+[  OK ] Intel Iris Xe Graphics — hardware acceleration works
+        Encode: VAAPI, QSV, Vulkan. Decode: VAAPI, QSV, Vulkan.
