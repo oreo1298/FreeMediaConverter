@@ -48,7 +48,23 @@ scripts/e2e-gui.sh                  # real conversion through the GUI, isolated 
 
 # Translations template
 meson compile -C _build retort-pot  # writes po/retort.pot (not committed)
+
+# Packages (Docker; each builds in its distro's container, installs, smoke-tests)
+scripts/make-dist.sh                 # dist/retort-<v>.tar.xz + -vendor.tar.xz (--dirty: working tree)
+packaging/debian/build.sh ubuntu:24.04   # also ubuntu:26.04, debian:trixie
+packaging/rpm/build.sh fedora:45         # also almalinux:10, opensuse/tumbleweed, opensuse/leap:16.0
+packaging/arch/build.sh | packaging/tarball/build.sh | packaging/appimage/build.sh
+scripts/check-versions.sh            # every stated version agrees with Cargo.toml
+
+# Docs: INSTALL.md is generated; every documented command is tested
+scripts/gen-install.py               # docs/install/install.toml -> docs/INSTALL.md
+scripts/test-docs.sh [section|image|doc|context]   # needs dist/ packages; logs in dist/doc-test/
 ```
+
+New ```bash blocks in README/CONTRIBUTING/TESTING/MAINTAINER need a
+`<!-- doc-test: context=… -->` or `<!-- doc-test: skip reason -->` line
+before them (CI fails otherwise). Behind the sandbox's TLS proxy, Docker-based
+scripts need `DOCKER_ARGS="--network host -v /root/.ccr/ca-bundle.crt:/ca.crt:ro -e HTTPS_PROXY -e https_proxy -e HTTP_PROXY -e http_proxy"`.
 
 Meson enables the `adw_1_6/1_7/1_8` Cargo features from the installed
 libadwaita version; code behind them must also have a 1.5 fallback. Check
