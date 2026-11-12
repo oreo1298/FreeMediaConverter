@@ -132,10 +132,11 @@ jobs:
         with:
           path: ffbuild-out
           key: ffmpeg-${{ hashFiles('packaging/ffmpeg/**') }}-x86_64
+      - name: Build container image (runtime libraries for the cached build too)
+        run: docker build -t retort-ffbuild packaging/ffmpeg
       - name: Build FFmpeg (Debian 13 container)
         if: steps.ffcache.outputs.cache-hit != 'true'
         run: |
-          docker build -t retort-ffbuild packaging/ffmpeg
           mkdir -p ffbuild-out
           docker run --rm -v "$PWD/ffbuild-out:/out" retort-ffbuild build-ffmpeg.sh /out/ffmpeg
       - name: Build integration tests
