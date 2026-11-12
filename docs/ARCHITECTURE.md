@@ -201,7 +201,23 @@ send `q`.
 
 `Engine` bundles `Ffmpeg`, `Caps`, the format catalog, `Compat` and the
 `Inventory` (all cheap to clone) and offers `analyze`, `plan`, `output_path`,
-`request` and `probe_hardware`. The CLI and the GUI only talk to this.
+`request` and `probe_hardware`, plus the Advanced-mode helpers
+`codec_options` (container ∩ this FFmpeg), `encoder_options` (verified
+hardware per device, then software), `settings_for_format` and `retarget`
+(switch container, keep what still fits). The CLI and the GUI only talk to this.
+
+### 2.11a Preview (`preview`)
+
+`sample_settings` trims the job to 10 s from the middle of the output range
+(target size → the planned bitrate as VBR); `estimate` scales the sample's
+size and encode time to the whole output, capped at a target-size limit.
+Used by the GUI's Preview button and `retort-cli convert --preview`.
+
+### 2.11b Translations (`i18n`)
+
+Core has no gettext dependency: user-visible catalogue literals are wrapped
+in the no-op `n_()` so xgettext extracts them; the app translates at display
+time (`i18n::tr`).
 
 ### 2.12 Doctor (`doctor`, `distro`)
 
@@ -215,7 +231,7 @@ as the System Check page and `retort-cli diagnose [--json]`.
 Thin layer over `retort-core` (clap). No GTK dependency, so it runs on headless
 servers. Subcommands: `diagnose [--json]`, `probe-hw [--json] [--force]`,
 `list-formats [--all] [--json]`, `analyze <file> [--json]`,
-`convert <in>… --preset <id> [-o <out>] [--dry-run] [overrides]`,
+`convert <in>… --preset <id> [-o <out>] [--dry-run | --preview] [overrides]`,
 `presets`.
 
 ## 4. The GUI (`retort`)
@@ -226,9 +242,18 @@ build dependencies minimal). Newer libadwaita widgets (e.g. `AdwSpinner` 1.6,
 features that Meson enables after checking the installed libadwaita version;
 fallbacks use 1.5 widgets.
 
-* `AdwApplicationWindow` → `AdwToastOverlay` → `AdwNavigationSplitView`
-  (content: queue / empty state; sidebar: settings for the selection) with an
-  `AdwBreakpoint` collapsing to a single pane below ~720 sp.
+* `AdwApplicationWindow` → `AdwToastOverlay` → `AdwOverlaySplitView`
+  (content: queue / empty state; sidebar: settings for the selection) with
+  `AdwBreakpoint`s: the sidebar becomes an overlay below 760 sp, cards turn
+  compact below 520 sp.
+* Modules: `window` (shell, queue, analysis), `card` (queue card), `sidebar`
+  (scope, Simple presets, shared footer), `advanced` (every setting),
+  `picker` (format grid), `runner` (batch, limits, notifications), `preview`,
+  `details`, `prefs` (incl. hardware matrix), `syscheck`, `wrapbox`
+  (`WrapBox`/`FixedBin` layout widgets), `demo` (screenshot + e2e harness).
+* Edits go through `sidebar::apply_to_scope` (selected files, else all files
+  and the defaults for new files); `sync_from_state`/`advanced::sync`
+  reflect the scope back into the widgets with `ui.syncing` set.
 * Engine work (probing, analysis, jobs) runs on worker threads; results come
   back to the main loop via `async-channel` + `glib::spawn_future_local`.
 * Preferences are GSettings (`@APP_ID@.gschema.xml`).
@@ -237,7 +262,10 @@ fallbacks use 1.5 widgets.
   `gtk::FileDialog` / `gtk::FileLauncher` (portals).
 * A headless screenshot harness (`RETORT_SCREENSHOT_DIR`) drives the UI
   through every major state and renders the window with GSK to PNG
-  (`scripts/screenshots.sh`, runs under Xvfb).
+  (`scripts/screenshots.sh`, runs under Xvfb). `RETORT_E2E` instead converts
+  the files given on the command line through the real UI (and with
+  `RETORT_E2E_ADVANCED` sets Advanced widgets first); `scripts/e2e-gui.sh`
+  checks the outputs with ffprobe.
 
 ## 5. Testing strategy
 

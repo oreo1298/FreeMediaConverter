@@ -9,8 +9,8 @@ Read this first in a new session. Requirements: `docs/SPEC.md`. Code map:
 |---|---|
 | M0 Bootstrap (spec, docs, name, scaffold) | done |
 | M1 Core engine + CLI + collect-hw-report.sh | done |
-| M2 GUI | done (Advanced panel is a placeholder until M3) |
-| M3 Advanced mode, planner, HDR, preview, target size | not started |
+| M2 GUI | done |
+| M3 Advanced mode, planner, HDR, preview, target size | done |
 | M4 Packaging + release CI | not started |
 | M5 Docs + polish | not started |
 
@@ -55,12 +55,15 @@ Read this first in a new session. Requirements: `docs/SPEC.md`. Code map:
 - [x] i18n: gettext domain, `po/POTFILES.in`, core strings marked with `n_()`
 
 ### M3 — Advanced
-- [ ] Advanced video/audio/subtitle/other settings UI
-- [ ] Planner: full-GPU pipelines, hybrid, fallback chain with runtime retry
-- [ ] HDR preservation + tonemapping (libplacebo / tonemap_vaapi / zscale)
-- [ ] Preview sample (10 s) + size/time estimate
-- [ ] Target size (2-pass software)
-- [ ] Concurrency per engine + NVENC session-limit requeue
+- [x] Advanced video/audio/subtitle/other settings UI (container switch keeps compatible choices; codec lists from the container + this FFmpeg; encoders = verified hardware per device + software; pinning)
+- [x] Default-track flags (`-disposition`), track selection by language, burn-in stream choice
+- [x] Extra input/output args: quote-aware splitting (no shell), conflict warnings
+- [x] Planner: full-GPU pipelines, hybrid, fallback chain with runtime retry (from M1, now reachable from the UI)
+- [x] HDR preservation + tonemapping (libplacebo / tonemap_vaapi / zscale) with Auto / Keep / Convert choice
+- [x] Preview sample (10 s from the middle of the trimmed range) + size/time estimate — GUI and `retort-cli convert --preview`
+- [x] Target size (2-pass software; estimate capped at the limit)
+- [x] Concurrency per engine + NVENC session-limit requeue
+- [x] GUI e2e drives Advanced widgets (rotate, trim, mono) and verifies the output with ffprobe
 
 ### M4 — Packaging
 - [ ] Flatpak (GNOME 51, bundled FFmpeg 9.0.x) + lint
@@ -141,6 +144,10 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 | D22 | Simple sidebar pins Speed / Save To / plan below a scrolling preset list | With 19 presets these were below the fold | Single scroller (options invisible), collapsing preset categories |
 | D23 | Translations are merged into desktop/metainfo templates first, branding substituted afterwards (`build-aux/subst.py`) | Msgids keep `@APP_NAME@` placeholders, so a rename doesn't invalidate translations, and translated strings still match after substitution | configure_file before merge (substituted text never matches the catalogue) |
 | D24 | Core marks catalogue strings with a no-op `n_()`; the app translates at display time | Core stays free of gettext; xgettext (C parser, gettext < 0.24 has no Rust) extracts with `--keyword=n_` | gettext dependency in core |
+| D26 | Advanced edits turn the scope's preset into `format:<container>` | Simple mode then shows "custom MP4" instead of pretending a preset is still selected | Keeping the preset id (misleading), a separate "modified" flag |
+| D27 | Codec lists for a container are computed on a worker and cached per (container, kind) | Uncurated containers need a test mux the first time (seconds) | Computing in `sync` (froze the UI) |
+| D28 | Preview samples run at the full job's planned bitrate (target size → VBR at the planned kb/s) and the size estimate is capped at the limit | A 10-s target-size sample would otherwise get the whole budget; short samples over-represent container overhead (2.10 MB estimate vs 1.97 MB real for a 2 MB limit) | Re-planning the sample as its own target-size job |
+| D29 | One shared sidebar footer (speed, plan + Preview, remux suggestion in Simple only); destination is a one-line strip under the scope | Advanced needs the vertical space; both modes show the same plan and preview | Separate footers per mode |
 | D25 | The copyable command shows the final output name; the log shows the argv that ran (temp name) | Copy-pasting the command must produce the file the user expects; the log stays exact | Showing the temp-file command (confusing when copied) |
 
 ## Findings worth knowing (from real FFmpeg / distro checks)
@@ -161,6 +168,17 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 - None blocking. Real hardware reports (below) will replace the synthetic profiles.
 
 ## Hardware test list
+
+### After M3 (Advanced mode, preview)
+
+On each machine, with a real HDR10 file, a multi-audio MKV (e.g. a film with two languages + subtitles) and a phone video:
+
+1. Advanced → Encoder: the list shows ⚡ entries only for encoders that passed the probe, one per GPU (Dell/Proxmox: Intel and NVIDIA separately). Pin one, convert, check the badge and `nvidia-smi`/`intel_gpu_top`. Pin an encoder that can't do 10-bit with a 10-bit source and check the error offers "Retry with Software".
+2. HDR file: HDR → "Keep" with HEVC/AV1 (MKV/MP4) keeps HDR10 (`retort-cli analyze` the output); "Convert to SDR" looks right (no washed-out colours) — note which tonemapper the plan used (libplacebo / tonemap_vaapi / CPU).
+3. Multi-audio MKV: Default Track → second language; play the result in mpv/VLC and check which track starts. Subtitles → Burn In a chosen track.
+4. Preview on a long file: estimate vs the real size after converting; with "Fit under a size limit" the real file must be under the limit.
+5. Container change (e.g. MKV → WebM): codec choices that fit are kept, others switch to defaults.
+6. Desktop (RTX 4090): AV1 NVENC 10-bit pinned + Preview; HEVC NVENC with Rate Control → Constant Bitrate.
 
 ### After M2 (GUI)
 
