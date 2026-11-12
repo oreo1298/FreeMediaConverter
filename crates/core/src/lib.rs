@@ -23,6 +23,7 @@ pub mod naming;
 pub mod paths;
 pub mod plan;
 pub mod preset;
+pub mod preview;
 pub mod process;
 pub mod progress;
 pub mod quality;

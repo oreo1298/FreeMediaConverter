@@ -680,6 +680,31 @@ fn parse_stream(v: &Value) -> StreamInfo {
     st
 }
 
+/// Parse a user-typed time: "90", "1:30", "1:02:03.5" (seconds, m:s, h:m:s).
+pub fn parse_time(s: &str) -> Option<f64> {
+    let s = s.trim();
+    if s.is_empty() {
+        return None;
+    }
+    let mut total = 0.0;
+    let parts: Vec<&str> = s.split(':').collect();
+    if parts.len() > 3 {
+        return None;
+    }
+    for (i, p) in parts.iter().enumerate() {
+        let v: f64 = p
+            .trim()
+            .parse()
+            .ok()
+            .filter(|v: &f64| v.is_finite() && *v >= 0.0)?;
+        if i > 0 && i + 1 < parts.len() && v >= 60.0 {
+            return None;
+        }
+        total = total * 60.0 + v;
+    }
+    Some(total)
+}
+
 /// Parse "01:02:03.500000000" (Matroska DURATION tag).
 pub fn parse_hms(s: &str) -> Option<f64> {
     let parts: Vec<&str> = s.split(':').collect();
@@ -764,6 +789,19 @@ pub fn merge_frame_side_data(info: &mut MediaInfo, frames_json: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn user_times() {
+        assert_eq!(parse_time("90"), Some(90.0));
+        assert_eq!(parse_time(" 1:30 "), Some(90.0));
+        assert_eq!(parse_time("1:02:03.5"), Some(3723.5));
+        assert_eq!(parse_time("0:75"), Some(75.0));
+        assert_eq!(parse_time("1:75:00"), None);
+        assert_eq!(parse_time("-3"), None);
+        assert_eq!(parse_time("abc"), None);
+        assert_eq!(parse_time(""), None);
+        assert_eq!(parse_time("1:2:3:4"), None);
+    }
 
     #[test]
     fn codec_levels() {
