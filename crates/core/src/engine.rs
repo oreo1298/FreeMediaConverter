@@ -82,6 +82,13 @@ impl Engine {
         formats::find(&self.formats, id)
     }
 
+    /// Default settings for a container chosen in the format picker (may
+    /// run a quick test mux for containers without curated rules).
+    pub fn settings_for_format(&self, id: &str) -> Option<OutputSettings> {
+        let f = self.format(id)?;
+        Some(crate::preset::for_format(f, self.compat.defaults(f)))
+    }
+
     /// Plan a job.
     pub fn plan(&self, media: &MediaInfo, settings: &OutputSettings) -> Result<JobPlan> {
         let compat = self.compat.clone();

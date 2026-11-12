@@ -113,7 +113,7 @@ pub fn builtin() -> Vec<Preset> {
         "mp4-small",
         "Smaller MP4",
         "HEVC + AAC — about half the size of H.264",
-        "folder-download-symbolic",
+        "zoom-out-symbolic",
         Video,
         base(
             "mp4",
@@ -146,7 +146,7 @@ pub fn builtin() -> Vec<Preset> {
         "av1-smallest",
         "AV1 for the smallest file",
         "AV1 + Opus in MKV — best compression",
-        "zoom-out-symbolic",
+        "media-floppy-symbolic",
         Video,
         {
             let mut s = base("mkv", venc("av1", |_| {}), aenc("opus", Some(128), |_| {}));
@@ -159,7 +159,7 @@ pub fn builtin() -> Vec<Preset> {
         "apple",
         "Apple-friendly",
         "HEVC tagged hvc1 + AAC — iPhone, Mac, QuickTime",
-        "computer-apple-symbolic",
+        "phone-apple-iphone-symbolic",
         Video,
         base(
             "mp4",
@@ -208,7 +208,7 @@ pub fn builtin() -> Vec<Preset> {
         "prores",
         "Editing intermediate (ProRes)",
         "ProRes 422 HQ + PCM in MOV — smooth scrubbing in editors",
-        "video-x-generic-symbolic",
+        "camera-video-symbolic",
         Professional,
         base(
             "mov",
@@ -224,7 +224,7 @@ pub fn builtin() -> Vec<Preset> {
         "dnxhr",
         "Editing intermediate (DNxHR)",
         "DNxHR HQ + PCM in MOV — DaVinci Resolve on Linux",
-        "video-x-generic-symbolic",
+        "camera-video-symbolic",
         Professional,
         base(
             "mov",
@@ -372,6 +372,60 @@ pub fn with_target_size(mut s: OutputSettings, megabytes: f64) -> OutputSettings
     s
 }
 
+/// A sensible starting bitrate for an audio codec (None = lossless/PCM or
+/// the encoder's own default).
+pub fn default_audio_kbps(codec: &str) -> Option<u32> {
+    match codec {
+        "aac" => Some(192),
+        "opus" => Some(128),
+        "vorbis" => Some(160),
+        "mp3" => Some(192),
+        "ac3" => Some(448),
+        "eac3" => Some(384),
+        "mp2" => Some(224),
+        "wmav2" => Some(192),
+        _ => None,
+    }
+}
+
+/// Default settings for a container picked from the format picker: the
+/// first built-in preset for that container when there is one (smart,
+/// tested defaults), else the container's default codecs (`defaults` is
+/// `(video, audio, subtitle)` from [`crate::catalog::Compat::defaults`]).
+pub fn for_format(
+    format: &crate::catalog::FormatInfo,
+    defaults: (Option<String>, Option<String>, Option<String>),
+) -> OutputSettings {
+    use crate::catalog::FormatKind;
+    if let Some(p) = builtin()
+        .into_iter()
+        .find(|p| p.settings.format == format.id && p.id != "remux")
+    {
+        return p.settings;
+    }
+    let (dv, da, ds) = defaults;
+    let video_codec = format.implied_video_codec.clone().or(dv);
+    let kind = format.kind;
+    let video = match (&video_codec, kind) {
+        (_, FormatKind::Audio | FormatKind::Subtitle) | (None, _) => VideoSettings::Drop,
+        (Some(c), _) => VideoSettings::Encode(Box::new(VideoEncode::new(c))),
+    };
+    let audio = match (&da, kind) {
+        (Some(c), FormatKind::Video | FormatKind::Audio | FormatKind::Other) => {
+            AudioSettings::Encode(AudioEncode::new(c, default_audio_kbps(c)))
+        }
+        _ => AudioSettings::Drop,
+    };
+    let mut s = base(&format.id, video, audio);
+    if ds.is_none() || kind != FormatKind::Video {
+        s.subtitles = SubtitleSettings::Drop;
+    }
+    if kind == FormatKind::Animation {
+        s.animation = Some(AnimationOptions::default());
+    }
+    s
+}
+
 /// Container for "extract audio": matches the copied codec.
 pub fn container_for_audio_codec(codec: &str) -> &'static str {
     match codec {
@@ -393,6 +447,64 @@ pub fn container_for_audio_codec(codec: &str) -> &'static str {
 mod tests {
     use super::*;
     use crate::catalog::compat;
+
+    fn fmt(
+        id: &str,
+        kind: crate::catalog::FormatKind,
+        implied: Option<&str>,
+    ) -> crate::catalog::FormatInfo {
+        crate::catalog::FormatInfo {
+            id: id.into(),
+            muxer: id.into(),
+            title: id.to_uppercase(),
+            description: String::new(),
+            group: crate::catalog::FormatGroup::Video,
+            kind,
+            visibility: crate::catalog::Visibility::Normal,
+            extension: id.into(),
+            implied_video_codec: implied.map(String::from),
+        }
+    }
+
+    #[test]
+    fn for_format_prefers_presets_then_container_defaults() {
+        use crate::catalog::FormatKind;
+        // A preset exists for mp4: its settings win.
+        let s = for_format(
+            &fmt("mp4", FormatKind::Video, None),
+            (Some("mpeg4".into()), Some("mp3".into()), None),
+        );
+        assert_eq!(s, find("mp4-compatible").unwrap().settings);
+        // No preset: container defaults.
+        let s = for_format(
+            &fmt("avi", FormatKind::Video, None),
+            (Some("mpeg4".into()), Some("mp3".into()), None),
+        );
+        assert_eq!(s.video_encode().unwrap().codec, "mpeg4");
+        assert_eq!(s.audio_encode().unwrap().codec, "mp3");
+        assert_eq!(s.audio_encode().unwrap().bitrate_kbps, Some(192));
+        assert_eq!(s.subtitles, SubtitleSettings::Drop);
+        // Audio-only container drops video even if the muxer has a video default.
+        let s = for_format(
+            &fmt("ac3", FormatKind::Audio, None),
+            (Some("mjpeg".into()), Some("ac3".into()), None),
+        );
+        assert_eq!(s.video, VideoSettings::Drop);
+        assert_eq!(s.audio_encode().unwrap().bitrate_kbps, Some(448));
+        // Image entries use their implied codec, no audio.
+        let s = for_format(
+            &fmt("tiff", FormatKind::Image, Some("tiff")),
+            (None, None, None),
+        );
+        assert_eq!(s.video_encode().unwrap().codec, "tiff");
+        assert_eq!(s.audio, AudioSettings::Drop);
+        // Animations get animation options.
+        let s = for_format(
+            &fmt("apng", FormatKind::Animation, Some("apng")),
+            (None, None, None),
+        );
+        assert!(s.animation.is_some());
+    }
 
     #[test]
     fn presets_are_unique_and_valid() {

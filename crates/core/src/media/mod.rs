@@ -398,6 +398,36 @@ pub fn codec_display_name(codec: &str) -> String {
     .to_string()
 }
 
+/// Human codec level ("4.1") from ffprobe's raw `level` value, which is
+/// codec-specific: H.264 uses level×10, HEVC/VVC level×30, AV1 the
+/// seq_level_idx (2 + idx/4 . idx%4), MPEG-2 a profile_and_level nibble.
+pub fn level_display(codec: &str, level: i64) -> Option<String> {
+    if level < 0 {
+        return None;
+    }
+    match codec {
+        "h264" => Some(if level == 9 {
+            "1b".into()
+        } else {
+            format!("{}.{}", level / 10, level % 10)
+        }),
+        "hevc" | "vvc" => {
+            let l = level / 3; // level×10
+            Some(format!("{}.{}", l / 10, l % 10))
+        }
+        "av1" if level < 24 => Some(format!("{}.{}", 2 + level / 4, level % 4)),
+        "mpeg2video" => match level {
+            4 => Some("High".into()),
+            6 => Some("High 1440".into()),
+            8 => Some("Main".into()),
+            10 => Some("Low".into()),
+            _ => None,
+        },
+        "vp9" => (level >= 10).then(|| format!("{}.{}", level / 10, level % 10)),
+        _ => None,
+    }
+}
+
 /// `h:mm:ss` or `m:ss`.
 pub fn format_duration(secs: f64) -> String {
     let total = secs.max(0.0).round() as u64;
@@ -734,6 +764,21 @@ pub fn merge_frame_side_data(info: &mut MediaInfo, frames_json: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn codec_levels() {
+        assert_eq!(level_display("h264", 40).as_deref(), Some("4.0"));
+        assert_eq!(level_display("h264", 51).as_deref(), Some("5.1"));
+        assert_eq!(level_display("h264", 9).as_deref(), Some("1b"));
+        assert_eq!(level_display("hevc", 120).as_deref(), Some("4.0"));
+        assert_eq!(level_display("hevc", 153).as_deref(), Some("5.1"));
+        assert_eq!(level_display("hevc", 93).as_deref(), Some("3.1"));
+        assert_eq!(level_display("av1", 8).as_deref(), Some("4.0"));
+        assert_eq!(level_display("av1", 13).as_deref(), Some("5.1"));
+        assert_eq!(level_display("mpeg2video", 8).as_deref(), Some("Main"));
+        assert_eq!(level_display("vp9", -99), None);
+        assert_eq!(level_display("prores", 3), None);
+    }
 
     fn load(name: &str) -> MediaInfo {
         let dir =
