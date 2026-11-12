@@ -161,6 +161,7 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 | D39 | ~~Stable repository names for the APT/RPM repositories~~ — superseded by D40 (no repositories) | | |
 | D40 | Install = clone + build a native package locally + install it with the package manager (`build-package.sh` for .deb/.rpm, repo-root `PKGBUILD` with `makepkg -si`); update = `git pull` + the same command. No APT/RPM repositories, no `curl \| sh` installer, no AUR. Flatpak, AppImage and tarball stay as release downloads | Owner's decision (2026-11-12), modelled on their EZP2019Linux project: one transparent method everywhere, nothing to host or sign, the package manager still tracks and removes the files. Supersedes SPEC §Packaging's repository/AUR/`install.sh` items | Signed APT/RPM repositories on Pages + `install.sh` + AUR (built and tested, removed); prebuilt .deb/.rpm on the release page (would need the repositories' per-distro build matrix again for little gain) |
 | D41 | Each local build gets a newer package version: `<version>-0local<UTC timestamp>` (deb), release `0.local<timestamp>` (rpm); Arch updates use `makepkg -sif` | apt/dnf/zypper skip a local package whose version is already installed, and `makepkg -si` reinstalls the previously built package when `pkgver` is unchanged — so an update between releases would silently keep the old build | A `pkgver()` from git (makepkg rewrites `pkgver=` in the tracked PKGBUILD, which then blocks `git pull`); `--reinstall`/`--force` flags (break real upgrades and differ per tool) |
+| D42 | Meson sets `RETORT_INSTALLED_BUILD`: the GUI binary then has no dev schema/icon/demo-profile paths compiled in; `cargo run` builds keep them | Packaged binaries should not reference the build directory (makepkg warns; reproducibility) | Remapping paths with `--remap-path-prefix` (does not cover `env!` strings); runtime discovery relative to `target/` (fragile across Meson/Cargo layouts) |
 
 ## Findings worth knowing (from real FFmpeg / distro checks)
 
@@ -175,17 +176,21 @@ App ID: `io.github.oreo1298.Retort` (owner from `git remote`). Defined in `brand
 - xgettext's C fallback parser warns about Rust lifetimes (`'static`) but still extracts every marked string (checked by script against all `gettext/tr_fmt/ntr_fmt/n_` literals).
 - `GSETTINGS_BACKEND=memory` plus temporary XDG dirs fully isolate a GUI test run.
 
+- Clone-and-build (D40): bash's command hash keeps answering `command -v retort-cli` after the package is removed (check with `test -e`); `! cmd` never trips `set -e`; Fedora's container image has no `su`; makepkg's `src/` persists between runs (prepare() wipes it); Meson-built binaries embedded build-tree paths (makepkg's "$srcdir" warning) until `RETORT_INSTALLED_BUILD`.
 - Packaging (M4): `dh_clean` deletes `*.orig` files — vendored crates contain `Cargo.toml.orig` covered by checksums (`dh_clean -Xvendor/`); debhelper 13 runs with its own `HOME`, hiding rustup (`RUSTUP_HOME`); `cargo vendor` prints an absolute path; openSUSE's rpmbuild uses `/usr/src/packages` (`--define _topdir`); `meson install` re-runs the always-stale Cargo target unless `--no-rebuild`; Ubuntu's rpmsign needs `--define "__gpg …"`.
 - Flatpak's `/tmp` is always private (even with `--filesystem=/tmp`); System Check reads granted devices from `/.flatpak-info` instead of inferring from `/dev/dri`.
 
-## Documentation test (last local run, 2026-11-12)
+## Documentation test (last local run, 2026-11-12, after D40)
 
-`scripts/test-docs.sh` against a local signed mirror built from the packages above:
+`scripts/test-docs.sh`, install sections as a normal user with sudo on a copy
+of the checkout (x86-64 here; CI also runs arm64):
 
-- PASS: quick install script on Ubuntu 24.04, Fedora 45, Tumbleweed; Flatpak bundle; APT on Ubuntu 24.04, 26.04, Debian 13 (incl. non-free + Intel/AMD driver installs); Fedora 45 (incl. RPM Fusion swap, Intel/AMD drivers); EL 10 (EPEL, CRB, RPM Fusion); Tumbleweed and Leap 16 (incl. Packman FFmpeg swap); Arch driver packages; AppImage (GUI started under Xvfb); portable tarball (install + uninstall); build from source; README CLI examples; CONTRIBUTING (fmt, clippy, tests, integration, screenshots, translation template); TESTING; MAINTAINER (key creation, version check, dist tarballs, rename).
-- Resolved only (no GPU in containers): NVIDIA driver packages on Debian 13, Fedora 45, EL 10, Arch.
-- Skipped with reasons in the report: `ubuntu-drivers install` (needs NVIDIA hardware); AUR helper/`makepkg` lines (the same PKGBUILD is built, namcap-checked, installed and run by `packaging/arch/build.sh`); `nix run` (the Packaging workflow builds the flake); `cargo insta review` (interactive); release tagging/pushing and Docker-based packaging commands in MAINTAINER.md (run by the workflows).
-- Bugs it found and that are fixed: Leap 16 Packman `ffmpeg-8` conflicts with OSS `ffmpeg-7` (System Check's fix was wrong too); `sudo meson install` re-ran Cargo as root without rustup on PATH; `install.sh` printed the distro name instead of the app name.
+- PASS, clone-and-build: Ubuntu 24.04 and Debian 13 (`build-package.sh` → .deb; install, update = second build installed *over* the first, Intel/AMD drivers, remove, CLI-only server install), Fedora 45 (incl. RPM Fusion swap), AlmaLinux 10 (EPEL, CRB, RPM Fusion), Tumbleweed and Leap 16 (incl. Packman swap; zypper "2 packages to upgrade" on update), Arch (`makepkg -si`, `makepkg -sif`, `meson test` in `check()`); README CLI examples (built with `build-package.sh`).
+- Release workflow dry run (run 43299340003): all 15 install jobs pass — Ubuntu 24.04/26.04, Debian 13, Fedora 45, AlmaLinux 10, Tumbleweed, Leap 16 on x86-64 and arm64, Arch on x86-64 — plus Flatpak, AppImage and tarball on both architectures.
+- Earlier run (before D40, still valid): Flatpak bundle, AppImage (GUI under Xvfb), portable tarball, Meson install, CONTRIBUTING/TESTING/MAINTAINER blocks.
+- Resolved only (no GPU in containers): NVIDIA driver packages on Debian 13, Fedora 45, EL 10, Arch. Intel driver steps are x86-64 only (skipped, with the reason, on arm64).
+- Skipped with reasons in the report: `ubuntu-drivers install` (needs NVIDIA hardware); `nix run` (the Packaging workflow builds the flake); `cargo insta review` (interactive); release tagging/pushing and Docker-based commands in MAINTAINER.md (run by the workflows). README's install blocks are checked to be identical to INSTALL.md's (`same-as`).
+- Bugs it found and that are fixed: openSUSE's build tools lacked `python3` (the spec needs it); NVIDIA's arm64 RHEL repository is `sbsa`, not `aarch64` (System Check's fix command was wrong too); rebuilding an unchanged version would not have replaced the installed package (D41); earlier: Leap 16 Packman `ffmpeg-8` vs `ffmpeg-7`, `sudo meson install` without `--no-rebuild`.
 
 ## Open questions (for the maintainer)
 
