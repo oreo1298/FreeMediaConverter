@@ -107,6 +107,29 @@ pub fn log_dir() -> PathBuf {
 }
 
 /// True when running inside a Flatpak sandbox.
+/// Device permissions the Flatpak sandbox was started with (`devices=` in
+/// `<root>/.flatpak-info`, e.g. `["dri"]` or `["all"]`); None outside Flatpak.
+pub fn flatpak_devices(root: &Path) -> Option<Vec<String>> {
+    let text = std::fs::read_to_string(root.join(".flatpak-info")).ok()?;
+    let mut in_context = false;
+    let mut devices = Vec::new();
+    for line in text.lines() {
+        let line = line.trim();
+        if line.starts_with('[') {
+            in_context = line == "[Context]";
+        } else if in_context {
+            if let Some(v) = line.strip_prefix("devices=") {
+                devices = v
+                    .split(';')
+                    .filter(|d| !d.is_empty())
+                    .map(String::from)
+                    .collect();
+            }
+        }
+    }
+    Some(devices)
+}
+
 pub fn in_flatpak() -> bool {
     Path::new("/.flatpak-info").exists()
 }
@@ -135,6 +158,27 @@ pub fn temp_dir(purpose: &str) -> std::io::Result<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn flatpak_device_permissions() {
+        let d = tempfile::tempdir().unwrap();
+        assert_eq!(flatpak_devices(d.path()), None);
+        std::fs::write(
+            d.path().join(".flatpak-info"),
+            "[Application]\nname=x\n\n[Context]\nshared=ipc;\ndevices=dri;kvm;\n\n[Instance]\ndevices=all\n",
+        )
+        .unwrap();
+        assert_eq!(
+            flatpak_devices(d.path()),
+            Some(vec!["dri".to_string(), "kvm".to_string()])
+        );
+        std::fs::write(
+            d.path().join(".flatpak-info"),
+            "[Context]\nsockets=wayland;\n",
+        )
+        .unwrap();
+        assert_eq!(flatpak_devices(d.path()), Some(vec![]));
+    }
 
     #[test]
     fn url_for_nasty_names() {

@@ -428,7 +428,12 @@ pub fn check(
 
     // Devices and permissions.
     let scan = &inv.scan;
-    if flatpak && scan.dri_missing {
+    // Without /dev/dri inside the sandbox, either the permission is missing or
+    // this machine simply has no GPU (then the hardware findings say so).
+    let dri_granted = crate::paths::flatpak_devices(root)
+        .or_else(|| crate::paths::flatpak_devices(Path::new("/")))
+        .is_some_and(|d| d.iter().any(|x| x == "dri" || x == "all"));
+    if flatpak && scan.dri_missing && !dri_granted {
         add!(
             "flatpak-no-dri",
             Severity::Error,
