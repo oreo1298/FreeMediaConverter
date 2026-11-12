@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+option('offline', type: 'boolean', value: false,
+       description: 'Build with cargo --offline (vendored crates, e.g. Flatpak or distro builds)')
+option('cargo_tests', type: 'boolean', value: false,
+       description: 'Register "cargo test" as a Meson test')
+option('update_check', type: 'boolean', value: false,
+       description: 'Opt-in update notifier (only for AppImage and tarball builds)')
