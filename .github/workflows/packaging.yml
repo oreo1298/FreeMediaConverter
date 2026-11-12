@@ -69,3 +69,11 @@ jobs:
         run: |
           flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest packaging/flatpak/io.github.oreo1298.Retort.json || true
           flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo || true
+
+  nix:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+      - run: nix build .#retort -L
+      - run: ./result/bin/retort-cli presets | head -3
