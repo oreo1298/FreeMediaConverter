@@ -1,0 +1,65 @@
+# Maintainer: Retort contributors <https://github.com/oreo1298/FreeMediaConverter>
+# SPDX-License-Identifier: GPL-3.0-or-later
+pkgbase=retort-git
+pkgname=('retort-git' 'retort-cli-git')
+pkgver=0.1.0.r0.g0000000
+pkgrel=1
+pkgdesc="Convert video and audio files with FFmpeg, using verified hardware acceleration"
+arch=('x86_64' 'aarch64')
+url="https://github.com/oreo1298/FreeMediaConverter"
+license=('GPL-3.0-or-later')
+makedepends=('git' 'cargo' 'meson' 'appstream' 'desktop-file-utils' 'gtk4' 'libadwaita')
+source=("$pkgbase::git+https://github.com/oreo1298/FreeMediaConverter.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$pkgbase"
+  git describe --long --tags --abbrev=7 2>/dev/null | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g' ||
+    printf "0.1.0.r%s.g%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short=7 HEAD)"
+}
+
+prepare() {
+  cd "$pkgbase"
+  export RUSTUP_TOOLCHAIN=stable
+  cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+  export RUSTUP_TOOLCHAIN=stable
+  arch-meson "$pkgbase" build -Doffline=true
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+_install() {
+  [ -d "$srcdir/install" ] || meson install -C build --destdir "$srcdir/install"
+}
+
+package_retort-git() {
+  provides=('retort')
+  conflicts=('retort')
+  depends=('gtk4' 'libadwaita' 'glib2' 'glibc' 'gcc-libs' 'cairo' 'pango' 'gdk-pixbuf2' 'graphene'
+           'hicolor-icon-theme' 'ffmpeg')
+  optdepends=('retort-cli-git: command-line companion'
+              'intel-media-driver: Intel VA-API / Quick Sync encode'
+              'vpl-gpu-rt: Intel Quick Sync runtime'
+              'nvidia-utils: NVENC / NVDEC'
+              'libva-utils: vainfo for System Check'
+              'vulkan-tools: vulkaninfo for System Check')
+  _install
+  cp -a "$srcdir/install/." "$pkgdir/"
+  rm "$pkgdir/usr/bin/retort-cli"
+}
+
+package_retort-cli-git() {
+  provides=('retort-cli')
+  conflicts=('retort-cli')
+  pkgdesc="Convert video and audio files with FFmpeg (command line, no GTK)"
+  depends=('glibc' 'gcc-libs' 'ffmpeg')
+  _install
+  install -Dm755 "$srcdir/install/usr/bin/retort-cli" "$pkgdir/usr/bin/retort-cli"
+  install -Dm644 "$srcdir/$pkgbase/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
