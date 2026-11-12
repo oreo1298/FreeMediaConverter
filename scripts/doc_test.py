@@ -225,7 +225,8 @@ def script_for(commands, prelude, url, rel, as_user=False):
         *body,
         "USERSCRIPT",
         "chmod 755 /tmp/user-script.sh",
-        "su - tester -c 'bash /tmp/user-script.sh'",
+        # sudo, not su: minimal images (Fedora) lack su.
+        "sudo -i -u tester bash /tmp/user-script.sh",
     ]
     return "\n".join(lines)
 
