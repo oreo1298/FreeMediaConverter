@@ -48,12 +48,18 @@ impl Status {
     pub fn is_finished(&self) -> bool {
         matches!(
             self,
-            Status::Done { .. } | Status::Failed { .. } | Status::Cancelled | Status::Skipped { .. }
+            Status::Done { .. }
+                | Status::Failed { .. }
+                | Status::Cancelled
+                | Status::Skipped { .. }
         )
     }
     /// Can be (re)started by "Convert".
     pub fn is_convertible(&self) -> bool {
-        matches!(self, Status::Ready | Status::Failed { .. } | Status::Cancelled)
+        matches!(
+            self,
+            Status::Ready | Status::Failed { .. } | Status::Cancelled
+        )
     }
 }
 
@@ -63,6 +69,15 @@ pub struct Live {
     pub fraction: Option<f64>,
     pub eta: Option<f64>,
     pub progress: Progress,
+}
+
+/// A planned job waiting for a free slot.
+pub struct Prepared {
+    pub plan: retort_core::plan::JobPlan,
+    pub output: PathBuf,
+    pub overwrite: bool,
+    /// Scheduling resource: a GPU id or "cpu".
+    pub resource: String,
 }
 
 /// One file in the queue.
@@ -85,6 +100,11 @@ pub struct Item {
     pub start_plan: Option<usize>,
     pub thumbnail: Option<gtk::gdk::Texture>,
     pub peaks: Option<Vec<f32>>,
+    pub prepared: Option<Prepared>,
+    /// Being planned right now (avoid double planning).
+    pub preparing: bool,
+    /// "Retry with software": plan without hardware for this item.
+    pub force_software: bool,
 }
 
 impl Item {
@@ -107,6 +127,9 @@ impl Item {
             start_plan: None,
             thumbnail: None,
             peaks: None,
+            prepared: None,
+            preparing: false,
+            force_software: false,
         }
     }
 
@@ -155,7 +178,9 @@ pub fn save(items: &[Item], path: &Path) {
                 settings: i.settings.clone(),
                 preset: i.preset.clone(),
                 status: match &i.status {
-                    Status::Running | Status::Paused | Status::Queued | Status::Analyzing => Status::Ready,
+                    Status::Running | Status::Paused | Status::Queued | Status::Analyzing => {
+                        Status::Ready
+                    }
                     s => s.clone(),
                 },
             })
@@ -175,8 +200,12 @@ pub fn save(items: &[Item], path: &Path) {
 /// Load the persisted queue: (path, settings, preset, status). Files that no
 /// longer exist are dropped.
 pub fn load(path: &Path) -> Vec<(PathBuf, OutputSettings, String, Status)> {
-    let Ok(bytes) = std::fs::read(path) else { return Vec::new() };
-    let Ok(q) = serde_json::from_slice::<SavedQueue>(&bytes) else { return Vec::new() };
+    let Ok(bytes) = std::fs::read(path) else {
+        return Vec::new();
+    };
+    let Ok(q) = serde_json::from_slice::<SavedQueue>(&bytes) else {
+        return Vec::new();
+    };
     q.items
         .into_iter()
         .filter(|s| s.path.exists())
@@ -185,7 +214,8 @@ pub fn load(path: &Path) -> Vec<(PathBuf, OutputSettings, String, Status)> {
 }
 
 /// Media file extensions picked up when a folder is added.
-pub const DEFAULT_EXTENSIONS: &str = "mp4,m4v,mkv,mov,avi,webm,mpg,mpeg,ts,m2ts,mts,wmv,flv,3gp,ogv,mxf,vob,dv,\
+pub const DEFAULT_EXTENSIONS: &str =
+    "mp4,m4v,mkv,mov,avi,webm,mpg,mpeg,ts,m2ts,mts,wmv,flv,3gp,ogv,mxf,vob,dv,\
 mp3,m4a,aac,flac,wav,ogg,oga,opus,wma,aiff,aif,ape,wv,mka,ac3,eac3,dts,amr,gif,webp,apng,avif";
 
 /// Expand folders recursively (filtering by extension) and keep files as-is.
@@ -200,7 +230,9 @@ pub fn expand_inputs(paths: Vec<PathBuf>, extensions: &str) -> Vec<PathBuf> {
         if depth > 32 {
             return;
         }
-        let Ok(rd) = std::fs::read_dir(dir) else { return };
+        let Ok(rd) = std::fs::read_dir(dir) else {
+            return;
+        };
         let mut entries: Vec<_> = rd.flatten().map(|e| e.path()).collect();
         entries.sort();
         for p in entries {
@@ -215,7 +247,10 @@ pub fn expand_inputs(paths: Vec<PathBuf>, extensions: &str) -> Vec<PathBuf> {
                 walk(&p, exts, out, depth + 1);
             } else if p
                 .extension()
-                .map(|e| exts.iter().any(|x| *x == e.to_string_lossy().to_ascii_lowercase()))
+                .map(|e| {
+                    exts.iter()
+                        .any(|x| *x == e.to_string_lossy().to_ascii_lowercase())
+                })
                 .unwrap_or(false)
             {
                 out.push(p);
@@ -240,11 +275,20 @@ mod tests {
     fn expands_folders_with_filter() {
         let d = tempfile::tempdir().unwrap();
         std::fs::create_dir_all(d.path().join("a/b")).unwrap();
-        for f in ["a/x.mkv", "a/b/y.MP3", "a/notes.txt", "a/.hidden.mp4", "z.mov"] {
+        for f in [
+            "a/x.mkv",
+            "a/b/y.MP3",
+            "a/notes.txt",
+            "a/.hidden.mp4",
+            "z.mov",
+        ] {
             std::fs::write(d.path().join(f), b"").unwrap();
         }
         let got = expand_inputs(vec![d.path().join("a"), d.path().join("z.mov")], "mkv,mp3");
-        let names: Vec<_> = got.iter().map(|p| p.file_name().unwrap().to_string_lossy().into_owned()).collect();
+        let names: Vec<_> = got
+            .iter()
+            .map(|p| p.file_name().unwrap().to_string_lossy().into_owned())
+            .collect();
         assert_eq!(names, ["y.MP3", "x.mkv", "z.mov"]);
     }
 }

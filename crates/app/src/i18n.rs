@@ -6,7 +6,10 @@ pub use gettextrs::{gettext, ngettext};
 /// Initialise translations for the app's text domain.
 pub fn init() {
     let domain = retort_core::branding::APP_BIN;
-    gettextrs::setlocale(gettextrs::LocaleCategory::LcAll, "");
+    // SAFETY: called first thing in main(), before any other thread exists.
+    unsafe {
+        gettextrs::setlocale(gettextrs::LocaleCategory::LcAll, "");
+    }
     let _ = gettextrs::bindtextdomain(domain, env!("RETORT_LOCALEDIR"));
     let _ = gettextrs::bind_textdomain_codeset(domain, "UTF-8");
     let _ = gettextrs::textdomain(domain);

@@ -969,6 +969,7 @@ dependencies = [
  "retort-core",
  "serde",
  "serde_json",
+ "tempfile",
 ]
 
 [[package]]
