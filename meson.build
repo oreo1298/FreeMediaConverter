@@ -50,6 +50,9 @@ cargo_target_dir = meson.project_build_root() / 'cargo-target'
 cargo_env = environment()
 cargo_env.set('RETORT_LOCALEDIR', localedir)
 cargo_env.set('RETORT_PKGDATADIR', datadir / app_bin)
+# Installable build: no build-tree paths compiled into the binaries (dev
+# fallbacks for `cargo run` only; packagers' tools flag such references).
+cargo_env.set('RETORT_INSTALLED_BUILD', '1')
 cargo_args = [
   '--manifest', meson.project_source_root() / 'Cargo.toml',
   '--target-dir', cargo_target_dir,

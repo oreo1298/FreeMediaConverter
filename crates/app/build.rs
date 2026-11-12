@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! For uninstalled runs (`cargo run -p retort`): template the GSettings
 //! schema from branding.env and compile it, and stage the app icons, inside
-//! OUT_DIR. Installed builds use the files Meson installs instead.
+//! OUT_DIR. Installed builds use the files Meson installs instead; Meson sets
+//! RETORT_INSTALLED_BUILD so that no build-tree path ends up in the binary.
 use std::path::Path;
 use std::process::Command;
 
@@ -19,6 +20,31 @@ fn main() {
             .to_string()
     };
     let (id, bin) = (get("APP_ID"), get("APP_BIN"));
+    println!("cargo:rerun-if-env-changed=RETORT_INSTALLED_BUILD");
+    if std::env::var_os("RETORT_INSTALLED_BUILD").is_some() {
+        for var in [
+            "RETORT_DEV_SCHEMA_DIR",
+            "RETORT_DEV_ICON_DIR",
+            "RETORT_DEV_PROFILES_DIR",
+        ] {
+            println!("cargo:rustc-env={var}=");
+        }
+    } else {
+        dev_files(&root, &out, &id, &bin);
+    }
+    // Install-time locations passed by Meson (fall back to /usr).
+    for (var, def) in [
+        ("RETORT_LOCALEDIR", "/usr/share/locale"),
+        ("RETORT_PKGDATADIR", "/usr/share/retort"),
+    ] {
+        println!("cargo:rerun-if-env-changed={var}");
+        let v = std::env::var(var).unwrap_or_else(|_| def.to_string());
+        println!("cargo:rustc-env={var}={v}");
+    }
+}
+
+/// Schema, icons and simulated hardware profiles for uninstalled runs.
+fn dev_files(root: &Path, out: &Path, id: &str, bin: &str) {
     let path = format!("/{}/", id.replace('.', "/"));
     for f in [
         "branding.env",
@@ -33,9 +59,9 @@ fn main() {
     std::fs::create_dir_all(&schema_dir).unwrap();
     let tmpl = std::fs::read_to_string(root.join("data/app.gschema.xml.in")).unwrap();
     let xml = tmpl
-        .replace("@APP_ID@", &id)
+        .replace("@APP_ID@", id)
         .replace("@APP_PATH@", &path)
-        .replace("@APP_BIN@", &bin);
+        .replace("@APP_BIN@", bin);
     std::fs::write(schema_dir.join(format!("{id}.gschema.xml")), xml).unwrap();
     match Command::new("glib-compile-schemas")
         .arg(&schema_dir)
@@ -68,13 +94,8 @@ fn main() {
         "cargo:rustc-env=RETORT_DEV_ICON_DIR={}",
         out.join("icons").display()
     );
-    // Install-time locations passed by Meson (fall back to /usr).
-    for (var, def) in [
-        ("RETORT_LOCALEDIR", "/usr/share/locale"),
-        ("RETORT_PKGDATADIR", "/usr/share/retort"),
-    ] {
-        println!("cargo:rerun-if-env-changed={var}");
-        let v = std::env::var(var).unwrap_or_else(|_| def.to_string());
-        println!("cargo:rustc-env={var}={v}");
-    }
+    println!(
+        "cargo:rustc-env=RETORT_DEV_PROFILES_DIR={}",
+        root.join("tests/fixtures/hw").display()
+    );
 }

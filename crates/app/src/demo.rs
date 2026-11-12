@@ -215,9 +215,10 @@ pub fn run(ui: Ui, dir: PathBuf) {
         s.set_gtk_font_name(Some("Cantarell 11"));
     }
     ui.window.set_default_size(1240, 800);
+    // The bundled profiles are only known to `cargo build`s of a checkout.
     let profile_dir = std::env::var_os("RETORT_DEMO_PROFILE")
         .map(PathBuf::from)
-        .unwrap_or_else(|| retort_core::hw::simulate::profiles_dir().join("nvidia-only"));
+        .unwrap_or_else(|| PathBuf::from(env!("RETORT_DEV_PROFILES_DIR")).join("nvidia-only"));
     let profile = Profile::load(&profile_dir).expect("demo profile");
     let inv = profile.inventory().expect("demo inventory");
     // Real ffmpeg for analysis/thumbnails; the simulated profile for hardware.

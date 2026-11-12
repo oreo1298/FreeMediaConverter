@@ -44,7 +44,10 @@ fn load_css() {
             if let Some(share) = util::exe_share_dir() {
                 theme.add_search_path(share.join("icons"));
             }
-            theme.add_search_path(env!("RETORT_DEV_ICON_DIR"));
+            let dev = env!("RETORT_DEV_ICON_DIR"); // empty in Meson builds
+            if !dev.is_empty() {
+                theme.add_search_path(dev);
+            }
         }
     }
 }

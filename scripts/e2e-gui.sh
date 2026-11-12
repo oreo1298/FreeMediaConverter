@@ -20,6 +20,12 @@ ffmpeg -v error -nostdin -f lavfi -i testsrc2=s=640x360:d=2 -f lavfi -i sine=d=2
   -c:v libx264 -preset ultrafast -c:a aac "file:$media/clip one.mkv"
 ffmpeg -v error -nostdin -f lavfi -i "sine=f=330:d=3" -c:a flac "file:$media/tone #2.flac"
 
+# A Meson build tree has the compiled schema in data/ (Meson builds carry no
+# build-tree paths; `meson devenv` sets the same variable).
+schemas="$(dirname "$bin")/data"
+if [ -f "$schemas/gschemas.compiled" ]; then
+  export GSETTINGS_SCHEMA_DIR="$schemas"
+fi
 export HOME="$work/home" XDG_CONFIG_HOME="$work/home/.config" XDG_DATA_HOME="$work/home/.local/share" \
   XDG_CACHE_HOME="$work/home/.cache" GSETTINGS_BACKEND=memory RETORT_E2E=1 GSK_RENDERER=cairo \
   GTK_A11Y=none NO_AT_BRIDGE=1

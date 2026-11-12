@@ -45,7 +45,11 @@ pub fn settings(memory: bool) -> gio::Settings {
             if let Some(share) = exe_share_dir() {
                 dirs.push(share.join("glib-2.0/schemas"));
             }
-            dirs.push(std::path::PathBuf::from(env!("RETORT_DEV_SCHEMA_DIR")));
+            // Empty in Meson (installable) builds.
+            let dev = env!("RETORT_DEV_SCHEMA_DIR");
+            if !dev.is_empty() {
+                dirs.push(std::path::PathBuf::from(dev));
+            }
             dirs.into_iter()
                 .filter(|d| d.join("gschemas.compiled").is_file())
                 .find_map(|d| {
