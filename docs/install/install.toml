@@ -237,7 +237,7 @@ images = ["opensuse/tumbleweed", "opensuse/leap:16.0"]
 text = "Run these as your normal user (not root). First the build tools, once:"
 [[section.step]]
 commands = [
-  "sudo zypper install -y git rpm-build gcc meson ninja gettext-tools desktop-file-utils AppStream gtk4-devel libadwaita-devel cargo",
+  "sudo zypper install -y git rpm-build gcc meson ninja python3 gettext-tools desktop-file-utils AppStream gtk4-devel libadwaita-devel cargo",
 ]
 [[section.step]]
 title = "Build and install"

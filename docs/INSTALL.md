@@ -261,7 +261,7 @@ sudo dnf remove -y retort retort-cli
 Run these as your normal user (not root). First the build tools, once:
 
 ```bash
-sudo zypper install -y git rpm-build gcc meson ninja gettext-tools desktop-file-utils AppStream gtk4-devel libadwaita-devel cargo
+sudo zypper install -y git rpm-build gcc meson ninja python3 gettext-tools desktop-file-utils AppStream gtk4-devel libadwaita-devel cargo
 ```
 
 ### Build and install
