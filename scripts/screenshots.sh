@@ -13,4 +13,10 @@ export GTK_A11Y=none
 export NO_AT_BRIDGE=1
 xvfb-run -a -s "-screen 0 2560x1600x24" dbus-run-session -- target/debug/retort
 rm -rf "${out:?}/media"
+# Lossy palette compression keeps the repository small (UI art survives it well).
+if command -v pngquant >/dev/null; then
+  for f in "$out"/*.png; do
+    pngquant --quality=80-95 --speed 1 --force --skip-if-larger --output "$f" -- "$f" || true
+  done
+fi
 ls "$out"

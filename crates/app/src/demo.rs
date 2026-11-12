@@ -4,6 +4,10 @@
 //! (RETORT_DEMO_PROFILE, default tests/fixtures/hw/nvidia-only), walks through
 //! every major state in light and dark, renders the window with GSK to PNG,
 //! and quits. Run via scripts/screenshots.sh (Xvfb).
+//!
+//! With RETORT_E2E set, [`e2e`] instead drives a real conversion of the files
+//! given on the command line (real ffmpeg, real hardware probe) and exits
+//! with 0 only if every file converted. Run via scripts/e2e-gui.sh.
 
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
@@ -371,5 +375,83 @@ pub fn run(ui: Ui, dir: PathBuf) {
             *idx.borrow_mut() = (i + 1, 0);
         }
         glib::ControlFlow::Continue
+    });
+}
+
+/// Exit status of the e2e run (read by main after the loop ends).
+pub static E2E_STATUS: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(2);
+
+/// Headless end-to-end check: wait for analysis, press Convert, wait for the
+/// batch, report every item's status, quit.
+pub fn e2e(ui: Ui) {
+    use crate::window::HwStatus;
+    use std::sync::atomic::Ordering;
+    let started = std::cell::Cell::new(false);
+    let deadline = std::time::Instant::now() + Duration::from_secs(600);
+    glib::timeout_add_local(Duration::from_millis(300), move || {
+        if std::time::Instant::now() > deadline {
+            eprintln!("E2E: timed out");
+            E2E_STATUS.store(3, Ordering::SeqCst);
+            ui.app.quit();
+            return glib::ControlFlow::Break;
+        }
+        let st = ui.state.borrow();
+        if let Some(e) = &st.engine_error {
+            eprintln!("E2E: engine error: {e}");
+            drop(st);
+            E2E_STATUS.store(4, Ordering::SeqCst);
+            ui.app.quit();
+            return glib::ControlFlow::Break;
+        }
+        if !started.get() {
+            let ready = st.engine.is_some()
+                && matches!(st.hw, HwStatus::Ready | HwStatus::Disabled)
+                && !st.items.is_empty()
+                && st
+                    .items
+                    .iter()
+                    .all(|i| !matches!(i.status, Status::Analyzing) && !i.preparing);
+            drop(st);
+            if ready {
+                eprintln!("E2E: starting conversion");
+                started.set(true);
+                gtk::prelude::WidgetExt::activate_action(&ui.window, "win.convert", None).ok();
+            }
+            return glib::ControlFlow::Continue;
+        }
+        if st.batch {
+            return glib::ControlFlow::Continue;
+        }
+        let mut ok = true;
+        for it in &st.items {
+            let line = match &it.status {
+                Status::Done {
+                    output,
+                    size,
+                    fallback,
+                } => {
+                    format!(
+                        "done {} ({size} bytes){}",
+                        output.display(),
+                        fallback
+                            .as_ref()
+                            .map(|f| format!(" fallback: {f}"))
+                            .unwrap_or_default()
+                    )
+                }
+                other => {
+                    ok = false;
+                    format!("{other:?}")
+                }
+            };
+            eprintln!("E2E: {} -> {line}", it.path.display());
+            if let Some(c) = &it.command {
+                eprintln!("E2E:   {c}");
+            }
+        }
+        drop(st);
+        E2E_STATUS.store(if ok { 0 } else { 1 }, Ordering::SeqCst);
+        ui.app.quit();
+        glib::ControlFlow::Break
     });
 }
