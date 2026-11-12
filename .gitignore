@@ -13,3 +13,8 @@
 *.snap.new
 *.pending-snap
 /po/*.pot
+# makepkg (PKGBUILD) and build-package.sh output
+/src/
+/pkg/
+*.pkg.tar.*
+/_package/

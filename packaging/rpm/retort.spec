@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Builds on Fedora, EL 10 (AlmaLinux/RHEL/Rocky) and openSUSE Tumbleweed/Leap 16.
-# Rust >= 1.92 must be on PATH (packaging/rpm/build.sh installs rustup);
-# crates come from the -vendor tarball, so the build is offline.
+# Built from a checkout by build-package.sh (repository root), which puts the
+# sources and a -vendor tarball (cargo vendor) in SOURCES: the build is offline.
+# Rust >= 1.92 must be on PATH.
 %global app_id io.github.oreo1298.Retort
 %global debug_package %{nil}
 

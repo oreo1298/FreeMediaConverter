@@ -17,7 +17,7 @@ Standards-Version: 4.7.0
 Homepage: https://github.com/oreo1298/FreeMediaConverter
 Vcs-Browser: https://github.com/oreo1298/FreeMediaConverter
 Rules-Requires-Root: no
-X-Rust-Note: built with a rustup toolchain (MSRV 1.92) and vendored crates; see packaging/debian/build.sh
+X-Rust-Note: built from a checkout by build-package.sh with Rust >= 1.92 on PATH and vendored crates
 
 Package: retort
 Architecture: any
