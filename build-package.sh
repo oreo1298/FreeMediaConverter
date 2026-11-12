@@ -70,7 +70,7 @@ tar -C "$root" \
 
 say "Fetching Rust crates (cargo vendor)"
 mkdir -p "$src/.cargo"
-(cd "$src" && cargo vendor --locked --versioned-dirs vendor >/dev/null)
+(cd "$src" && cargo vendor --quiet --locked --versioned-dirs vendor >/dev/null)
 cat > "$src/.cargo/config.toml" <<'TOML'
 [source.crates-io]
 replace-with = "vendored-sources"
